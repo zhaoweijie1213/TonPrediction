@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QYQ.Base.Common" Version="8.5.6" />
+    <PackageReference Include="QYQ.Base.SqlSugar" Version="8.2.3" />
+    <PackageReference Include="QYQ.Base.Swagger" Version="8.0.7" />
+  </ItemGroup>
+
+</Project>
