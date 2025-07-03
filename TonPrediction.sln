@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonPrediction.Application",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonPrediction.Infrastructure", "TonPrediction.Infrastructure\TonPrediction.Infrastructure.csproj", "{892809CD-85E4-4D13-9EE6-2099C427F4B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonPrediction.Test", "TonPrediction.Test\TonPrediction.Test.csproj", "{7205A0D8-5560-4835-8F48-5C2F645D476B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{892809CD-85E4-4D13-9EE6-2099C427F4B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{892809CD-85E4-4D13-9EE6-2099C427F4B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{892809CD-85E4-4D13-9EE6-2099C427F4B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7205A0D8-5560-4835-8F48-5C2F645D476B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7205A0D8-5560-4835-8F48-5C2F645D476B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7205A0D8-5560-4835-8F48-5C2F645D476B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7205A0D8-5560-4835-8F48-5C2F645D476B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

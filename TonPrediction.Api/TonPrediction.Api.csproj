@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TonPrediction.Application\TonPrediction.Application.csproj" />
+    <ProjectReference Include="..\TonPrediction.Infrastructure\TonPrediction.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
