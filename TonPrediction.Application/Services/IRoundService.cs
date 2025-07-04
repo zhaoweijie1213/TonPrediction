@@ -1,0 +1,27 @@
+using QYQ.Base.Common.IOCExtensions;
+using TonPrediction.Application.Output;
+
+namespace TonPrediction.Application.Services;
+
+/// <summary>
+/// 回合信息查询业务接口。
+/// </summary>
+public interface IRoundService : ITransientDependency
+{
+    /// <summary>
+    /// 获取历史回合列表。
+    /// </summary>
+    /// <param name="limit">最大返回数量。</param>
+    /// <param name="ct">取消任务标记。</param>
+    /// <returns>历史回合集合。</returns>
+    Task<List<RoundHistoryOutput>> GetHistoryAsync(
+        int limit = 3,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// 获取即将开始的回合时间。
+    /// </summary>
+    /// <param name="ct">取消任务标记。</param>
+    /// <returns>回合时间集合。</returns>
+    Task<List<UpcomingRoundOutput>> GetUpcomingAsync(CancellationToken ct = default);
+}
