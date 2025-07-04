@@ -16,7 +16,7 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
-builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings:Default"));
+builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
