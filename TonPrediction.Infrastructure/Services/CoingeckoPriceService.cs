@@ -14,20 +14,26 @@ namespace TonPrediction.Infrastructure.Services
     {
         private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
         private readonly ILogger<CoingeckoPriceService> _logger = logger;
-        private const string Url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd";
+        private const string UrlTemplate =
+            "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies={0}";
 
         /// <inheritdoc />
-        public async Task<decimal> GetCurrentPriceAsync(CancellationToken token)
+        public async Task<PriceResult> GetAsync(
+            string symbol,
+            string vsCurrency = "usd",
+            CancellationToken ct = default)
         {
             try
             {
-                var resp = await _httpClient.GetFromJsonAsync<Response>(Url, token);
-                return resp?.Ton?.Usd ?? 0m;
+                var url = string.Format(UrlTemplate, vsCurrency);
+                var resp = await _httpClient.GetFromJsonAsync<Response>(url, ct);
+                var price = resp?.Ton?.Usd ?? 0m;
+                return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to fetch price from CoinGecko");
-                return 0m;
+                return new PriceResult(symbol, vsCurrency, 0m, DateTimeOffset.UtcNow);
             }
         }
 

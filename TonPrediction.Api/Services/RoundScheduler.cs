@@ -47,7 +47,7 @@ namespace TonPrediction.Api.Services
             var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
-            var startPrice = await priceService.GetCurrentPriceAsync(token);
+            var startPrice = (await priceService.GetAsync("ton", "usd", token)).Price;
             var now = DateTime.UtcNow;
             var round = new RoundEntity
             {
@@ -63,7 +63,7 @@ namespace TonPrediction.Api.Services
 
             await Task.Delay(_interval, token);
 
-            var closePrice = await priceService.GetCurrentPriceAsync(token);
+            var closePrice = (await priceService.GetAsync("ton", "usd", token)).Price;
             var closeTime = DateTime.UtcNow;
             round.CloseTime = closeTime;
             round.ClosePrice = closePrice;

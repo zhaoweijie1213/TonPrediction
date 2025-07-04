@@ -8,10 +8,15 @@ namespace TonPrediction.Application.Services
     public interface IPriceService : ITransientDependency
     {
         /// <summary>
-        /// 获取当前价格。
+        /// 获取某币种在指定法币中的最新价格。
         /// </summary>
-        /// <param name="token">取消任务标记。</param>
-        /// <returns>当前价格。</returns>
-        Task<decimal> GetCurrentPriceAsync(CancellationToken token);
+        /// <param name="symbol">币种符号，小写，如 "ton" 或 "btc"。</param>
+        /// <param name="vsCurrency">法币符号，默认为 usd。</param>
+        /// <param name="ct">取消任务标记。</param>
+        /// <returns>价格结果。</returns>
+        Task<PriceResult> GetAsync(
+            string symbol,
+            string vsCurrency = "usd",
+            CancellationToken ct = default);
     }
 }
