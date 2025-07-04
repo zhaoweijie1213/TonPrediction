@@ -169,7 +169,7 @@
 ### mode = `round`
 
 ```
-GET /api/user/predictions/round
+GET /api/predictions/round
 ```
 
 | 参数名     | 类型   | 默认值 | 说明                        |
@@ -195,7 +195,7 @@ GET /api/user/predictions/round
 ### mode = `pnl`
 
 ```
-GET /api/user/predictions/pnl
+GET /api/predictions/pnl
 ```
 
 返回盈亏汇总，字段同现有文档，字段名保持不变。
