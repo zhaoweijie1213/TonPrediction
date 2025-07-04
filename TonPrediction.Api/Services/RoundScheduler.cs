@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
-using TonPrediction.Application.Services;
 using PancakeSwap.Api.Hubs;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Services
 {

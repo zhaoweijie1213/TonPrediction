@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Services;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Infrastructure.Services
 {

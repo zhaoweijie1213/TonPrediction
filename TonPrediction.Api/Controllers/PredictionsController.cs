@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using QYQ.Base.Common.ApiResult;
-using TonPrediction.Application.Services;
 using TonPrediction.Application.Output;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Controllers;
 

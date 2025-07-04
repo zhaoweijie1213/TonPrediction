@@ -4,12 +4,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
-using TonPrediction.Application.Services;
 using TonPrediction.Application.Enums;
 using PancakeSwap.Api.Hubs;
 using System.Linq;
 using SqlSugar;
 using System.Collections.Generic;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Services
 {

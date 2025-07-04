@@ -4,6 +4,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Application.Services;
 

@@ -1,7 +1,7 @@
 using QYQ.Base.Common.IOCExtensions;
 using TonPrediction.Application.Output;
 
-namespace TonPrediction.Application.Services;
+namespace TonPrediction.Application.Services.Interface;
 
 /// <summary>
 /// 预测记录查询业务接口。

@@ -1,6 +1,6 @@
 using QYQ.Base.Common.IOCExtensions;
 
-namespace TonPrediction.Application.Services
+namespace TonPrediction.Application.Services.Interface
 {
     /// <summary>
     /// 提供价格数据的服务接口。

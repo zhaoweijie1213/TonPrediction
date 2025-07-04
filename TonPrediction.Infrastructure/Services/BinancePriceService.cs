@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Services;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Infrastructure.Services
 {
