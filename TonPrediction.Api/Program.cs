@@ -4,6 +4,8 @@ using TonPrediction.Application.Database.Config;
 using TonPrediction.Infrastructure.Database;
 using TonPrediction.Infrastructure.Database.Migrations;
 using TonPrediction.Api.Services;
+using TonPrediction.Application.Services;
+using TonPrediction.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddMultipleService("^TonPrediction");
+builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings:Default"));
 builder.Services.AddHostedService<TonPrediction.Api.Services.RoundScheduler>();

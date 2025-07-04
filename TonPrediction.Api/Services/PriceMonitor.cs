@@ -39,7 +39,8 @@ namespace TonPrediction.Api.Services
 
         private async Task RecordPriceAsync(CancellationToken token)
         {
-            var price = await _priceService.GetCurrentPriceAsync(token);
+            var priceResult = await _priceService.GetAsync("ton", "usd", token);
+            var price = priceResult.Price;
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             await repo.InsertAsync(new PriceSnapshotEntity
