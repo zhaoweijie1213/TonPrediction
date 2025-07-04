@@ -1,9 +1,14 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Services;
+using PancakeSwap.Api.Hubs;
+using System.Linq;
+using SqlSugar;
+using System.Collections.Generic;
 
 namespace TonPrediction.Api.Services
 {
@@ -13,10 +18,12 @@ namespace TonPrediction.Api.Services
     public class PriceMonitor(
         IServiceScopeFactory scopeFactory,
         IPriceService priceService,
+        IHubContext<PredictionHub> hub,
         ILogger<PriceMonitor> logger) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPriceService _priceService = priceService;
+        private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<PriceMonitor> _logger = logger;
 
         /// <inheritdoc />
@@ -48,6 +55,17 @@ namespace TonPrediction.Api.Services
                 Timestamp = DateTime.UtcNow,
                 Price = price
             });
+
+            var since = DateTime.UtcNow.AddMinutes(-10);
+            dynamic repoDyn = repo;
+            var db = repoDyn.Db;
+            var data = (List<PriceSnapshotEntity>)await db.Queryable<PriceSnapshotEntity>()
+                .Where("timestamp >= @ts", new { ts = since })
+                .OrderBy("timestamp", OrderByType.Asc)
+                .ToListAsync();
+            var timestamps = data.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray();
+            var prices = data.Select(d => d.Price.ToString("F8")).ToArray();
+            await _hub.Clients.All.SendAsync("chartData", new { timestamps, prices }, token);
         }
     }
 }
