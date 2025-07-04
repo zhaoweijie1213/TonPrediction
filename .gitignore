@@ -2,3 +2,4 @@
 obj
 bin
 dotnet-install.sh
+logs
