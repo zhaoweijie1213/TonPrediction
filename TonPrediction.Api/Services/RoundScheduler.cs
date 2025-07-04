@@ -52,11 +52,7 @@ namespace TonPrediction.Api.Services
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
             var now = DateTime.UtcNow;
-            dynamic repoDyn = roundRepo;
-            var db = repoDyn.Db;
-            var current = await db.Queryable<RoundEntity>()
-                .OrderBy("id", SqlSugar.OrderByType.Desc)
-                .FirstAsync();
+            var current = await roundRepo.GetLatestAsync(token);
 
             if (current == null || current.Status == RoundStatus.Ended)
             {

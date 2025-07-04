@@ -9,5 +9,13 @@ namespace TonPrediction.Application.Database.Repository
     /// </summary>
     public interface IPriceSnapshotRepository : IBaseRepository<PriceSnapshotEntity>, ITransientDependency
     {
+        /// <summary>
+        /// 获取指定时间之后的价格快照。
+        /// </summary>
+        /// <param name="since">起始时间。</param>
+        /// <param name="ct">取消令牌。</param>
+        Task<List<PriceSnapshotEntity>> GetSinceAsync(
+            DateTime since,
+            CancellationToken ct = default);
     }
 }

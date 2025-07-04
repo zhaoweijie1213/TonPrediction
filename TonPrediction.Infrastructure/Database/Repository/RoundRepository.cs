@@ -5,6 +5,7 @@ using SqlSugar;
 using TonPrediction.Application.Database.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Infrastructure.Database.Repository
 {
@@ -14,8 +15,46 @@ namespace TonPrediction.Infrastructure.Database.Repository
     /// <param name="logger"></param>
     /// <param name="connectionString"></param>
     /// <param name="dbType"></param>
-    public class RoundRepository(ILogger<RoundRepository> logger, IOptionsMonitor<DatabaseConfig> options, DbType dbType = DbType.MySql) : BaseRepository<RoundEntity>(logger, options.CurrentValue.Default, dbType), IRoundRepository
+    public class RoundRepository(
+        ILogger<RoundRepository> logger,
+        IOptionsMonitor<DatabaseConfig> options,
+        DbType dbType = DbType.MySql)
+        : BaseRepository<RoundEntity>(logger, options.CurrentValue.Default, dbType),
+            IRoundRepository
     {
+        /// <inheritdoc />
+        public async Task<RoundEntity?> GetLatestAsync(CancellationToken ct = default)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .OrderBy(r => r.Id, OrderByType.Desc)
+                .FirstAsync();
+        }
 
+        /// <inheritdoc />
+        public async Task<RoundEntity?> GetCurrentLiveAsync(CancellationToken ct = default)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Status == RoundStatus.Live)
+                .OrderBy(r => r.Id, OrderByType.Desc)
+                .FirstAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<RoundEntity>> GetEndedAsync(int limit, CancellationToken ct = default)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Status == RoundStatus.Ended)
+                .OrderBy(r => r.Id, OrderByType.Desc)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<RoundEntity>> GetByIdsAsync(long[] ids, CancellationToken ct = default)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => ids.Contains(r.Id))
+                .ToListAsync();
+        }
     }
 }

@@ -14,8 +14,41 @@ namespace TonPrediction.Infrastructure.Database.Repository
     /// <param name="logger"></param>
     /// <param name="connectionString"></param>
     /// <param name="dbType"></param>
-    public class BetRepository(ILogger<BetRepository> logger, IOptionsMonitor<DatabaseConfig> options, DbType dbType = DbType.MySql) : BaseRepository<BetEntity>(logger, options.CurrentValue.Default, dbType), IBetRepository
+    public class BetRepository(
+        ILogger<BetRepository> logger,
+        IOptionsMonitor<DatabaseConfig> options,
+        DbType dbType = DbType.MySql)
+        : BaseRepository<BetEntity>(logger, options.CurrentValue.Default, dbType),
+            IBetRepository
     {
+        /// <inheritdoc />
+        public async Task<List<BetEntity>> GetPagedByAddressAsync(
+            string address,
+            string status,
+            int page,
+            int pageSize,
+            CancellationToken ct = default)
+        {
+            var query = Db.Queryable<BetEntity>()
+                .Where(b => b.UserAddress == address);
+            query = status switch
+            {
+                "claimed" => query.Where(b => b.Claimed),
+                "unclaimed" => query.Where(b => !b.Claimed),
+                _ => query
+            };
+            return await query.OrderBy(b => b.Id, OrderByType.Desc)
+                .ToPageListAsync(page, pageSize);
+        }
 
+        /// <inheritdoc />
+        public async Task<List<BetEntity>> GetByAddressAsync(
+            string address,
+            CancellationToken ct = default)
+        {
+            return await Db.Queryable<BetEntity>()
+                .Where(b => b.UserAddress == address)
+                .ToListAsync();
+        }
     }
 }

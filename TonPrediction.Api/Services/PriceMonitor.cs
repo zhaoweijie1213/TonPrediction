@@ -59,22 +59,12 @@ namespace TonPrediction.Api.Services
             });
 
             var since = DateTime.UtcNow.AddMinutes(-10);
-            dynamic repoDyn = repo;
-            var db = repoDyn.Db;
-            var data = (List<PriceSnapshotEntity>)await db.Queryable<PriceSnapshotEntity>()
-                .Where("timestamp >= @ts", new { ts = since })
-                .OrderBy("timestamp", OrderByType.Asc)
-                .ToListAsync();
+            var data = await repo.GetSinceAsync(since, token);
             var timestamps = data.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray();
             var prices = data.Select(d => d.Price.ToString("F8")).ToArray();
             await _hub.Clients.All.SendAsync("chartData", new { timestamps, prices }, token);
 
-            dynamic roundDyn = roundRepo;
-            var rdb = roundDyn.Db;
-            var round = await rdb.Queryable<RoundEntity>()
-                .Where("status = @status", new { status = (int)RoundStatus.Live })
-                .OrderBy("id", OrderByType.Desc)
-                .FirstAsync();
+            var round = await roundRepo.GetCurrentLiveAsync(token);
             if (round != null)
             {
                 var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;

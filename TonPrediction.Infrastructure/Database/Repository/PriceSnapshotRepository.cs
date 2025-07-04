@@ -21,5 +21,15 @@ namespace TonPrediction.Infrastructure.Database.Repository
         : BaseRepository<PriceSnapshotEntity>(logger, options.CurrentValue.Default, dbType),
             IPriceSnapshotRepository
     {
+        /// <inheritdoc />
+        public async Task<List<PriceSnapshotEntity>> GetSinceAsync(
+            DateTime since,
+            CancellationToken ct = default)
+        {
+            return await Db.Queryable<PriceSnapshotEntity>()
+                .Where(p => p.Timestamp >= since)
+                .OrderBy(p => p.Timestamp, OrderByType.Asc)
+                .ToListAsync();
+        }
     }
 }
