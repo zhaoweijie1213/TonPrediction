@@ -66,12 +66,7 @@ namespace TonPrediction.Api.Services
                     var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
                     var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
 
-                    dynamic repoDyn = roundRepo;
-                    var db = repoDyn.Db;
-                    var round = await db.Queryable<RoundEntity>()
-                        .Where("status = @status", new { status = (int)RoundStatus.Live })
-                        .OrderBy("id", SqlSugar.OrderByType.Desc)
-                        .FirstAsync();
+                    var round = await roundRepo.GetCurrentLiveAsync(stoppingToken);
                     if (round == null)
                         continue;
 

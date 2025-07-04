@@ -24,14 +24,7 @@ public class RoundService(
         CancellationToken ct = default)
     {
         limit = limit is <= 0 or > 100 ? 3 : limit;
-        dynamic repoDyn = _roundRepo;
-        ISqlSugarClient db = repoDyn.Db;
-        dynamic query = db.Queryable<RoundEntity>();
-        var list = (List<RoundEntity>)await query
-            .Where("status = @status", new { status = (int)RoundStatus.Ended })
-            .OrderBy("id", OrderByType.Desc)
-            .Take(limit)
-            .ToListAsync();
+        var list = await _roundRepo.GetEndedAsync(limit, ct);
         return list.Select(r => new RoundHistoryOutput
         {
             RoundId = r.Id,
@@ -51,12 +44,7 @@ public class RoundService(
     public async Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
         CancellationToken ct = default)
     {
-        dynamic repoDyn = _roundRepo;
-        ISqlSugarClient db = repoDyn.Db;
-        dynamic query = db.Queryable<RoundEntity>();
-        var latest = (RoundEntity?)await query
-            .OrderBy("id", OrderByType.Desc)
-            .FirstAsync();
+        var latest = await _roundRepo.GetLatestAsync(ct);
         var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var list = new List<UpcomingRoundOutput>();

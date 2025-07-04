@@ -27,23 +27,9 @@ public class PredictionService(
     {
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
-        dynamic betDyn = _betRepo;
-        ISqlSugarClient db = betDyn.Db;
-        dynamic betQuery = db.Queryable<BetEntity>()
-            .Where("user_address = @address", new { address });
-        betQuery = status switch
-        {
-            "claimed" => betQuery.Where("claimed = true"),
-            "unclaimed" => betQuery.Where("claimed = false"),
-            _ => betQuery
-        };
-        var bets = (List<BetEntity>)await betQuery
-            .OrderBy("id", OrderByType.Desc)
-            .ToPageListAsync(page, pageSize);
+        var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize, ct);
         var ids = bets.Select(b => b.Epoch).ToArray();
-        var rounds = (List<RoundEntity>)await db.Queryable<RoundEntity>()
-            .In(ids)
-            .ToListAsync();
+        var rounds = await _roundRepo.GetByIdsAsync(ids, ct);
         var map = rounds.ToDictionary(r => r.Id);
         var list = new List<BetRecordOutput>();
         foreach (var bet in bets)
@@ -74,11 +60,7 @@ public class PredictionService(
     /// <inheritdoc />
     public async Task<PnlOutput> GetPnlAsync(string address, CancellationToken ct = default)
     {
-        dynamic betDyn = _betRepo;
-        ISqlSugarClient db = betDyn.Db;
-        var bets = (List<BetEntity>)await db.Queryable<BetEntity>()
-            .Where("user_address = @address", new { address })
-            .ToListAsync();
+        var bets = await _betRepo.GetByAddressAsync(address, ct);
         var totalBet = bets.Sum(b => b.Amount);
         var totalReward = bets.Sum(b => b.Reward);
         var rounds = bets.Count;
