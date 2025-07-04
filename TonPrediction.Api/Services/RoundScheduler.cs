@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
@@ -10,7 +10,7 @@ using TonPrediction.Application.Services;
 namespace TonPrediction.Api.Services
 {
     /// <summary>
-    /// 定期创建和结束回合的后台服务。
+    /// 定期创建和结束回合的后台服务，具备容错恢复能力。
     /// </summary>
     public class RoundScheduler(
         IServiceScopeFactory scopeFactory,
@@ -29,47 +29,57 @@ namespace TonPrediction.Api.Services
             {
                 try
                 {
-                    await RunRoundAsync(stoppingToken);
+                    await HandleRoundAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Round scheduler error");
                 }
 
-                await Task.Delay(_interval, stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
 
-        private async Task RunRoundAsync(CancellationToken token)
+        private async Task HandleRoundAsync(CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
             var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
-            var startPrice = (await priceService.GetAsync("ton", "usd", token)).Price;
             var now = DateTime.UtcNow;
-            var round = new RoundEntity
+            dynamic repoDyn = roundRepo;
+            var db = repoDyn.Db;
+            var current = await db.Queryable<RoundEntity>()
+                .OrderBy("id", SqlSugar.OrderByType.Desc)
+                .FirstAsync();
+
+            if (current == null || current.Status == RoundStatus.Ended)
             {
-                Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                StartTime = now,
-                LockTime = now,
-                CloseTime = now.Add(_interval),
-                LockPrice = startPrice,
-                Status = RoundStatus.Live
-            };
-            await roundRepo.InsertAsync(round);
-            await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = startPrice });
+                var startPrice = (await priceService.GetAsync("ton", "usd", token)).Price;
+                var newRound = new RoundEntity
+                {
+                    Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    StartTime = now,
+                    LockTime = now,
+                    CloseTime = now.Add(_interval),
+                    LockPrice = startPrice,
+                    Status = RoundStatus.Live
+                };
+                await roundRepo.InsertAsync(newRound);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = startPrice });
+                return;
+            }
 
-            await Task.Delay(_interval, token);
-
-            var closePrice = (await priceService.GetAsync("ton", "usd", token)).Price;
-            var closeTime = DateTime.UtcNow;
-            round.CloseTime = closeTime;
-            round.ClosePrice = closePrice;
-            round.Status = RoundStatus.Ended;
-            await roundRepo.UpdateByPrimaryKeyAsync(round);
-            await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = closeTime, Price = closePrice });
+            if (current.Status == RoundStatus.Live && current.CloseTime <= now)
+            {
+                var closePrice = (await priceService.GetAsync("ton", "usd", token)).Price;
+                current.CloseTime = now;
+                current.ClosePrice = closePrice;
+                current.Status = RoundStatus.Ended;
+                await roundRepo.UpdateByPrimaryKeyAsync(current);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = closePrice });
+            }
         }
     }
 }

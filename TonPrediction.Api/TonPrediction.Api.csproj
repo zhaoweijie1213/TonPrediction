@@ -11,4 +11,8 @@
     <ProjectReference Include="..\TonPrediction.Infrastructure\TonPrediction.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="TonSdk.Client" Version="0.3.11" />
+  </ItemGroup>
+
 </Project>
