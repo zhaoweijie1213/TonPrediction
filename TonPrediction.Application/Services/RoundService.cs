@@ -20,11 +20,12 @@ public class RoundService(
 
     /// <inheritdoc />
     public async Task<List<RoundHistoryOutput>> GetHistoryAsync(
+        string symbol = "ton",
         int limit = 3,
         CancellationToken ct = default)
     {
         limit = limit is <= 0 or > 100 ? 3 : limit;
-        var list = await _roundRepo.GetEndedAsync(limit, ct);
+        var list = await _roundRepo.GetEndedAsync(symbol, limit, ct);
         return list.Select(r => new RoundHistoryOutput
         {
             RoundId = r.Id,
@@ -42,9 +43,10 @@ public class RoundService(
 
     /// <inheritdoc />
     public async Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
+        string symbol = "ton",
         CancellationToken ct = default)
     {
-        var latest = await _roundRepo.GetLatestAsync(ct);
+        var latest = await _roundRepo.GetLatestAsync(symbol, ct);
         var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var list = new List<UpcomingRoundOutput>();

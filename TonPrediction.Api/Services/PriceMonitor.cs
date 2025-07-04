@@ -26,6 +26,7 @@ namespace TonPrediction.Api.Services
         private readonly IPriceService _priceService = priceService;
         private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<PriceMonitor> _logger = logger;
+        private readonly string[] _symbols = ["ton", "btc", "eth"];
 
         /// <inheritdoc />
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,7 +35,10 @@ namespace TonPrediction.Api.Services
             {
                 try
                 {
-                    await RecordPriceAsync(stoppingToken);
+                    foreach (var symbol in _symbols)
+                    {
+                        await RecordPriceAsync(symbol, stoppingToken);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -48,28 +52,30 @@ namespace TonPrediction.Api.Services
         /// <summary>
         /// 价格快照记录方法。
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private async Task RecordPriceAsync(CancellationToken token)
+        /// <param name="symbol">币种符号。</param>
+        /// <param name="token">取消令牌。</param>
+        /// <returns>任务。</returns>
+        private async Task RecordPriceAsync(string symbol, CancellationToken token)
         {
-            var priceResult = await _priceService.GetAsync("ton", "usd", token);
+            var priceResult = await _priceService.GetAsync(symbol, "usd", token);
             var price = priceResult.Price;
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
             await repo.InsertAsync(new PriceSnapshotEntity
             {
+                Symbol = symbol,
                 Timestamp = DateTime.UtcNow,
                 Price = price
             });
 
             var since = DateTime.UtcNow.AddMinutes(-10);
-            var data = await repo.GetSinceAsync(since, token);
+            var data = await repo.GetSinceAsync(symbol, since, token);
             var timestamps = data.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray();
             var prices = data.Select(d => d.Price.ToString("F8")).ToArray();
             await _hub.Clients.All.SendAsync("chartData", new { timestamps, prices }, token);
 
-            var round = await roundRepo.GetCurrentLiveAsync(token);
+            var round = await roundRepo.GetCurrentLiveAsync(symbol, token);
             if (round != null)
             {
                 var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;

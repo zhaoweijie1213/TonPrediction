@@ -10,6 +10,12 @@ namespace TonPrediction.Application.Database.Entities
     public class PriceSnapshotEntity
     {
         /// <summary>
+        /// 价格所属币种符号。
+        /// </summary>
+        [SugarColumn(ColumnName = "symbol", Length = 16)]
+        public string Symbol { get; set; } = string.Empty;
+
+        /// <summary>
         /// 主键编号。
         /// </summary>
         [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnName = "id")]

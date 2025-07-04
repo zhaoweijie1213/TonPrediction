@@ -15,6 +15,7 @@ namespace TonPrediction.Application.Database.Repository
         /// <param name="since">起始时间。</param>
         /// <param name="ct">取消令牌。</param>
         Task<List<PriceSnapshotEntity>> GetSinceAsync(
+            string symbol,
             DateTime since,
             CancellationToken ct = default);
     }
