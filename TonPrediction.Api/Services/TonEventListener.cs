@@ -102,12 +102,16 @@ namespace TonPrediction.Api.Services
                         new
                         {
                             roundId = round.Id,
-                            totalAmount = round.TotalAmount,
-                            upAmount = round.BullAmount,
-                            downAmount = round.BearAmount,
-                            rewardPool = round.RewardAmount,
-                            oddsUp = oddsBull,
-                            oddsDown = oddsBear
+                            lockPrice = round.LockPrice.ToString("F8"),
+                            currentPrice = round.ClosePrice > 0m ? round.ClosePrice.ToString("F8") : round.LockPrice.ToString("F8"),
+                            totalAmount = round.TotalAmount.ToString("F8"),
+                            upAmount = round.BullAmount.ToString("F8"),
+                            downAmount = round.BearAmount.ToString("F8"),
+                            rewardPool = round.RewardAmount.ToString("F8"),
+                            endTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
+                            oddsUp = oddsBull.ToString("F8"),
+                            oddsDown = oddsBear.ToString("F8"),
+                            status = round.Status
                         },
                         stoppingToken);
                 }
