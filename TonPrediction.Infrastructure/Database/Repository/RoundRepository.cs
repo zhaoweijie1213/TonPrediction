@@ -23,27 +23,35 @@ namespace TonPrediction.Infrastructure.Database.Repository
             IRoundRepository
     {
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetLatestAsync(CancellationToken ct = default)
+        public async Task<RoundEntity?> GetLatestAsync(
+            string symbol,
+            CancellationToken ct = default)
         {
             return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Symbol == symbol)
                 .OrderBy(r => r.Id, OrderByType.Desc)
                 .FirstAsync();
         }
 
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetCurrentLiveAsync(CancellationToken ct = default)
+        public async Task<RoundEntity?> GetCurrentLiveAsync(
+            string symbol,
+            CancellationToken ct = default)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Status == RoundStatus.Live)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
                 .OrderBy(r => r.Id, OrderByType.Desc)
                 .FirstAsync();
         }
 
         /// <inheritdoc />
-        public async Task<List<RoundEntity>> GetEndedAsync(int limit, CancellationToken ct = default)
+        public async Task<List<RoundEntity>> GetEndedAsync(
+            string symbol,
+            int limit,
+            CancellationToken ct = default)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Status == RoundStatus.Ended)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Ended)
                 .OrderBy(r => r.Id, OrderByType.Desc)
                 .Take(limit)
                 .ToListAsync();

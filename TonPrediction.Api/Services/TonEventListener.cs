@@ -55,18 +55,25 @@ namespace TonPrediction.Api.Services
                 try
                 {
                     var comment = ((string?)tx.Message?.Comment)?.Trim().ToLowerInvariant();
-                    if (comment is not ("bull" or "bear"))
+                    if (string.IsNullOrEmpty(comment))
+                        continue;
+                    var parts = comment.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2)
+                        continue;
+                    var symbol = parts[0];
+                    var side = parts[1];
+                    if (side is not ("bull" or "bear"))
                         continue;
 
                     var amount = (decimal)tx.Amount;
                     var sender = (string?)tx.Message?.Source ?? string.Empty;
-                    var position = comment == "bull" ? Position.Bull : Position.Bear;
+                    var position = side == "bull" ? Position.Bull : Position.Bear;
 
                     using var scope = _scopeFactory.CreateScope();
                     var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
                     var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
 
-                    var round = await roundRepo.GetCurrentLiveAsync(stoppingToken);
+                    var round = await roundRepo.GetCurrentLiveAsync(symbol, stoppingToken);
                     if (round == null)
                         continue;
 

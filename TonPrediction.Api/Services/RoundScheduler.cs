@@ -25,6 +25,7 @@ namespace TonPrediction.Api.Services
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly TimeSpan _interval =
             TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
+        private readonly string[] _symbols = ["ton", "btc", "eth"];
 
         /// <inheritdoc />
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,7 +34,10 @@ namespace TonPrediction.Api.Services
             {
                 try
                 {
-                    await HandleRoundAsync(stoppingToken);
+                    foreach (var symbol in _symbols)
+                    {
+                        await HandleRoundAsync(symbol, stoppingToken);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -44,7 +48,7 @@ namespace TonPrediction.Api.Services
             }
         }
 
-        private async Task HandleRoundAsync(CancellationToken token)
+        private async Task HandleRoundAsync(string symbol, CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
@@ -52,13 +56,14 @@ namespace TonPrediction.Api.Services
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
             var now = DateTime.UtcNow;
-            var current = await roundRepo.GetLatestAsync(token);
+            var current = await roundRepo.GetLatestAsync(symbol, token);
 
             if (current == null || current.Status == RoundStatus.Ended)
             {
-                var startPrice = (await priceService.GetAsync("ton", "usd", token)).Price;
+                var startPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 var newRound = new RoundEntity
                 {
+                    Symbol = symbol,
                     Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     StartTime = now,
                     LockTime = now,
@@ -67,7 +72,7 @@ namespace TonPrediction.Api.Services
                     Status = RoundStatus.Live
                 };
                 await roundRepo.InsertAsync(newRound);
-                await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = startPrice });
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
                 await _hub.Clients.All.SendAsync("currentRound", new
                 {
                     roundId = newRound.Id,
@@ -87,12 +92,12 @@ namespace TonPrediction.Api.Services
 
             if (current.Status == RoundStatus.Live && current.CloseTime <= now)
             {
-                var closePrice = (await priceService.GetAsync("ton", "usd", token)).Price;
+                var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 current.CloseTime = now;
                 current.ClosePrice = closePrice;
                 current.Status = RoundStatus.Ended;
                 await roundRepo.UpdateByPrimaryKeyAsync(current);
-                await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = closePrice });
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
                 await _hub.Clients.All.SendAsync("roundEnded", new { roundId = current.Id }, token);
             }
         }

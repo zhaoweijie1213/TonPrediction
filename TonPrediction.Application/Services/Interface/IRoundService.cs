@@ -15,6 +15,7 @@ public interface IRoundService : ITransientDependency
     /// <param name="ct">取消任务标记。</param>
     /// <returns>历史回合集合。</returns>
     Task<List<RoundHistoryOutput>> GetHistoryAsync(
+        string symbol = "ton",
         int limit = 3,
         CancellationToken ct = default);
 
@@ -23,5 +24,7 @@ public interface IRoundService : ITransientDependency
     /// </summary>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>回合时间集合。</returns>
-    Task<List<UpcomingRoundOutput>> GetUpcomingAsync(CancellationToken ct = default);
+    Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
+        string symbol = "ton",
+        CancellationToken ct = default);
 }

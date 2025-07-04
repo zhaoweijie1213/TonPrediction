@@ -23,11 +23,12 @@ namespace TonPrediction.Infrastructure.Database.Repository
     {
         /// <inheritdoc />
         public async Task<List<PriceSnapshotEntity>> GetSinceAsync(
+            string symbol,
             DateTime since,
             CancellationToken ct = default)
         {
             return await Db.Queryable<PriceSnapshotEntity>()
-                .Where(p => p.Timestamp >= since)
+                .Where(p => p.Symbol == symbol && p.Timestamp >= since)
                 .OrderBy(p => p.Timestamp, OrderByType.Asc)
                 .ToListAsync();
         }

@@ -18,9 +18,11 @@ public class RoundController(IRoundService roundService) : ControllerBase
     /// 获取历史回合列表。
     /// </summary>
     [HttpGet("history")]
-    public async Task<ApiResult<List<RoundHistoryOutput>>> GetHistoryAsync([FromQuery] int limit = 3)
+    public async Task<ApiResult<List<RoundHistoryOutput>>> GetHistoryAsync(
+        [FromQuery] string symbol = "ton",
+        [FromQuery] int limit = 3)
     {
-        var result = await _roundService.GetHistoryAsync(limit);
+        var result = await _roundService.GetHistoryAsync(symbol, limit);
         var api = new ApiResult<List<RoundHistoryOutput>>();
         api.SetRsult(ApiResultCode.Success, result);
         return api;
@@ -30,9 +32,10 @@ public class RoundController(IRoundService roundService) : ControllerBase
     /// 获取即将开始的回合。
     /// </summary>
     [HttpGet("upcoming")]
-    public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync()
+    public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
+        [FromQuery] string symbol = "ton")
     {
-        var list = await _roundService.GetUpcomingAsync();
+        var list = await _roundService.GetUpcomingAsync(symbol);
         var api = new ApiResult<List<UpcomingRoundOutput>>();
         api.SetRsult(ApiResultCode.Success, list);
         return api;

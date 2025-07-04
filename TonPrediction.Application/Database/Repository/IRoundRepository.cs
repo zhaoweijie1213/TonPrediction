@@ -18,26 +18,35 @@ namespace TonPrediction.Application.Database.Repository
         /// 获取最新一轮记录。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
-        Task<RoundEntity?> GetLatestAsync(CancellationToken ct = default);
+        Task<RoundEntity?> GetLatestAsync(
+            string symbol,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取当前进行中的回合。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
-        Task<RoundEntity?> GetCurrentLiveAsync(CancellationToken ct = default);
+        Task<RoundEntity?> GetCurrentLiveAsync(
+            string symbol,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取最近结束的若干回合。
         /// </summary>
         /// <param name="limit">限制数量。</param>
         /// <param name="ct">取消令牌。</param>
-        Task<List<RoundEntity>> GetEndedAsync(int limit, CancellationToken ct = default);
+        Task<List<RoundEntity>> GetEndedAsync(
+            string symbol,
+            int limit,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 根据编号批量查询回合。
         /// </summary>
         /// <param name="ids">回合编号集合。</param>
         /// <param name="ct">取消令牌。</param>
-        Task<List<RoundEntity>> GetByIdsAsync(long[] ids, CancellationToken ct = default);
+        Task<List<RoundEntity>> GetByIdsAsync(
+            long[] ids,
+            CancellationToken ct = default);
     }
 }
