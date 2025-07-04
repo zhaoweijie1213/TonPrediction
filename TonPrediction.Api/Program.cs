@@ -6,6 +6,7 @@ using TonPrediction.Infrastructure.Database.Migrations;
 using TonPrediction.Api.Services;
 using TonPrediction.Infrastructure.Services;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();
@@ -16,10 +17,13 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
+builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
+
+builder.AddInfrastructure();
 
 var app = builder.Build();
 

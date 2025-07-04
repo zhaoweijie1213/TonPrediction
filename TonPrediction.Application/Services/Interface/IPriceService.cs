@@ -5,7 +5,7 @@ namespace TonPrediction.Application.Services.Interface
     /// <summary>
     /// 提供价格数据的服务接口。
     /// </summary>
-    public interface IPriceService : ITransientDependency
+    public interface IPriceService
     {
         /// <summary>
         /// 获取某币种在指定法币中的最新价格。

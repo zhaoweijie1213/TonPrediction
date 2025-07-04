@@ -45,6 +45,11 @@ namespace TonPrediction.Api.Services
             }
         }
 
+        /// <summary>
+        /// 价格快照记录方法。
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private async Task RecordPriceAsync(CancellationToken token)
         {
             var priceResult = await _priceService.GetAsync("ton", "usd", token);

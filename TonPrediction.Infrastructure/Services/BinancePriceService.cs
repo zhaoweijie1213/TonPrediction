@@ -23,7 +23,13 @@ namespace TonPrediction.Infrastructure.Services
         private readonly ConcurrentDictionary<string, ClientWebSocket> _sockets = new();
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
-        /// <inheritdoc />
+        /// <summary>
+        /// 获取指定币种对的价格。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="vsCurrency"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         public async Task<PriceResult> GetAsync(
             string symbol,
             string vsCurrency = "usd",
@@ -40,6 +46,12 @@ namespace TonPrediction.Infrastructure.Services
             return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
         }
 
+        /// <summary>
+        /// 拉取 Binance REST API 获取价格。
+        /// </summary>
+        /// <param name="pair"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         private async Task<decimal> FetchRestAsync(string pair, CancellationToken ct)
         {
             var url = $"https://api.binance.com/api/v3/ticker/price?symbol={pair}";
@@ -55,6 +67,12 @@ namespace TonPrediction.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// websocket 连接 Binance 获取实时价格。
+        /// </summary>
+        /// <param name="pair"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         private async Task EnsureWebSocketAsync(string pair, CancellationToken ct)
         {
             if (_sockets.ContainsKey(pair))
@@ -75,6 +93,13 @@ namespace TonPrediction.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// 接收 Binance WebSocket 消息循环。
+        /// </summary>
+        /// <param name="pair"></param>
+        /// <param name="socket"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         private async Task ReceiveLoopAsync(string pair, ClientWebSocket socket, CancellationToken ct)
         {
             var buffer = new byte[1024];
@@ -104,12 +129,18 @@ namespace TonPrediction.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// 价格响应模型，用于 REST API 响应。
+        /// </summary>
         private sealed class RestResponse
         {
             [JsonPropertyName("price")]
             public decimal Price { get; set; }
         }
 
+        /// <summary>
+        /// websocket 响应模型，用于实时价格更新。
+        /// </summary>
         private sealed class WsResponse
         {
             [JsonPropertyName("p")]
