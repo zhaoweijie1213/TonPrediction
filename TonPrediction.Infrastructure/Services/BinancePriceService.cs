@@ -35,7 +35,11 @@ namespace TonPrediction.Infrastructure.Services
             string vsCurrency = "usd",
             CancellationToken ct = default)
         {
-            var pair = (symbol + vsCurrency).ToUpperInvariant();
+            // Binance 不支持直接使用 "USD" 交易对，需转换为 "USDT"
+            var currency = vsCurrency.Equals("usd", StringComparison.OrdinalIgnoreCase)
+                ? "usdt"
+                : vsCurrency;
+            var pair = (symbol + currency).ToUpperInvariant();
             if (!_prices.TryGetValue(pair, out var price))
             {
                 price = await FetchRestAsync(pair, ct);
