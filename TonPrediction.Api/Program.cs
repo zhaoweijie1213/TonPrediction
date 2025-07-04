@@ -3,6 +3,7 @@ using QYQ.Base.Common.IOCExtensions;
 using TonPrediction.Application.Database.Config;
 using TonPrediction.Infrastructure.Database;
 using TonPrediction.Infrastructure.Database.Migrations;
+using TonPrediction.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings:Default"));
+builder.Services.AddHostedService<TonPrediction.Api.Services.RoundScheduler>();
+builder.Services.AddHostedService<TonPrediction.Api.Services.PriceMonitor>();
 
 var app = builder.Build();
 

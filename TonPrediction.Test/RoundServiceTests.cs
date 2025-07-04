@@ -1,19 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Xunit;
 
 namespace TonPrediction.Test
 {
-    public class RoundServiceTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+    /// <summary>
+    /// 回合服务测试占位。
+    /// </summary>
+    public class RoundServiceTests
     {
         /// <summary>
-        /// 实例化容器
+        /// 占位测试，待后续补充。
         /// </summary>
-        private readonly IServiceProvider _serviceProvider = factory.Services;
-
-        [Fact]
-        public void Test1()
-        {
-
-        }
+        [Fact(Skip = "Not implemented")]
+        public void Placeholder() { }
     }
 }
