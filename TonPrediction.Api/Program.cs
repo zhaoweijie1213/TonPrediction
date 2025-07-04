@@ -20,6 +20,7 @@ builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings:Default"));
 builder.Services.AddHostedService<TonPrediction.Api.Services.RoundScheduler>();
 builder.Services.AddHostedService<TonPrediction.Api.Services.PriceMonitor>();
+builder.Services.AddHostedService<TonPrediction.Api.Services.TonEventListener>();
 
 var app = builder.Build();
 
