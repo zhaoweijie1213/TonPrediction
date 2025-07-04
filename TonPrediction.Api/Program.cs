@@ -18,9 +18,9 @@ builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings:Default"));
-builder.Services.AddHostedService<TonPrediction.Api.Services.RoundScheduler>();
-builder.Services.AddHostedService<TonPrediction.Api.Services.PriceMonitor>();
-builder.Services.AddHostedService<TonPrediction.Api.Services.TonEventListener>();
+builder.Services.AddHostedService<RoundScheduler>();
+builder.Services.AddHostedService<PriceMonitor>();
+builder.Services.AddHostedService<TonEventListener>();
 
 var app = builder.Build();
 
