@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,6 +7,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services;
+using PancakeSwap.Api.Hubs;
 
 namespace TonPrediction.Api.Services
 {
@@ -15,9 +17,11 @@ namespace TonPrediction.Api.Services
     public class RoundScheduler(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
+        IHubContext<PredictionHub> hub,
         ILogger<RoundScheduler> logger) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+        private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly TimeSpan _interval =
             TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
@@ -68,6 +72,20 @@ namespace TonPrediction.Api.Services
                 };
                 await roundRepo.InsertAsync(newRound);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = startPrice });
+                await _hub.Clients.All.SendAsync("currentRound", new
+                {
+                    roundId = newRound.Id,
+                    lockPrice = newRound.LockPrice.ToString("F8"),
+                    currentPrice = newRound.LockPrice.ToString("F8"),
+                    totalAmount = newRound.TotalAmount.ToString("F8"),
+                    upAmount = newRound.BullAmount.ToString("F8"),
+                    downAmount = newRound.BearAmount.ToString("F8"),
+                    rewardPool = newRound.RewardAmount.ToString("F8"),
+                    endTime = new DateTimeOffset(newRound.CloseTime).ToUnixTimeSeconds(),
+                    oddsUp = "0",
+                    oddsDown = "0",
+                    status = RoundStatus.Live
+                }, token);
                 return;
             }
 
@@ -79,6 +97,7 @@ namespace TonPrediction.Api.Services
                 current.Status = RoundStatus.Ended;
                 await roundRepo.UpdateByPrimaryKeyAsync(current);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Timestamp = now, Price = closePrice });
+                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = current.Id }, token);
             }
         }
     }
