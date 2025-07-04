@@ -8,7 +8,7 @@ using TonPrediction.Infrastructure.Services;
 using TonPrediction.Application.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.AddQYQSerilog();
 // Add services to the container.
 
 builder.Services.AddControllers();
