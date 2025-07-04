@@ -67,7 +67,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IConfiguration 
                                 $"/v2/blockchain/transactions/{head.Tx_Hash}",
                                 stoppingToken);
 
-                        ProcessTransaction(detail!, stoppingToken);
+                        await ProcessTransactionAsync(detail!, stoppingToken);
                     }
                 }
             }
@@ -84,7 +84,12 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IConfiguration 
         }
     }
 
-    private async void ProcessTransaction(TonTxDetail tx, CancellationToken ct)
+    /// <summary>
+    /// 处理一笔入账交易。
+    /// </summary>
+    /// <param name="tx">交易详情。</param>
+    /// <param name="ct">取消令牌。</param>
+    internal virtual async Task ProcessTransactionAsync(TonTxDetail tx, CancellationToken ct)
     {
         var comment = tx.In_Message.Comment?.Trim().ToLowerInvariant();
         if (string.IsNullOrEmpty(comment)) return;
@@ -163,7 +168,7 @@ public record SseTxHead(string Account_Id, ulong Lt, string Tx_Hash);
 /// <param name="Amount">交易金额（nanoTON 已转普通 TON）</param>
 /// <param name="In_Message"></param>
 public record TonTxDetail(
-    decimal Amount,       
+    decimal Amount,
     InMsg In_Message);
 
 /// <summary>

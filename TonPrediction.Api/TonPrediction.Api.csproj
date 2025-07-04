@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="TonPrediction.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TonPrediction.Application\TonPrediction.Application.csproj" />
     <ProjectReference Include="..\TonPrediction.Infrastructure\TonPrediction.Infrastructure.csproj" />
   </ItemGroup>
