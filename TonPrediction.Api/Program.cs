@@ -7,6 +7,7 @@ using TonPrediction.Api.Services;
 using TonPrediction.Infrastructure.Services;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure;
+using QYQ.Base.Swagger.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();
@@ -23,6 +24,13 @@ builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
 
+builder.AddQYQSwaggerAndApiVersioning(new NSwag.OpenApiInfo()
+{
+    Title = "TonPrediction API",
+    Version = "v1",
+    Description = "TonPrediction API for prediction game on TON blockchain."
+}, null, false);
+
 builder.AddInfrastructure();
 
 var app = builder.Build();
@@ -30,6 +38,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseAuthorization();
+
+app.UseQYQSwaggerUI("TonPrediction", false);
 
 app.MapControllers();
 
