@@ -7,6 +7,7 @@ using TonPrediction.Api.Services;
 using TonPrediction.Infrastructure.Services;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure;
+using System;
 using QYQ.Base.Swagger.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,10 @@ builder.AddQYQSerilog();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("TonApi", c =>
+{
+    c.BaseAddress = new Uri("https://tonapi.io");
+});
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.AddSingleton<IPriceService, BinancePriceService>();
