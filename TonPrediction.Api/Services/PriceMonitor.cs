@@ -10,6 +10,7 @@ using System.Linq;
 using SqlSugar;
 using System.Collections.Generic;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Cache;
 
 namespace TonPrediction.Api.Services
 {
@@ -38,7 +39,7 @@ namespace TonPrediction.Api.Services
                 try
                 {
                     using var handle = await _locker.AcquireAsync(
-                        "price_monitor",
+                        CacheKeyCollection.PriceMonitorLockKey,
                         TimeSpan.FromSeconds(30),
                         stoppingToken);
                     if (handle != null)
