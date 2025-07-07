@@ -95,7 +95,6 @@ $ docker compose up -d db redis ton-node price-oracle
 | `ENV_MASTER_WALLET_ADDRESS` | 主钱包地址                                    |
 | `ENV_MASTER_WALLET_PK`      | 主钱包私钥（Base64 或 Hex，加密存储，勿提交） |
 | `ENV_PRICE_API_KEY`         | 行情 API 密钥                                 |
-| `ENV_ROUND_INTERVAL_SEC`    | 回合时长，单位秒                              |
 
 ------
 
