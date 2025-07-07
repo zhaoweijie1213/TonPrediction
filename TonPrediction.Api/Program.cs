@@ -19,7 +19,8 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("TonApi", c =>
 {
-    c.BaseAddress = new Uri("https://tonapi.io");
+    var baseUrl = builder.Configuration["TonApi:BaseUrl"] ?? "https://tonapi.io";
+    c.BaseAddress = new Uri(baseUrl);
 });
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();

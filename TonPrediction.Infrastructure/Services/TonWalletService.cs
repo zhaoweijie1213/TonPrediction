@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
@@ -11,10 +12,13 @@ namespace TonPrediction.Infrastructure.Services;
 /// </summary>
 public class TonWalletService(
     IConfiguration configuration,
+    IHttpClientFactory httpFactory,
     ILogger<TonWalletService> logger) : IWalletService
 {
     private readonly IConfiguration _configuration = configuration;
+    private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
     private readonly ILogger<TonWalletService> _logger = logger;
+    private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
 
     /// <inheritdoc />
     public async Task<TransferResult> TransferAsync(
@@ -22,9 +26,36 @@ public class TonWalletService(
         decimal amount,
         CancellationToken ct = default)
     {
-        // TODO: 使用 TonSdk 发送真实交易，目前仅返回模拟结果。
-        await Task.Delay(100, ct);
-        var hash = Guid.NewGuid().ToString("N");
-        return new TransferResult(hash, 0, DateTime.UtcNow, ClaimStatus.Confirmed);
+        try
+        {
+            var body = new
+            {
+                to = address,
+                amount = ((ulong)(amount * 1_000_000_000m)).ToString(),
+                bounce = false
+            };
+            var resp = await _http.PostAsJsonAsync(
+                $"/v2/blockchain/accounts/{_wallet}/transfer",
+                body,
+                ct);
+            resp.EnsureSuccessStatusCode();
+            var data = await resp.Content.ReadFromJsonAsync<Response>(ct);
+            return new TransferResult(
+                data?.Hash ?? string.Empty,
+                data?.Lt ?? 0,
+                DateTime.UtcNow,
+                ClaimStatus.Confirmed);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Transfer failed");
+            return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Pending);
+        }
+    }
+
+    private sealed class Response
+    {
+        public string Hash { get; set; } = string.Empty;
+        public ulong Lt { get; set; }
     }
 }
