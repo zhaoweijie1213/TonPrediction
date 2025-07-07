@@ -29,7 +29,7 @@ public class TonEventListener(
     private readonly string _walletAddress = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
     private ulong _lastLt;
     private const string SseUrlTemplate =
-        "https://tonapi.io/v2/sse/accounts/transactions?accounts={0}";
+        "/v2/sse/accounts/transactions?accounts={0}";
     private static readonly Regex CommentRegex = new(@"^\s*(\w+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
