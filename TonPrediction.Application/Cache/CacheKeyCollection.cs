@@ -46,5 +46,11 @@ namespace TonPrediction.Application.Cache
         /// </summary>
         public static string TonEventListenerLockKey =>
             $"{AppDomain.CurrentDomain.FriendlyName}lock:ton_event_listener";
+
+        /// <summary>
+        /// TonEventListener 状态键。
+        /// </summary>
+        public static string TonEventListenerLastLtKey =>
+            $"{AppDomain.CurrentDomain.FriendlyName}state:ton_event_listener_lt";
     }
 }
