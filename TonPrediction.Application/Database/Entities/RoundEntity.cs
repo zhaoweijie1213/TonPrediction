@@ -10,17 +10,18 @@ namespace TonPrediction.Application.Database.Entities
     [SugarTable("round")]
     public class RoundEntity
     {
-        /// <summary>
-        /// 预测币种符号，如 ton、btc、eth。
-        /// </summary>
-        [SugarColumn(ColumnName = "symbol", Length = 16)]
-        public string Symbol { get; set; } = string.Empty;
 
         /// <summary>
         /// 回合编号。
         /// </summary>
         [SugarColumn(IsPrimaryKey = true, IsIdentity = false, ColumnName = "id")]
         public long Id { get; set; }
+
+        /// <summary>
+        /// 预测币种符号，如 ton、btc、eth。
+        /// </summary>
+        [SugarColumn(ColumnName = "symbol", Length = 16)]
+        public string Symbol { get; set; } = string.Empty;
 
         /// <summary>
         /// 回合开始时间。

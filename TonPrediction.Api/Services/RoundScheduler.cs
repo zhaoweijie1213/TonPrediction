@@ -36,7 +36,7 @@ namespace TonPrediction.Api.Services
                 {
                     foreach (var symbol in _symbols)
                     {
-                        await HandleRoundAsync(symbol, stoppingToken);
+                        await HandleRoundAsync(symbol, CancellationToken.None);
                     }
                 }
                 catch (Exception ex)
@@ -48,6 +48,12 @@ namespace TonPrediction.Api.Services
             }
         }
 
+        /// <summary>
+        /// 回合处理逻辑
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private async Task HandleRoundAsync(string symbol, CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();

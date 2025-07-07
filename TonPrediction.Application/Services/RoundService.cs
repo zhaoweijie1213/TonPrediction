@@ -41,7 +41,12 @@ public class RoundService(
         }).ToList();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 获取即将开始的回合时间列表。
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
         string symbol = "ton",
         CancellationToken ct = default)
