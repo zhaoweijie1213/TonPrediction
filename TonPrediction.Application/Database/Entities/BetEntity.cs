@@ -24,7 +24,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 用户地址。
         /// </summary>
-        [SugarColumn(ColumnName = "user_address", IndexGroupNameList = new[] { "idx_address_lt" })]
+        [SugarColumn(ColumnName = "user_address", UniqueGroupNameList = new[] { "uq_address_lt" })]
         public string UserAddress { get; set; } = string.Empty;
 
         /// <summary>
@@ -52,15 +52,21 @@ namespace TonPrediction.Application.Database.Entities
         public decimal Reward { get; set; }
 
         /// <summary>
-        /// 下注交易哈希。
+        /// 下注交易哈希，唯一索引避免重复插入。
         /// </summary>
-        [SugarColumn(ColumnName = "tx_hash")]
+        [SugarColumn(ColumnName = "tx_hash", UniqueGroupNameList = new[] { "uq_tx_hash" })]
         public string TxHash { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 下注状态。
+        /// </summary>
+        [SugarColumn(ColumnName = "status")]
+        public BetStatus Status { get; set; }
 
         /// <summary>
         /// 交易账户逻辑时间。
         /// </summary>
-        [SugarColumn(ColumnName = "lt", IndexGroupNameList = new[] { "idx_address_lt" })]
+        [SugarColumn(ColumnName = "lt", UniqueGroupNameList = new[] { "uq_address_lt" })]
         public ulong Lt { get; set; }
     }
 }
