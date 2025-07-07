@@ -12,6 +12,7 @@ using TonPrediction.Api.Services;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Services.Interface;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -77,7 +78,8 @@ public class TonEventListenerTests
             config,
             hubContext.Object,
             NullLogger<TonEventListener>.Instance,
-            new Mock<IHttpClientFactory>().Object);
+            new Mock<IHttpClientFactory>().Object,
+            Mock.Of<IDistributedLock>());
 
         var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"));
         await listener.ProcessTransactionAsync(tx, CancellationToken.None);

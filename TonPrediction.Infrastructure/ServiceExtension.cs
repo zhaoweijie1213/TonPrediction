@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using StackExchange.Redis;
+using TonPrediction.Application.Services.Interface;
+using TonPrediction.Infrastructure.Services;
 
 namespace TonPrediction.Infrastructure
 {
@@ -23,16 +26,25 @@ namespace TonPrediction.Infrastructure
 
             builder.Services.AddEasyCaching(options =>
             {
-                //static void easycaching(EasyCachingJsonSerializerOptions x)
-                //{
-                //    x.NullValueHandling = NullValueHandling.Ignore;
-                //    x.TypeNameHandling = TypeNameHandling.None;
-                //}
                 options.UseRedis(config =>
                 {
                     config.DBConfig = builder.Configuration.GetSection("Redis").Get<RedisDBOptions>();
                 }, "Redis").WithMessagePack("Redis");
             });
+
+            var redisSection = builder.Configuration.GetSection("Redis");
+            var options = new ConfigurationOptions
+            {
+                Password = redisSection["Password"],
+                AllowAdmin = redisSection.GetValue<bool>("AllowAdmin"),
+                DefaultDatabase = redisSection.GetValue<int>("Database")
+            };
+            foreach (var ep in redisSection.GetSection("Endpoints").GetChildren())
+            {
+                options.EndPoints.Add($"{ep["Host"]}:{ep.GetValue<int>("Port")}");
+            }
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
+            builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
 
             #endregion
             return builder;

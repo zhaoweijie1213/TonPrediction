@@ -4,18 +4,26 @@ using PancakeSwap.Api.Hubs;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Services;
 
 /// <summary>
 /// 监听主钱包入账的后台服务。
 /// </summary>
-public class TonEventListener(IServiceScopeFactory scopeFactory, IConfiguration configuration, IHubContext<PredictionHub> hub, ILogger<TonEventListener> logger, IHttpClientFactory httpFactory) : BackgroundService
+public class TonEventListener(
+    IServiceScopeFactory scopeFactory,
+    IConfiguration configuration,
+    IHubContext<PredictionHub> hub,
+    ILogger<TonEventListener> logger,
+    IHttpClientFactory httpFactory,
+    IDistributedLock locker) : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly IHubContext<PredictionHub> _hub = hub;
     private readonly ILogger<TonEventListener> _logger = logger;
     private readonly IHttpClientFactory _httpFactory = httpFactory;
+    private readonly IDistributedLock _locker = locker;
     private readonly string _walletAddress = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
     private const string SseUrlTemplate =
         "https://tonapi.io/v2/sse/accounts/transactions?accounts={0}";
@@ -40,6 +48,16 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IConfiguration 
         {
             try
             {
+                using var handle = await _locker.AcquireAsync(
+                    "ton_event_listener",
+                    TimeSpan.FromMinutes(5),
+                    stoppingToken);
+                if (handle == null)
+                {
+                    await Task.Delay(backoff, stoppingToken);
+                    continue;
+                }
+
                 await using var stream = await http.GetStreamAsync(
                     string.Format(SseUrlTemplate, _walletAddress), stoppingToken);
                 using var reader = new StreamReader(stream);

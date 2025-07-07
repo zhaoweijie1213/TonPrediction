@@ -18,11 +18,13 @@ namespace TonPrediction.Api.Services
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
         IHubContext<PredictionHub> hub,
-        ILogger<RoundScheduler> logger) : BackgroundService
+        ILogger<RoundScheduler> logger,
+        IDistributedLock locker) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<RoundScheduler> _logger = logger;
+        private readonly IDistributedLock _locker = locker;
         private readonly TimeSpan _interval =
             TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
         private readonly string[] _symbols = ["ton", "btc", "eth"];
@@ -34,9 +36,16 @@ namespace TonPrediction.Api.Services
             {
                 try
                 {
-                    foreach (var symbol in _symbols)
+                    using var handle = await _locker.AcquireAsync(
+                        "round_scheduler",
+                        TimeSpan.FromSeconds(10),
+                        stoppingToken);
+                    if (handle != null)
                     {
-                        await HandleRoundAsync(symbol, CancellationToken.None);
+                        foreach (var symbol in _symbols)
+                        {
+                            await HandleRoundAsync(symbol, CancellationToken.None);
+                        }
                     }
                 }
                 catch (Exception ex)
