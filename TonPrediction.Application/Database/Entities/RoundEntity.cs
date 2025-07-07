@@ -12,10 +12,16 @@ namespace TonPrediction.Application.Database.Entities
     {
 
         /// <summary>
-        /// 回合编号。
+        /// 主键编号，通常使用时间戳生成，保证全局唯一。
         /// </summary>
         [SugarColumn(IsPrimaryKey = true, IsIdentity = false, ColumnName = "id")]
         public long Id { get; set; }
+
+        /// <summary>
+        /// 回合序号，从 1 开始按币种独立递增。
+        /// </summary>
+        [SugarColumn(ColumnName = "epoch")]
+        public long Epoch { get; set; }
 
         /// <summary>
         /// 预测币种符号，如 ton、btc、eth。

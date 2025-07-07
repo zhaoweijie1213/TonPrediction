@@ -133,7 +133,7 @@ public class TonEventListener(
 
         await betRepo.InsertAsync(new BetEntity
         {
-            Epoch = round.Id,
+            Epoch = round.Epoch,
             UserAddress = sender,
             Amount = amount,
             Position = position,
@@ -155,7 +155,7 @@ public class TonEventListener(
             "currentRound",
             new
             {
-                roundId = round.Id,
+                roundId = round.Epoch,
                 lockPrice = round.LockPrice.ToString("F8"),
                 currentPrice = round.ClosePrice > 0 ? round.ClosePrice.ToString("F8") : round.LockPrice.ToString("F8"),
                 totalAmount = round.TotalAmount.ToString("F8"),

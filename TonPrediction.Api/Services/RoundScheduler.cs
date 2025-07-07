@@ -83,7 +83,7 @@ namespace TonPrediction.Api.Services
                 locked.Status = RoundStatus.Ended;
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
-                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = locked.Id }, token);
+                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = locked.Epoch }, token);
             }
 
             // 获取当前可下注的回合
@@ -91,10 +91,12 @@ namespace TonPrediction.Api.Services
             if (live == null)
             {
                 var startPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
+                var last = await roundRepo.GetLatestAsync(symbol, token);
                 var firstRound = new RoundEntity
                 {
                     Symbol = symbol,
                     Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    Epoch = (last?.Epoch ?? 0) + 1,
                     StartTime = now,
                     LockTime = now.Add(_interval),
                     CloseTime = now.Add(_interval * 2),
@@ -105,7 +107,7 @@ namespace TonPrediction.Api.Services
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
                 await _hub.Clients.All.SendAsync("currentRound", new
                 {
-                    roundId = firstRound.Id,
+                    roundId = firstRound.Epoch,
                     lockPrice = firstRound.LockPrice.ToString("F8"),
                     currentPrice = firstRound.LockPrice.ToString("F8"),
                     totalAmount = firstRound.TotalAmount.ToString("F8"),
@@ -136,6 +138,7 @@ namespace TonPrediction.Api.Services
                 {
                     Symbol = symbol,
                     Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    Epoch = live.Epoch + 1,
                     StartTime = now,
                     LockTime = now.Add(_interval),
                     CloseTime = now.Add(_interval * 2),
@@ -146,7 +149,7 @@ namespace TonPrediction.Api.Services
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
                 await _hub.Clients.All.SendAsync("currentRound", new
                 {
-                    roundId = nextRound.Id,
+                    roundId = nextRound.Epoch,
                     lockPrice = nextRound.LockPrice.ToString("F8"),
                     currentPrice = nextRound.LockPrice.ToString("F8"),
                     totalAmount = nextRound.TotalAmount.ToString("F8"),
