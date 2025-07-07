@@ -1,4 +1,5 @@
 using SqlSugar;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Database.Entities
 {
@@ -37,5 +38,23 @@ namespace TonPrediction.Application.Database.Entities
         /// </summary>
         [SugarColumn(ColumnName = "tx_hash")]
         public string TxHash { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 交易状态。
+        /// </summary>
+        [SugarColumn(ColumnName = "status")]
+        public ClaimStatus Status { get; set; }
+
+        /// <summary>
+        /// 交易账户逻辑时间。
+        /// </summary>
+        [SugarColumn(ColumnName = "lt")]
+        public ulong Lt { get; set; }
+
+        /// <summary>
+        /// 交易时间（UTC）。
+        /// </summary>
+        [SugarColumn(ColumnName = "timestamp")]
+        public DateTime Timestamp { get; set; }
     }
 }

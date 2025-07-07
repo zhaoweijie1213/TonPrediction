@@ -213,3 +213,20 @@ GET /api/predictions/pnl
 | `page`     | int    | 1         | 当前页                                     |
 | `pageSize` | int    | 10        | 分页大小，<=100                            |
 | `address`  | string |           | 若传入则返回该地址在列表中的页码 & 排名    |
+## 8️⃣ 领奖
+
+### `POST /api/claim`
+
+请求体：
+```json
+{ "roundId": 123, "address": "EQ..." }
+```
+
+返回字段：
+| 字段名 | 类型 | 说明 |
+| ------- | ---- | ---- |
+| `txHash` | string | 转账交易哈希 |
+| `lt` | ulong | 账户逻辑时间 |
+| `status` | enum | `pending`\|`confirmed`\|`failed` |
+| `timestamp` | int | 交易时间（秒） |
+
