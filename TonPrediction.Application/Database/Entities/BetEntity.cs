@@ -50,5 +50,11 @@ namespace TonPrediction.Application.Database.Entities
         /// </summary>
         [SugarColumn(ColumnName = "reward", ColumnDataType = "decimal(18,8)")]
         public decimal Reward { get; set; }
+
+        /// <summary>
+        /// 下注交易哈希。
+        /// </summary>
+        [SugarColumn(ColumnName = "tx_hash")]
+        public string TxHash { get; set; } = string.Empty;
     }
 }

@@ -86,7 +86,11 @@ public class TonEventListener(
                                 $"/v2/blockchain/transactions/{head.Tx_Hash}",
                                 stoppingToken);
 
-                        await ProcessTransactionAsync(detail!, stoppingToken);
+                        if (detail != null)
+                        {
+                            detail = detail with { Hash = head.Tx_Hash };
+                            await ProcessTransactionAsync(detail, stoppingToken);
+                        }
                     }
                 }
             }
@@ -138,7 +142,8 @@ public class TonEventListener(
             Amount = amount,
             Position = position,
             Claimed = false,
-            Reward = 0m
+            Reward = 0m,
+            TxHash = tx.Hash
         });
 
         round.TotalAmount += amount;
@@ -186,9 +191,11 @@ public record SseTxHead(string Account_Id, ulong Lt, string Tx_Hash);
 /// </summary>
 /// <param name="Amount">交易金额（nanoTON 已转普通 TON）</param>
 /// <param name="In_Message"></param>
+/// <param name="Hash">交易哈希。</param>
 public record TonTxDetail(
     decimal Amount,
-    InMsg In_Message);
+    InMsg In_Message,
+    string Hash);
 
 /// <summary>
 /// 

@@ -48,6 +48,11 @@ public class BetRecordOutput
     public bool Claimed { get; set; }
 
     /// <summary>
+    /// 下注交易哈希。
+    /// </summary>
+    public string TxHash { get; set; } = string.Empty;
+
+    /// <summary>
     /// 结果。
     /// </summary>
     public BetResult Result { get; set; }

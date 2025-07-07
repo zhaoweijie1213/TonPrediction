@@ -59,6 +59,7 @@ public class PredictionService(
                 ClosePrice = round.ClosePrice.ToString("F8"),
                 Reward = bet.Reward.ToString("F8"),
                 Claimed = bet.Claimed,
+                TxHash = bet.TxHash,
                 Result = result
             };
             list.Add(output);
