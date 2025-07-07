@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
@@ -37,28 +38,31 @@ namespace TonPrediction.Api.Services
         /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            var tasks = _symbols.Select(s => Task.Run(() => RunSymbolLoopAsync(s, stoppingToken), stoppingToken)).ToArray();
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task RunSymbolLoopAsync(string symbol, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
                     using var handle = await _locker.AcquireAsync(
-                        CacheKeyCollection.RoundSchedulerLockKey,
+                        CacheKeyCollection.GetRoundSchedulerLockKey(symbol),
                         TimeSpan.FromSeconds(10),
-                        stoppingToken);
+                        token);
                     if (handle != null)
                     {
-                        foreach (var symbol in _symbols)
-                        {
-                            await HandleRoundAsync(symbol, CancellationToken.None);
-                        }
+                        await HandleRoundAsync(symbol, token);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Round scheduler error");
+                    _logger.LogError(ex, "Round scheduler error for {Symbol}", symbol);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), token);
             }
         }
 
@@ -74,10 +78,11 @@ namespace TonPrediction.Api.Services
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
             var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
+            var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
 
             var now = DateTime.UtcNow;
 
-            // 结束已锁定的回合
+            // 结束上一回合并结算奖励
             var locked = await roundRepo.GetCurrentLockedAsync(symbol, token);
             if (locked != null && locked.CloseTime <= now)
             {
@@ -85,7 +90,39 @@ namespace TonPrediction.Api.Services
                 locked.CloseTime = now;
                 locked.ClosePrice = closePrice;
                 locked.Status = RoundStatus.Ended;
+
+                Position? winner = null;
+                if (closePrice > locked.LockPrice) winner = Position.Bull;
+                else if (closePrice < locked.LockPrice) winner = Position.Bear;
+
+                locked.WinnerSide = winner.HasValue ? (decimal)winner.Value : 0;
+                locked.RewardBaseCalAmount = locked.TotalAmount;
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
+
+                var bets = await betRepo.GetByRoundAsync(locked.Id, token);
+                var winTotal = winner switch
+                {
+                    Position.Bull => locked.BullAmount,
+                    Position.Bear => locked.BearAmount,
+                    _ => 0m
+                };
+
+                foreach (var bet in bets)
+                {
+                    decimal reward = 0m;
+                    if (!winner.HasValue)
+                    {
+                        reward = bet.Amount;
+                    }
+                    else if ((winner == Position.Bull && bet.Position == Position.Bull) ||
+                             (winner == Position.Bear && bet.Position == Position.Bear))
+                    {
+                        reward = winTotal > 0m ? bet.Amount / winTotal * locked.RewardAmount : 0m;
+                    }
+                    bet.Reward = reward;
+                    await betRepo.UpdateByPrimaryKeyAsync(bet);
+                }
+
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
                 await _hub.Clients.All.SendAsync("roundEnded", new { roundId = locked.Epoch }, token);
             }
@@ -126,7 +163,7 @@ namespace TonPrediction.Api.Services
             }
 
             // 到达锁定时间时，锁定当前回合并创建下一回合
-            if (live.LockTime <= now)
+            if (live.LockTime <= now && live.Status == RoundStatus.Live)
             {
                 var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 live.LockPrice = lockPrice;
@@ -135,6 +172,7 @@ namespace TonPrediction.Api.Services
                 live.Status = RoundStatus.Locked;
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
+                await _hub.Clients.All.SendAsync("roundLocked", new { roundId = live.Epoch }, token);
 
                 var nextPrice = lockPrice;
                 var nextRound = new RoundEntity

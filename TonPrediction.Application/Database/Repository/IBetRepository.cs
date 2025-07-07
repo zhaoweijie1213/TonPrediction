@@ -37,5 +37,14 @@ namespace TonPrediction.Application.Database.Repository
         Task<List<BetEntity>> GetByAddressAsync(
             string address,
             CancellationToken ct = default);
+
+        /// <summary>
+        /// 获取指定回合的全部下注记录。
+        /// </summary>
+        /// <param name="roundId">回合编号。</param>
+        /// <param name="ct">取消令牌。</param>
+        Task<List<BetEntity>> GetByRoundAsync(
+            long roundId,
+            CancellationToken ct = default);
     }
 }

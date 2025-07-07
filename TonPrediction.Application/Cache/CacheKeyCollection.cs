@@ -28,6 +28,14 @@ namespace TonPrediction.Application.Cache
             $"{AppDomain.CurrentDomain.FriendlyName}lock:round_scheduler";
 
         /// <summary>
+        /// 获取指定币种的 RoundScheduler 锁 key。
+        /// </summary>
+        /// <param name="symbol">币种符号。</param>
+        /// <returns>分布式锁 key。</returns>
+        public static string GetRoundSchedulerLockKey(string symbol) =>
+            $"{AppDomain.CurrentDomain.FriendlyName}lock:round_scheduler:{symbol}";
+
+        /// <summary>
         /// 分布式锁：PriceMonitor。
         /// </summary>
         public static string PriceMonitorLockKey =>
