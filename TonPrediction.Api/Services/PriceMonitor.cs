@@ -20,12 +20,14 @@ namespace TonPrediction.Api.Services
         IServiceScopeFactory scopeFactory,
         IPriceService priceService,
         IHubContext<PredictionHub> hub,
-        ILogger<PriceMonitor> logger) : BackgroundService
+        ILogger<PriceMonitor> logger,
+        IDistributedLock locker) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPriceService _priceService = priceService;
         private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<PriceMonitor> _logger = logger;
+        private readonly IDistributedLock _locker = locker;
         private readonly string[] _symbols = ["ton", "btc", "eth"];
 
         /// <inheritdoc />
@@ -35,9 +37,16 @@ namespace TonPrediction.Api.Services
             {
                 try
                 {
-                    foreach (var symbol in _symbols)
+                    using var handle = await _locker.AcquireAsync(
+                        "price_monitor",
+                        TimeSpan.FromSeconds(30),
+                        stoppingToken);
+                    if (handle != null)
                     {
-                        await RecordPriceAsync(symbol, stoppingToken);
+                        foreach (var symbol in _symbols)
+                        {
+                            await RecordPriceAsync(symbol, stoppingToken);
+                        }
                     }
                 }
                 catch (Exception ex)
