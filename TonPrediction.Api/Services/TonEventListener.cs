@@ -5,6 +5,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Cache;
 
 namespace TonPrediction.Api.Services;
 
@@ -49,7 +50,7 @@ public class TonEventListener(
             try
             {
                 using var handle = await _locker.AcquireAsync(
-                    "ton_event_listener",
+                    CacheKeyCollection.TonEventListenerLockKey,
                     TimeSpan.FromMinutes(5),
                     stoppingToken);
                 if (handle == null)

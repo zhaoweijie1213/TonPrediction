@@ -20,5 +20,23 @@ namespace TonPrediction.Application.Cache
         {
             return $"{AppDomain.CurrentDomain.FriendlyName}tonprice:{address}";
         }
+
+        /// <summary>
+        /// 分布式锁：RoundScheduler。
+        /// </summary>
+        public static string RoundSchedulerLockKey =>
+            $"{AppDomain.CurrentDomain.FriendlyName}lock:round_scheduler";
+
+        /// <summary>
+        /// 分布式锁：PriceMonitor。
+        /// </summary>
+        public static string PriceMonitorLockKey =>
+            $"{AppDomain.CurrentDomain.FriendlyName}lock:price_monitor";
+
+        /// <summary>
+        /// 分布式锁：TonEventListener。
+        /// </summary>
+        public static string TonEventListenerLockKey =>
+            $"{AppDomain.CurrentDomain.FriendlyName}lock:ton_event_listener";
     }
 }

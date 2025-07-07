@@ -8,6 +8,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using PancakeSwap.Api.Hubs;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Cache;
 
 namespace TonPrediction.Api.Services
 {
@@ -37,7 +38,7 @@ namespace TonPrediction.Api.Services
                 try
                 {
                     using var handle = await _locker.AcquireAsync(
-                        "round_scheduler",
+                        CacheKeyCollection.RoundSchedulerLockKey,
                         TimeSpan.FromSeconds(10),
                         stoppingToken);
                     if (handle != null)
