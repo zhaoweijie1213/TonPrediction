@@ -22,14 +22,14 @@ namespace TonPrediction.Api.Services
         IPriceService priceService,
         IHubContext<PredictionHub> hub,
         ILogger<PriceMonitor> logger,
-        IDistributedLock locker) : BackgroundService
+        IDistributedLock locker, IConfiguration configuration) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPriceService _priceService = priceService;
         private readonly IHubContext<PredictionHub> _hub = hub;
         private readonly ILogger<PriceMonitor> _logger = logger;
         private readonly IDistributedLock _locker = locker;
-        private readonly string[] _symbols = ["ton", "btc", "eth"];
+        private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
         /// <inheritdoc />
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -29,7 +29,7 @@ namespace TonPrediction.Api.Services
         private readonly IDistributedLock _locker = locker;
         private readonly TimeSpan _interval =
             TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
-        private readonly string[] _symbols = ["ton", "btc", "eth"];
+        private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
         /// <summary>
         /// 
@@ -42,6 +42,12 @@ namespace TonPrediction.Api.Services
             await Task.WhenAll(tasks);
         }
 
+        /// <summary>
+        /// 执行每个币种的回合循环
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private async Task RunSymbolLoopAsync(string symbol, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
