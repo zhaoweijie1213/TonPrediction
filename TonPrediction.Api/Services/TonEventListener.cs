@@ -6,6 +6,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
+using System.Text.RegularExpressions;
 
 namespace TonPrediction.Api.Services;
 
@@ -26,8 +27,10 @@ public class TonEventListener(
     private readonly IHttpClientFactory _httpFactory = httpFactory;
     private readonly IDistributedLock _locker = locker;
     private readonly string _walletAddress = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
+    private ulong _lastLt;
     private const string SseUrlTemplate =
         "https://tonapi.io/v2/sse/accounts/transactions?accounts={0}";
+    private static readonly Regex CommentRegex = new(@"^\s*(\w+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
     /// 执行
@@ -101,9 +104,31 @@ public class TonEventListener(
             catch (Exception ex)
             {
                 _logger.LogError(ex, "SSE 连接中断，{Delay}s 后重试…", backoff.TotalSeconds);
+                await FetchMissedAsync(http, stoppingToken);
                 await Task.Delay(backoff, stoppingToken);
                 backoff = TimeSpan.FromSeconds(Math.Min(backoff.TotalSeconds * 2, 30));
             }
+        }
+    }
+
+    private async Task FetchMissedAsync(HttpClient http, CancellationToken ct)
+    {
+        if (_lastLt == 0) return;
+        var url = $"/v2/blockchain/accounts/{_walletAddress}/transactions?limit=20&to_lt={_lastLt}";
+        try
+        {
+            var resp = await http.GetFromJsonAsync<AccountTxList>(url, ct);
+            if (resp?.Transactions != null)
+            {
+                foreach (var tx in resp.Transactions)
+                {
+                    await ProcessTransactionAsync(tx with { Lt = tx.Lt }, ct);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "拉取历史交易失败");
         }
     }
 
@@ -114,15 +139,10 @@ public class TonEventListener(
     /// <param name="ct">取消令牌。</param>
     internal virtual async Task ProcessTransactionAsync(TonTxDetail tx, CancellationToken ct)
     {
-        var comment = tx.In_Message.Comment?.Trim().ToLowerInvariant();
-        if (string.IsNullOrEmpty(comment)) return;
-
-        var parts = comment.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length is not 2) return;
-
-        var symbol = parts[0];
-        var side = parts[1];
-        if (side is not ("bull" or "bear")) return;
+        var match = CommentRegex.Match(tx.In_Message.Comment ?? string.Empty);
+        if (!match.Success) return;
+        var symbol = match.Groups[1].Value.ToLowerInvariant();
+        var side = match.Groups[2].Value.ToLowerInvariant();
 
         var amount = tx.Amount;        // TonAPI 已返回普通 TON
         var sender = tx.In_Message.Source ?? string.Empty;
@@ -135,17 +155,30 @@ public class TonEventListener(
         var round = await roundRepo.GetCurrentLiveAsync(symbol, ct);
         if (round == null) return;
 
-        await betRepo.InsertAsync(new BetEntity
+        var exist = await betRepo.GetByTxHashAsync(tx.Hash, ct);
+        if (exist != null)
         {
-            RoundId = round.Id,
-            UserAddress = sender,
-            Amount = amount,
-            Position = position,
-            Claimed = false,
-            Reward = 0m,
-            TxHash = tx.Hash,
-            Lt = tx.Lt
-        });
+            exist.Status = BetStatus.Confirmed;
+            exist.Lt = tx.Lt;
+            await betRepo.UpdateByPrimaryKeyAsync(exist);
+            _lastLt = tx.Lt;
+        }
+        else
+        {
+            await betRepo.InsertAsync(new BetEntity
+            {
+                RoundId = round.Id,
+                UserAddress = sender,
+                Amount = amount,
+                Position = position,
+                Claimed = false,
+                Reward = 0m,
+                TxHash = tx.Hash,
+                Lt = tx.Lt,
+                Status = BetStatus.Confirmed
+            });
+            _lastLt = tx.Lt;
+        }
 
         round.TotalAmount += amount;
         if (position == Position.Bull) round.BullAmount += amount;
@@ -209,4 +242,10 @@ public record TonTxDetail(
 /// </summary>
 /// <param name="Source"></param>
 /// <param name="Comment"></param>
-public record InMsg(string? Source, string? Comment);
+public record InMsg(string? Source, string? Comment, string? Destination);
+
+/// <summary>
+/// TonAPI 账户交易列表响应。
+/// </summary>
+/// <param name="Transactions">交易数组。</param>
+public record AccountTxList(TonTxDetail[] Transactions);

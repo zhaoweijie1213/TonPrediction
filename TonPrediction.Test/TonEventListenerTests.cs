@@ -41,6 +41,8 @@ public class TonEventListenerTests
             .Callback<BetEntity>(b => inserted = b)
             .ReturnsAsync(new BetEntity())
             .Verifiable();
+        betRepo.Setup(b => b.GetByTxHashAsync("hash", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((BetEntity?)null);
 
         var roundRepo = new Mock<IRoundRepository>();
         roundRepo.Setup(r => r.GetCurrentLiveAsync("ton", It.IsAny<CancellationToken>()))
@@ -84,7 +86,7 @@ public class TonEventListenerTests
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
 
-        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"), "hash")
+        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull", "addr"), "hash")
         {
             Lt = 1
         };
@@ -99,5 +101,61 @@ public class TonEventListenerTests
 
         Assert.Equal("hash", inserted?.TxHash);
         Assert.Equal<ulong>(1ul, inserted?.Lt ?? 0);
+    }
+
+    [Fact]
+    public async Task ProcessTransactionAsync_UpdatesExistingBet()
+    {
+        var round = new RoundEntity
+        {
+            Symbol = "ton",
+            Id = 1,
+            Epoch = 1,
+            CloseTime = DateTime.UtcNow.AddMinutes(5),
+            LockPrice = 1m,
+            Status = RoundStatus.Live
+        };
+
+        var bet = new BetEntity { TxHash = "hash", Lt = 0, Status = BetStatus.Pending };
+        var betRepo = new Mock<IBetRepository>();
+        betRepo.Setup(b => b.GetByTxHashAsync("hash", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bet);
+        betRepo.Setup(b => b.UpdateByPrimaryKeyAsync(bet)).ReturnsAsync(true).Verifiable();
+
+        var roundRepo = new Mock<IRoundRepository>();
+        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(round);
+
+        var clientProxy = new Mock<IClientProxy>();
+        var hubClients = new Mock<IHubClients>();
+        hubClients.SetupGet(h => h.All).Returns(clientProxy.Object);
+        var hubContext = new Mock<IHubContext<PredictionHub>>();
+        hubContext.SetupGet(h => h.Clients).Returns(hubClients.Object);
+
+        var sp = new ServiceCollection()
+            .AddSingleton(betRepo.Object)
+            .AddSingleton(roundRepo.Object)
+            .BuildServiceProvider();
+        var scope = new Mock<IServiceScope>();
+        scope.SetupGet(s => s.ServiceProvider).Returns(sp);
+        var scopeFactory = new Mock<IServiceScopeFactory>();
+        scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string> { { "ENV_MASTER_WALLET_ADDRESS", "addr" } })
+            .Build();
+
+        var listener = new TonEventListener(
+            scopeFactory.Object,
+            config,
+            hubContext.Object,
+            NullLogger<TonEventListener>.Instance,
+            new Mock<IHttpClientFactory>().Object,
+            Mock.Of<IDistributedLock>());
+
+        var tx = new TonTxDetail(1m, new InMsg("sender", "ton bull", "addr"), "hash") { Lt = 2 };
+        await listener.ProcessTransactionAsync(tx, CancellationToken.None);
+
+        betRepo.Verify(b => b.UpdateByPrimaryKeyAsync(bet), Times.Once);
     }
 }
