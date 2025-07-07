@@ -45,6 +45,7 @@ namespace TonPrediction.Infrastructure
             }
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
             builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
+            builder.Services.AddSingleton<IWalletService, TonWalletService>();
 
             #endregion
             return builder;
