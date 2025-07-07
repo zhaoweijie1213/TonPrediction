@@ -24,7 +24,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 用户地址。
         /// </summary>
-        [SugarColumn(ColumnName = "user_address")]
+        [SugarColumn(ColumnName = "user_address", IndexGroupNameList = new[] { "idx_address_lt" })]
         public string UserAddress { get; set; } = string.Empty;
 
         /// <summary>
@@ -56,5 +56,11 @@ namespace TonPrediction.Application.Database.Entities
         /// </summary>
         [SugarColumn(ColumnName = "tx_hash")]
         public string TxHash { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 交易账户逻辑时间。
+        /// </summary>
+        [SugarColumn(ColumnName = "lt", IndexGroupNameList = new[] { "idx_address_lt" })]
+        public ulong Lt { get; set; }
     }
 }

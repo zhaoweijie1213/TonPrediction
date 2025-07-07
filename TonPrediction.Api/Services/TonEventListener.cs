@@ -88,7 +88,7 @@ public class TonEventListener(
 
                         if (detail != null)
                         {
-                            detail = detail with { Hash = head.Tx_Hash };
+                            detail = detail with { Hash = head.Tx_Hash, Lt = head.Lt };
                             await ProcessTransactionAsync(detail, stoppingToken);
                         }
                     }
@@ -143,7 +143,8 @@ public class TonEventListener(
             Position = position,
             Claimed = false,
             Reward = 0m,
-            TxHash = tx.Hash
+            TxHash = tx.Hash,
+            Lt = tx.Lt
         });
 
         round.TotalAmount += amount;
@@ -195,7 +196,13 @@ public record SseTxHead(string Account_Id, ulong Lt, string Tx_Hash);
 public record TonTxDetail(
     decimal Amount,
     InMsg In_Message,
-    string Hash);
+    string Hash)
+{
+    /// <summary>
+    /// 交易的账户逻辑时间。
+    /// </summary>
+    public ulong Lt { get; init; }
+}
 
 /// <summary>
 /// 
