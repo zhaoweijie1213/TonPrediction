@@ -48,6 +48,17 @@ public class TonEventListener(
         var backoff = TimeSpan.FromSeconds(3);
         var http = _httpFactory.CreateClient("TonApi");
 
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
+            var val = await stateRepo.GetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, stoppingToken);
+            if (ulong.TryParse(val, out var saved))
+            {
+                _lastLt = saved;
+                await FetchMissedAsync(http, stoppingToken);
+            }
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -157,6 +168,7 @@ public class TonEventListener(
         using var scope = _scopeFactory.CreateScope();
         var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
         var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
+        var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
 
         var round = await roundRepo.GetCurrentLiveAsync(symbol, ct);
         if (round == null) return;
@@ -168,6 +180,7 @@ public class TonEventListener(
             exist.Lt = tx.Lt;
             await betRepo.UpdateByPrimaryKeyAsync(exist);
             _lastLt = tx.Lt;
+            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString(), ct);
         }
         else
         {
@@ -184,6 +197,7 @@ public class TonEventListener(
                 Status = BetStatus.Confirmed
             });
             _lastLt = tx.Lt;
+            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString(), ct);
         }
 
         round.TotalAmount += amount;

@@ -63,9 +63,11 @@ public class TonEventListenerTests
         var hubContext = new Mock<IHubContext<PredictionHub>>();
         hubContext.SetupGet(h => h.Clients).Returns(hubClients.Object);
 
+        var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()
             .AddSingleton(betRepo.Object)
             .AddSingleton(roundRepo.Object)
+            .AddSingleton(stateRepo.Object)
             .BuildServiceProvider();
         var scope = new Mock<IServiceScope>();
         scope.SetupGet(s => s.ServiceProvider).Returns(sp);
@@ -132,9 +134,11 @@ public class TonEventListenerTests
         var hubContext = new Mock<IHubContext<PredictionHub>>();
         hubContext.SetupGet(h => h.Clients).Returns(hubClients.Object);
 
+        var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()
             .AddSingleton(betRepo.Object)
             .AddSingleton(roundRepo.Object)
+            .AddSingleton(stateRepo.Object)
             .BuildServiceProvider();
         var scope = new Mock<IServiceScope>();
         scope.SetupGet(s => s.ServiceProvider).Returns(sp);
