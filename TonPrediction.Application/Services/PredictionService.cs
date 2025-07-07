@@ -17,7 +17,15 @@ public class PredictionService(
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IRoundRepository _roundRepo = roundRepo;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 获取用户的投注记录
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="status"></param>
+    /// <param name="page"></param>
+    /// <param name="pageSize"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<List<BetRecordOutput>> GetRecordsAsync(
         string address,
         string status = "all",
@@ -28,13 +36,13 @@ public class PredictionService(
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
         var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize, ct);
-        var epochs = bets.Select(b => b.Epoch).ToArray();
-        var rounds = await _roundRepo.GetByEpochsAsync(epochs, ct);
+        var roundIds = bets.Select(b => b.RoundId).ToArray();
+        var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds, ct);
         var map = rounds.ToDictionary(r => r.Epoch);
         var list = new List<BetRecordOutput>();
         foreach (var bet in bets)
         {
-            if (!map.TryGetValue(bet.Epoch, out var round))
+            if (!map.TryGetValue(bet.RoundId, out var round))
                 continue;
             var result = BetResult.Draw;
             if (round.ClosePrice > round.LockPrice)
@@ -43,7 +51,8 @@ public class PredictionService(
                 result = bet.Position == Position.Bear ? BetResult.Win : BetResult.Lose;
             var output = new BetRecordOutput
             {
-                RoundId = bet.Epoch,
+                RoundId = bet.RoundId,
+                Epoch = round.Epoch,
                 Position = bet.Position,
                 Amount = bet.Amount.ToString("F8"),
                 LockPrice = round.LockPrice.ToString("F8"),

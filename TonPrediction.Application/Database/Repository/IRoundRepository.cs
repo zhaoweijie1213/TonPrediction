@@ -52,10 +52,10 @@ namespace TonPrediction.Application.Database.Repository
         /// <summary>
         /// 根据编号批量查询回合。
         /// </summary>
-        /// <param name="epochs">回合序号集合。</param>
+        /// <param name="roundIds">回合序号集合。</param>
         /// <param name="ct">取消令牌。</param>
-        Task<List<RoundEntity>> GetByEpochsAsync(
-            long[] epochs,
+        Task<List<RoundEntity>> GetByRoundIdsAsync(
+            long[] roundIds,
             CancellationToken ct = default);
     }
 }

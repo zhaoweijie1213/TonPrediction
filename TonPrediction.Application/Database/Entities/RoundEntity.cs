@@ -14,11 +14,11 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 主键编号，通常使用时间戳生成，保证全局唯一。
         /// </summary>
-        [SugarColumn(IsPrimaryKey = true, IsIdentity = false, ColumnName = "id")]
+        [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnName = "id")]
         public long Id { get; set; }
 
         /// <summary>
-        /// 回合序号，从 1 开始按币种独立递增。
+        /// 期次，从 1 开始按币种独立递增。
         /// </summary>
         [SugarColumn(ColumnName = "epoch")]
         public long Epoch { get; set; }

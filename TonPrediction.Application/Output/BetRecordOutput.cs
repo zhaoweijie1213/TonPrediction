@@ -13,6 +13,11 @@ public class BetRecordOutput
     public long RoundId { get; set; }
 
     /// <summary>
+    /// 期次,回合期次从 1 开始按币种独立递增。
+    /// </summary>
+    public long Epoch { get; set; }
+
+    /// <summary>
     /// 下注方向。
     /// </summary>
     public Position Position { get; set; }

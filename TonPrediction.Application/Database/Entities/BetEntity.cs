@@ -18,8 +18,8 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 通常翻译成 “回合编号” 或 “期次”，用来唯一标识一轮竞猜的完整生命周期
         /// </summary>
-        [SugarColumn(ColumnName = "epoch_id")]
-        public long Epoch { get; set; }
+        [SugarColumn(ColumnName = "round_id")]
+        public long RoundId { get; set; }
 
         /// <summary>
         /// 用户地址。

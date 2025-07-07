@@ -68,11 +68,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .ToListAsync();
         }
 
-        /// <inheritdoc />
-        public async Task<List<RoundEntity>> GetByEpochsAsync(long[] epochs, CancellationToken ct = default)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="roundIds"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public async Task<List<RoundEntity>> GetByRoundIdsAsync(long[] roundIds, CancellationToken ct = default)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => epochs.Contains(r.Epoch))
+                .Where(r => roundIds.Contains(r.Id))
                 .ToListAsync();
         }
     }

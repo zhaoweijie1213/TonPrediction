@@ -30,7 +30,11 @@ namespace TonPrediction.Api.Services
             TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
         private readonly string[] _symbols = ["ton", "btc", "eth"];
 
-        /// <inheritdoc />
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -59,7 +63,7 @@ namespace TonPrediction.Api.Services
         }
 
         /// <summary>
-        /// 回合处理逻辑
+        /// 回合处理
         /// </summary>
         /// <param name="symbol"></param>
         /// <param name="token"></param>
@@ -95,7 +99,6 @@ namespace TonPrediction.Api.Services
                 var firstRound = new RoundEntity
                 {
                     Symbol = symbol,
-                    Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     Epoch = (last?.Epoch ?? 0) + 1,
                     StartTime = now,
                     LockTime = now.Add(_interval),
@@ -137,7 +140,6 @@ namespace TonPrediction.Api.Services
                 var nextRound = new RoundEntity
                 {
                     Symbol = symbol,
-                    Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     Epoch = live.Epoch + 1,
                     StartTime = now,
                     LockTime = now.Add(_interval),
