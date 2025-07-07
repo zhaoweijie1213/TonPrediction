@@ -41,7 +41,7 @@ public class TonEventListener(
     {
         if (string.IsNullOrWhiteSpace(_walletAddress))
         {
-            _logger.LogWarning("ENV_MASTER_WALLET_ADDRESS 未配置，监听器退出");
+            _logger.LogWarning("主钱包地址未配置，监听器退出");
             return;
         }
 
@@ -111,6 +111,12 @@ public class TonEventListener(
         }
     }
 
+    /// <summary>
+    /// 拉取未处理的历史交易
+    /// </summary>
+    /// <param name="http"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     private async Task FetchMissedAsync(HttpClient http, CancellationToken ct)
     {
         if (_lastLt == 0) return;

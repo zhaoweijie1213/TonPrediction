@@ -23,7 +23,12 @@ public class BetService(
     private readonly IRoundRepository _roundRepo = roundRepo;
     private static readonly Regex CommentRegex = new(@"^\s*(\w+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 验证并上报用户下注信息
+    /// </summary>
+    /// <param name="txHash"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<bool> ReportAsync(string txHash, CancellationToken ct = default)
     {
         var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}", ct);
