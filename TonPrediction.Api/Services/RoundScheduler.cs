@@ -62,49 +62,92 @@ namespace TonPrediction.Api.Services
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
 
             var now = DateTime.UtcNow;
-            var current = await roundRepo.GetLatestAsync(symbol, token);
 
-            if (current == null || current.Status == RoundStatus.Ended)
+            // 结束已锁定的回合
+            var locked = await roundRepo.GetCurrentLockedAsync(symbol, token);
+            if (locked != null && locked.CloseTime <= now)
+            {
+                var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
+                locked.CloseTime = now;
+                locked.ClosePrice = closePrice;
+                locked.Status = RoundStatus.Ended;
+                await roundRepo.UpdateByPrimaryKeyAsync(locked);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
+                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = locked.Id }, token);
+            }
+
+            // 获取当前可下注的回合
+            var live = await roundRepo.GetCurrentLiveAsync(symbol, token);
+            if (live == null)
             {
                 var startPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
-                var newRound = new RoundEntity
+                var firstRound = new RoundEntity
                 {
                     Symbol = symbol,
                     Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     StartTime = now,
-                    LockTime = now,
-                    CloseTime = now.Add(_interval),
+                    LockTime = now.Add(_interval),
+                    CloseTime = now.Add(_interval * 2),
                     LockPrice = startPrice,
                     Status = RoundStatus.Live
                 };
-                await roundRepo.InsertAsync(newRound);
+                await roundRepo.InsertAsync(firstRound);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
                 await _hub.Clients.All.SendAsync("currentRound", new
                 {
-                    roundId = newRound.Id,
-                    lockPrice = newRound.LockPrice.ToString("F8"),
-                    currentPrice = newRound.LockPrice.ToString("F8"),
-                    totalAmount = newRound.TotalAmount.ToString("F8"),
-                    upAmount = newRound.BullAmount.ToString("F8"),
-                    downAmount = newRound.BearAmount.ToString("F8"),
-                    rewardPool = newRound.RewardAmount.ToString("F8"),
-                    endTime = new DateTimeOffset(newRound.CloseTime).ToUnixTimeSeconds(),
+                    roundId = firstRound.Id,
+                    lockPrice = firstRound.LockPrice.ToString("F8"),
+                    currentPrice = firstRound.LockPrice.ToString("F8"),
+                    totalAmount = firstRound.TotalAmount.ToString("F8"),
+                    upAmount = firstRound.BullAmount.ToString("F8"),
+                    downAmount = firstRound.BearAmount.ToString("F8"),
+                    rewardPool = firstRound.RewardAmount.ToString("F8"),
+                    endTime = new DateTimeOffset(firstRound.CloseTime).ToUnixTimeSeconds(),
                     oddsUp = "0",
                     oddsDown = "0",
-                    status = RoundStatus.Live
+                    status = firstRound.Status
                 }, token);
                 return;
             }
 
-            if (current.Status == RoundStatus.Live && current.CloseTime <= now)
+            // 到达锁定时间时，锁定当前回合并创建下一回合
+            if (live.LockTime <= now)
             {
-                var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
-                current.CloseTime = now;
-                current.ClosePrice = closePrice;
-                current.Status = RoundStatus.Ended;
-                await roundRepo.UpdateByPrimaryKeyAsync(current);
-                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
-                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = current.Id }, token);
+                var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
+                live.LockPrice = lockPrice;
+                live.LockTime = now;
+                live.CloseTime = now.Add(_interval);
+                live.Status = RoundStatus.Locked;
+                await roundRepo.UpdateByPrimaryKeyAsync(live);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
+
+                var nextPrice = lockPrice;
+                var nextRound = new RoundEntity
+                {
+                    Symbol = symbol,
+                    Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    StartTime = now,
+                    LockTime = now.Add(_interval),
+                    CloseTime = now.Add(_interval * 2),
+                    LockPrice = nextPrice,
+                    Status = RoundStatus.Live
+                };
+                await roundRepo.InsertAsync(nextRound);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
+                await _hub.Clients.All.SendAsync("currentRound", new
+                {
+                    roundId = nextRound.Id,
+                    lockPrice = nextRound.LockPrice.ToString("F8"),
+                    currentPrice = nextRound.LockPrice.ToString("F8"),
+                    totalAmount = nextRound.TotalAmount.ToString("F8"),
+                    upAmount = nextRound.BullAmount.ToString("F8"),
+                    downAmount = nextRound.BearAmount.ToString("F8"),
+                    rewardPool = nextRound.RewardAmount.ToString("F8"),
+                    endTime = new DateTimeOffset(nextRound.CloseTime).ToUnixTimeSeconds(),
+                    oddsUp = "0",
+                    oddsDown = "0",
+                    status = nextRound.Status
+                }, token);
             }
         }
     }

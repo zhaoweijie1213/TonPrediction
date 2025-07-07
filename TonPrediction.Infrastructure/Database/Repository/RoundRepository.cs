@@ -45,6 +45,17 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
+        public async Task<RoundEntity?> GetCurrentLockedAsync(
+            string symbol,
+            CancellationToken ct = default)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Locked)
+                .OrderBy(r => r.Id, OrderByType.Desc)
+                .FirstAsync();
+        }
+
+        /// <inheritdoc />
         public async Task<List<RoundEntity>> GetEndedAsync(
             string symbol,
             int limit,

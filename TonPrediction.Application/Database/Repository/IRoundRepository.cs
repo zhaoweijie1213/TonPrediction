@@ -31,6 +31,15 @@ namespace TonPrediction.Application.Database.Repository
             CancellationToken ct = default);
 
         /// <summary>
+        /// 获取当前锁定中的回合。
+        /// </summary>
+        /// <param name="symbol">币种符号。</param>
+        /// <param name="ct">取消令牌。</param>
+        Task<RoundEntity?> GetCurrentLockedAsync(
+            string symbol,
+            CancellationToken ct = default);
+
+        /// <summary>
         /// 获取最近结束的若干回合。
         /// </summary>
         /// <param name="limit">限制数量。</param>
