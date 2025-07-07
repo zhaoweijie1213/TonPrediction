@@ -29,7 +29,7 @@ namespace TonPrediction.Infrastructure
                 options.UseRedis(config =>
                 {
                     config.DBConfig = builder.Configuration.GetSection("Redis").Get<RedisDBOptions>();
-                }, "Redis").WithMessagePack("Redis");
+                }, "DefaultRedis").WithMessagePack("DefaultRedis");
             });
 
             var redisSection = builder.Configuration.GetSection("Redis");
