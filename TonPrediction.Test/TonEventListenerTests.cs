@@ -35,8 +35,10 @@ public class TonEventListenerTests
             Status = RoundStatus.Live
         };
 
+        BetEntity? inserted = null;
         var betRepo = new Mock<IBetRepository>();
         betRepo.Setup(b => b.InsertAsync(It.IsAny<BetEntity>()))
+            .Callback<BetEntity>(b => inserted = b)
             .ReturnsAsync(new BetEntity())
             .Verifiable();
 
@@ -82,7 +84,7 @@ public class TonEventListenerTests
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
 
-        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"));
+        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"), "hash");
         await listener.ProcessTransactionAsync(tx, CancellationToken.None);
 
         betRepo.Verify(b => b.InsertAsync(It.IsAny<BetEntity>()), Times.Once);
@@ -91,5 +93,7 @@ public class TonEventListenerTests
             "currentRound",
             It.IsAny<object?[]>(),
             It.IsAny<CancellationToken>()), Times.Once);
+
+        Assert.Equal("hash", inserted?.TxHash);
     }
 }
