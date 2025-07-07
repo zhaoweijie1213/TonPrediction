@@ -84,7 +84,10 @@ public class TonEventListenerTests
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
 
-        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"), "hash");
+        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull"), "hash")
+        {
+            Lt = 1
+        };
         await listener.ProcessTransactionAsync(tx, CancellationToken.None);
 
         betRepo.Verify(b => b.InsertAsync(It.IsAny<BetEntity>()), Times.Once);
@@ -95,5 +98,6 @@ public class TonEventListenerTests
             It.IsAny<CancellationToken>()), Times.Once);
 
         Assert.Equal("hash", inserted?.TxHash);
+        Assert.Equal<ulong>(1ul, inserted?.Lt ?? 0);
     }
 }
