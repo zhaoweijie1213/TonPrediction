@@ -92,7 +92,7 @@ namespace TonPrediction.Api.Services
                 var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
                 await _hub.Clients.All.SendAsync("currentRound", new
                 {
-                    roundId = round.Id,
+                    roundId = round.Epoch,
                     lockPrice = round.LockPrice.ToString("F8"),
                     currentPrice = price.ToString("F8"),
                     totalAmount = round.TotalAmount.ToString("F8"),

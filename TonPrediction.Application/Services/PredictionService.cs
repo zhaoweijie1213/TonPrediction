@@ -28,9 +28,9 @@ public class PredictionService(
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
         var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize, ct);
-        var ids = bets.Select(b => b.Epoch).ToArray();
-        var rounds = await _roundRepo.GetByIdsAsync(ids, ct);
-        var map = rounds.ToDictionary(r => r.Id);
+        var epochs = bets.Select(b => b.Epoch).ToArray();
+        var rounds = await _roundRepo.GetByEpochsAsync(epochs, ct);
+        var map = rounds.ToDictionary(r => r.Epoch);
         var list = new List<BetRecordOutput>();
         foreach (var bet in bets)
         {

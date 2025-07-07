@@ -29,6 +29,7 @@ public class TonEventListenerTests
         {
             Symbol = "ton",
             Id = 1,
+            Epoch = 1,
             CloseTime = DateTime.UtcNow.AddMinutes(5),
             LockPrice = 1m,
             Status = RoundStatus.Live

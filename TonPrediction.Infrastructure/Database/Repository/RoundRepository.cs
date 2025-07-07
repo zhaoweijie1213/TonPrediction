@@ -29,7 +29,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol)
-                .OrderBy(r => r.Id, OrderByType.Desc)
+                .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
 
@@ -40,7 +40,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
-                .OrderBy(r => r.Id, OrderByType.Desc)
+                .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
 
@@ -51,7 +51,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Locked)
-                .OrderBy(r => r.Id, OrderByType.Desc)
+                .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
 
@@ -63,16 +63,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Ended)
-                .OrderBy(r => r.Id, OrderByType.Desc)
+                .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .Take(limit)
                 .ToListAsync();
         }
 
         /// <inheritdoc />
-        public async Task<List<RoundEntity>> GetByIdsAsync(long[] ids, CancellationToken ct = default)
+        public async Task<List<RoundEntity>> GetByEpochsAsync(long[] epochs, CancellationToken ct = default)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => ids.Contains(r.Id))
+                .Where(r => epochs.Contains(r.Epoch))
                 .ToListAsync();
         }
     }
