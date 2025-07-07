@@ -262,6 +262,7 @@ public record TonTxDetail(
 /// </summary>
 /// <param name="Source"></param>
 /// <param name="Comment"></param>
+/// <param name="Destination"></param>
 public record InMsg(string? Source, string? Comment, string? Destination);
 
 /// <summary>

@@ -17,8 +17,8 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 回合编号。
         /// </summary>
-        [SugarColumn(ColumnName = "epoch_id")]
-        public long Epoch { get; set; }
+        [SugarColumn(ColumnName = "round_id")]
+        public long RoundId { get; set; }
 
         /// <summary>
         /// 用户地址。
