@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
-using PancakeSwap.Api.Hubs;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
@@ -17,13 +15,13 @@ namespace TonPrediction.Api.Services;
 public class TonEventListener(
     IServiceScopeFactory scopeFactory,
     IConfiguration configuration,
-    IHubContext<PredictionHub> hub,
+    IPredictionHubService notifier,
     ILogger<TonEventListener> logger,
     IHttpClientFactory httpFactory,
     IDistributedLock locker) : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
-    private readonly IHubContext<PredictionHub> _hub = hub;
+    private readonly IPredictionHubService _notifier = notifier;
     private readonly ILogger<TonEventListener> _logger = logger;
     private readonly IHttpClientFactory _httpFactory = httpFactory;
     private readonly IDistributedLock _locker = locker;
@@ -208,25 +206,8 @@ public class TonEventListener(
         round.RewardAmount = round.TotalAmount;
         await roundRepo.UpdateByPrimaryKeyAsync(round);
 
-        var oddsBull = round.BullAmount > 0 ? round.TotalAmount / round.BullAmount : 0;
-        var oddsBear = round.BearAmount > 0 ? round.TotalAmount / round.BearAmount : 0;
-
-        await _hub.Clients.All.SendAsync(
-            "currentRound",
-            new CurrentRoundOutput
-            {
-                RoundId = round.Epoch,
-                LockPrice = round.LockPrice.ToString("F8"),
-                CurrentPrice = round.ClosePrice > 0 ? round.ClosePrice.ToString("F8") : round.LockPrice.ToString("F8"),
-                TotalAmount = round.TotalAmount.ToString("F8"),
-                BullAmount = round.BullAmount.ToString("F8"),
-                BearAmount = round.BearAmount.ToString("F8"),
-                RewardPool = round.RewardAmount.ToString("F8"),
-                EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-                BullOdds = oddsBull.ToString("F8"),
-                BearOdds = oddsBear.ToString("F8"),
-                Status = round.Status
-            }, ct);
+        var currentPrice = round.ClosePrice > 0 ? round.ClosePrice : round.LockPrice;
+        await _notifier.PushCurrentRoundAsync(round, currentPrice, ct);
     }
 
 

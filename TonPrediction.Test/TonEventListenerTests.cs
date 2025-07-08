@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using PancakeSwap.Api.Hubs;
 using TonPrediction.Api.Services;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
@@ -51,23 +49,20 @@ public class TonEventListenerTests
             .ReturnsAsync(true)
             .Verifiable();
 
-        var clientProxy = new Mock<IClientProxy>();
-        clientProxy.Setup(p => p.SendCoreAsync(
-                "currentRound",
-                It.IsAny<object?[]>(),
+        var notifier = new Mock<IPredictionHubService>();
+        notifier.Setup(n => n.PushCurrentRoundAsync(
+                round,
+                It.IsAny<decimal>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
-        var hubClients = new Mock<IHubClients>();
-        hubClients.SetupGet(h => h.All).Returns(clientProxy.Object);
-        var hubContext = new Mock<IHubContext<PredictionHub>>();
-        hubContext.SetupGet(h => h.Clients).Returns(hubClients.Object);
 
         var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()
             .AddSingleton(betRepo.Object)
             .AddSingleton(roundRepo.Object)
             .AddSingleton(stateRepo.Object)
+            .AddSingleton(notifier.Object)
             .BuildServiceProvider();
         var scope = new Mock<IServiceScope>();
         scope.SetupGet(s => s.ServiceProvider).Returns(sp);
@@ -83,7 +78,7 @@ public class TonEventListenerTests
         var listener = new TonEventListener(
             scopeFactory.Object,
             config,
-            hubContext.Object,
+            notifier.Object,
             NullLogger<TonEventListener>.Instance,
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
@@ -96,9 +91,9 @@ public class TonEventListenerTests
 
         betRepo.Verify(b => b.InsertAsync(It.IsAny<BetEntity>()), Times.Once);
         roundRepo.Verify(r => r.UpdateByPrimaryKeyAsync(round), Times.Once);
-        clientProxy.Verify(p => p.SendCoreAsync(
-            "currentRound",
-            It.IsAny<object?[]>(),
+        notifier.Verify(n => n.PushCurrentRoundAsync(
+            round,
+            It.IsAny<decimal>(),
             It.IsAny<CancellationToken>()), Times.Once);
 
         Assert.Equal("hash", inserted?.TxHash);
@@ -128,17 +123,14 @@ public class TonEventListenerTests
         roundRepo.Setup(r => r.GetCurrentLiveAsync("ton", It.IsAny<CancellationToken>()))
             .ReturnsAsync(round);
 
-        var clientProxy = new Mock<IClientProxy>();
-        var hubClients = new Mock<IHubClients>();
-        hubClients.SetupGet(h => h.All).Returns(clientProxy.Object);
-        var hubContext = new Mock<IHubContext<PredictionHub>>();
-        hubContext.SetupGet(h => h.Clients).Returns(hubClients.Object);
+        var notifier = new Mock<IPredictionHubService>();
 
         var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()
             .AddSingleton(betRepo.Object)
             .AddSingleton(roundRepo.Object)
             .AddSingleton(stateRepo.Object)
+            .AddSingleton(notifier.Object)
             .BuildServiceProvider();
         var scope = new Mock<IServiceScope>();
         scope.SetupGet(s => s.ServiceProvider).Returns(sp);
@@ -152,7 +144,7 @@ public class TonEventListenerTests
         var listener = new TonEventListener(
             scopeFactory.Object,
             config,
-            hubContext.Object,
+            notifier.Object,
             NullLogger<TonEventListener>.Instance,
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
