@@ -20,9 +20,6 @@ public class BetController(IBetService betService) : ControllerBase
     [HttpPost("report")]
     public async Task<ApiResult<bool>> ReportAsync([FromBody] TxHashInput input)
     {
-        var ok = await _betService.ReportAsync(input.TxHash);
-        var api = new ApiResult<bool>();
-        api.SetRsult(ok ? ApiResultCode.Success : ApiResultCode.ErrorParams, ok);
-        return api;
+        return await _betService.ReportAsync(input.TxHash);
     }
 }

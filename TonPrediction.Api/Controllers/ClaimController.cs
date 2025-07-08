@@ -21,9 +21,6 @@ public class ClaimController(IClaimService claimService) : ControllerBase
     [HttpPost]
     public async Task<ApiResult<ClaimOutput?>> ClaimAsync([FromBody] ClaimInput input)
     {
-        var output = await _claimService.ClaimAsync(input);
-        var api = new ApiResult<ClaimOutput?>();
-        api.SetRsult(output != null ? ApiResultCode.Success : ApiResultCode.ErrorParams, output);
-        return api;
+        return await _claimService.ClaimAsync(input);
     }
 }

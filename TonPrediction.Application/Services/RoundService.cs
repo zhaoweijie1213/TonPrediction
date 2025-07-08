@@ -5,6 +5,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
 
@@ -19,14 +20,15 @@ public class RoundService(
     private readonly IConfiguration _configuration = configuration;
 
     /// <inheritdoc />
-    public async Task<List<RoundHistoryOutput>> GetHistoryAsync(
+    public async Task<ApiResult<List<RoundHistoryOutput>>> GetHistoryAsync(
         string symbol = "ton",
         int limit = 3,
         CancellationToken ct = default)
     {
+        var api = new ApiResult<List<RoundHistoryOutput>>();
         limit = limit is <= 0 or > 100 ? 3 : limit;
         var list = await _roundRepo.GetEndedAsync(symbol, limit);
-        return list.Select(r => new RoundHistoryOutput
+        var result = list.Select(r => new RoundHistoryOutput
         {
             RoundId = r.Id,
             Epoch = r.Epoch,
@@ -40,6 +42,8 @@ public class RoundService(
             BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToString("F8") : "0",
             BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToString("F8") : "0"
         }).ToList();
+        api.SetRsult(ApiResultCode.Success, result);
+        return api;
     }
 
     /// <summary>
@@ -48,10 +52,11 @@ public class RoundService(
     /// <param name="symbol"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
+    public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
         string symbol = "ton",
         CancellationToken ct = default)
     {
+        var api = new ApiResult<List<UpcomingRoundOutput>>();
         var latest = await _roundRepo.GetLatestAsync(symbol);
         var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
@@ -68,6 +73,7 @@ public class RoundService(
                 EndTime = new DateTimeOffset(s.AddSeconds(intervalSec)).ToUnixTimeSeconds()
             });
         }
-        return list;
+        api.SetRsult(ApiResultCode.Success, list);
+        return api;
     }
 }
