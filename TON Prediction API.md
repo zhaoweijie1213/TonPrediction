@@ -23,17 +23,34 @@
 > | 4004   | round_not_found   | 回合不存在或未开始 |
 > | 5000   | internal_error    | 服务器内部错误     |
 >
-> WebSocket 统一入口：`wss://<host>/ws`，订阅消息需发送 JSON：`{"event":"<topic>"}`。
+> SignalR Hub 路径：`https://<host>/predictionHub`。
+> 推荐使用 `@microsoft/signalr` 进行连接，示例代码：
+>
+> ```ts
+> import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+>
+> const connection = new HubConnectionBuilder()
+>   .withUrl("https://<host>/predictionHub")
+>   .configureLogging(LogLevel.Information)
+>   .build();
+>
+> connection.on("currentRound", data => {
+>   console.log("currentRound", data);
+> });
+> connection.on("roundStarted", data => {/* ... */});
+> connection.on("roundLocked", data => {/* ... */});
+> connection.on("settlementStarted", data => {/* ... */});
+> connection.on("settlementEnded", data => {/* ... */});
+> connection.on("roundEnded", data => {/* ... */});
+>
+> await connection.start();
+> ```
 
 ------
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
 
-- **订阅方式**：
-
-  ```json
-  { "event": "currentRound" }
-  ```
+- **SignalR 事件**：`currentRound`
 
 - **推送频率**：每 5 秒（或当有下注 / 价格变化时实时推送）
 
@@ -73,11 +90,27 @@
 
 ## 2️⃣ 回合开始通知（`roundStarted` • WS 广播）
 
-- **订阅方式**：
+- **SignalR 事件**：`roundStarted`
 
-  ```json
-  { "event": "roundStarted" }
-  ```
+- **推送内容**：
+
+| 字段名    | 类型 | 说明     |
+| --------- | ---- | -------- |
+| `roundId` | int  | 回合编号 |
+## 3️⃣ 回合锁定通知（`roundLocked` • WS 广播）
+
+- **SignalR 事件**：`roundLocked`
+
+- **推送内容**：
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `roundId` | int | 回合编号 |
+
+
+## 4️⃣ 开始结算通知（`settlementStarted` • WS 广播）
+
+- **SignalR 事件**：`settlementStarted`
 
 - **推送内容**：
 
@@ -85,13 +118,9 @@
 | --------- | ---- | -------- |
 | `roundId` | int  | 回合编号 |
 
-## 3️⃣ 开始结算通知（`settlementStarted` • WS 广播）
+## 5️⃣ 结束结算通知（`settlementEnded` • WS 广播）
 
-- **订阅方式**：
-
-  ```json
-  { "event": "settlementStarted" }
-  ```
+- **SignalR 事件**：`settlementEnded`
 
 - **推送内容**：
 
@@ -99,27 +128,9 @@
 | --------- | ---- | -------- |
 | `roundId` | int  | 回合编号 |
 
-## 4️⃣ 结束结算通知（`settlementEnded` • WS 广播）
+## 6️⃣ 回合结束通知（`roundEnded` • WS 广播）
 
-- **订阅方式**：
-
-  ```json
-  { "event": "settlementEnded" }
-  ```
-
-- **推送内容**：
-
-| 字段名    | 类型 | 说明     |
-| --------- | ---- | -------- |
-| `roundId` | int  | 回合编号 |
-
-## 5️⃣ 回合结束通知（`roundEnded` • WS 广播）
-
-- **订阅方式**：
-
-  ```json
-  { "event": "roundEnded" }
-  ```
+- **SignalR 事件**：`roundEnded`
 
 - **推送内容**：
 
@@ -135,7 +146,7 @@
 
 ------
 
-## 6️⃣ 历史回合列表
+## 7️⃣ 历史回合列表
 
 ### `GET /api/rounds/history?limit=3`
 
@@ -175,7 +186,7 @@
 
 ------
 
-## 7️⃣ 即将开始回合
+## 8️⃣ 即将开始回合
 
 ### `GET /api/rounds/upcoming`
 
@@ -189,7 +200,7 @@
 
 ------
 
-## 8️⃣ 价格走势图
+## 9️⃣ 价格走势图
 
 ### `GET /api/price/chart`
 
@@ -202,7 +213,7 @@
 
 ------
 
-## 9️⃣ 我的下注记录
+## 1️⃣0️⃣ 我的下注记录
 
 ### mode = `round`
 
@@ -240,7 +251,7 @@ GET /api/predictions/pnl
 
 ------
 
-## 1️⃣0️⃣ 排行榜
+## 1️⃣1️⃣ 排行榜
 
 ### `GET /api/leaderboard/list`
 
@@ -251,7 +262,7 @@ GET /api/predictions/pnl
 | `page`     | int    | 1         | 当前页                                     |
 | `pageSize` | int    | 10        | 分页大小，<=100                            |
 | `address`  | string |           | 若传入则返回该地址在列表中的页码 & 排名    |
-## 1️⃣1️⃣ 领奖
+## 1️⃣2️⃣ 领奖
 
 ### `POST /api/claim`
 
