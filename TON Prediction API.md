@@ -26,24 +26,25 @@
 > SignalR Hub 路径：`http://localhost:5259/predictionHub`（对应 `app.MapHub<PredictionHub>("/predictionHub")`）。
 > 推荐使用 `@microsoft/signalr` 进行连接，示例代码：
 >
+> ```typescript
+>import * as signalR from "@microsoft/signalr";
+>
+>const hub = new signalR.HubConnectionBuilder()
+>  .withUrl("http://localhost:5259/predictionHub")
+>  .build();
+>
+>hub.on("currentRound", data => { /* ... */ });
+>hub.on("roundStarted", data => { /* ... */ });
+>hub.on("roundLocked", data => { /* ... */ });
+>hub.on("settlementStarted", data => { /* ... */ });
+>hub.on("settlementEnded", data => { /* ... */ });
+>hub.on("roundEnded", data => { /* ... */ });
+>
+>await hub.start();
 > ```
-import * as signalR from "@microsoft/signalr";
+>
+>**说明**：回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
 
-const hub = new signalR.HubConnectionBuilder()
-  .withUrl("http://localhost:5259/predictionHub")
-  .build();
-
-hub.on("currentRound", data => { /* ... */ });
-hub.on("roundStarted", data => { /* ... */ });
-hub.on("roundLocked", data => { /* ... */ });
-hub.on("settlementStarted", data => { /* ... */ });
-hub.on("settlementEnded", data => { /* ... */ });
-hub.on("roundEnded", data => { /* ... */ });
-
-await hub.start();
-```
-
-> **说明**：回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
 ------
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
