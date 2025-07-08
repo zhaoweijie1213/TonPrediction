@@ -4,6 +4,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Extensions;
 using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
@@ -56,10 +57,10 @@ public class PredictionService(
                 RoundId = bet.RoundId,
                 Epoch = round.Epoch,
                 Position = bet.Position,
-                Amount = bet.Amount.ToString("F8"),
-                LockPrice = round.LockPrice.ToString("F8"),
-                ClosePrice = round.ClosePrice.ToString("F8"),
-                Reward = bet.Reward.ToString("F8"),
+                Amount = bet.Amount.ToAmountString(),
+                LockPrice = round.LockPrice.ToAmountString(),
+                ClosePrice = round.ClosePrice.ToAmountString(),
+                Reward = bet.Reward.ToAmountString(),
                 Claimed = bet.Claimed,
                 TxHash = bet.TxHash,
                 Result = result
@@ -81,9 +82,9 @@ public class PredictionService(
         var winRounds = bets.Count(b => b.Reward > 0m);
         var output = new PnlOutput
         {
-            TotalBet = totalBet.ToString("F8"),
-            TotalReward = totalReward.ToString("F8"),
-            NetProfit = (totalReward - totalBet).ToString("F8"),
+            TotalBet = totalBet.ToAmountString(),
+            TotalReward = totalReward.ToAmountString(),
+            NetProfit = (totalReward - totalBet).ToAmountString(),
             Rounds = rounds,
             WinRounds = winRounds
         };

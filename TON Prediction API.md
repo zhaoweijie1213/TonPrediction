@@ -74,12 +74,12 @@
 {
   "id": 357690,
   "epoch": 357690,
-  "lockPrice": "308.85000000",
-  "currentPrice": "309.12500000",
-  "totalAmount": "2500.00000000",
-  "bullAmount": "1400.00000000",
-  "bearAmount": "1100.00000000",
-  "rewardPool": "2425.00000000",
+  "lockPrice": "308.85",
+  "currentPrice": "309.125",
+  "totalAmount": "2500",
+  "bullAmount": "1400",
+  "bearAmount": "1100",
+  "rewardPool": "2425",
   "endTime": 1710001234,
   "status": "live",
   "bullOdds": "1.78571428",
@@ -178,15 +178,15 @@
 [
   {
     "id": 357689,
-    "lockPrice": "308.85000000",
-    "closePrice": "309.75000000",
-    "totalAmount": "1800.00000000",
-    "bullAmount": "1000.00000000",
-    "bearAmount": "800.00000000",
-    "rewardPool": "1746.00000000",
+    "lockPrice": "308.85",
+    "closePrice": "309.75",
+    "totalAmount": "1800",
+    "bullAmount": "1000",
+    "bearAmount": "800",
+    "rewardPool": "1746",
     "endTime": 1709999999,
-    "bullOdds": "1.80000000",
-    "bearOdds": "2.25000000"
+    "bullOdds": "1.8",
+    "bearOdds": "2.25"
   }
 ]
 ```

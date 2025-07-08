@@ -4,6 +4,7 @@ using TonPrediction.Api.Hubs;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Extensions;
 
 namespace TonPrediction.Api.Services;
 
@@ -28,15 +29,15 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         {
             RoundId = round.Id,
             Epoch = round.Epoch,
-            LockPrice = round.LockPrice.ToString("F8"),
-            CurrentPrice = currentPrice.ToString("F8"),
-            TotalAmount = round.TotalAmount.ToString("F8"),
-            BullAmount = round.BullAmount.ToString("F8"),
-            BearAmount = round.BearAmount.ToString("F8"),
-            RewardPool = round.RewardAmount.ToString("F8"),
+            LockPrice = round.LockPrice.ToAmountString(),
+            CurrentPrice = currentPrice.ToAmountString(),
+            TotalAmount = round.TotalAmount.ToAmountString(),
+            BullAmount = round.BullAmount.ToAmountString(),
+            BearAmount = round.BearAmount.ToAmountString(),
+            RewardPool = round.RewardAmount.ToAmountString(),
             EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-            BullOdds = oddsBull.ToString("F8"),
-            BearOdds = oddsBear.ToString("F8"),
+            BullOdds = oddsBull.ToAmountString(),
+            BearOdds = oddsBear.ToAmountString(),
             Status = round.Status
         };
         logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));

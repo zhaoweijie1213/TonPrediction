@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Output;
+using TonPrediction.Application.Extensions;
 
 namespace TonPrediction.Api.Controllers;
 
@@ -25,7 +26,7 @@ public class PriceController(IPriceSnapshotRepository repo) : ControllerBase
         var output = new ChartDataOutput
         {
             Timestamps = list.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray(),
-            Prices = list.Select(d => d.Price.ToString("F8")).ToArray()
+            Prices = list.Select(d => d.Price.ToAmountString()).ToArray()
         };
         var api = new ApiResult<ChartDataOutput>();
         api.SetRsult(ApiResultCode.Success, output);
