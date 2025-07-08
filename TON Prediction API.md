@@ -23,29 +23,27 @@
 > | 4004   | round_not_found   | 回合不存在或未开始 |
 > | 5000   | internal_error    | 服务器内部错误     |
 >
-> SignalR Hub 路径：`https://<host>/predictionHub`。
+> SignalR Hub 路径：`http://localhost:5259/predictionHub`（对应 `app.MapHub<PredictionHub>("/predictionHub")`）。
 > 推荐使用 `@microsoft/signalr` 进行连接，示例代码：
 >
-> ```ts
-> import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
->
-> const connection = new HubConnectionBuilder()
->   .withUrl("https://<host>/predictionHub")
->   .configureLogging(LogLevel.Information)
->   .build();
->
-> connection.on("currentRound", data => {
->   console.log("currentRound", data);
-> });
-> connection.on("roundStarted", data => {/* ... */});
-> connection.on("roundLocked", data => {/* ... */});
-> connection.on("settlementStarted", data => {/* ... */});
-> connection.on("settlementEnded", data => {/* ... */});
-> connection.on("roundEnded", data => {/* ... */});
->
-> await connection.start();
 > ```
+import * as signalR from "@microsoft/signalr";
 
+const hub = new signalR.HubConnectionBuilder()
+  .withUrl("http://localhost:5259/predictionHub")
+  .build();
+
+hub.on("currentRound", data => { /* ... */ });
+hub.on("roundStarted", data => { /* ... */ });
+hub.on("roundLocked", data => { /* ... */ });
+hub.on("settlementStarted", data => { /* ... */ });
+hub.on("settlementEnded", data => { /* ... */ });
+hub.on("roundEnded", data => { /* ... */ });
+
+await hub.start();
+```
+
+> **说明**：所有 `roundId` 字段均表示回合期次（epoch）。
 ------
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
@@ -56,7 +54,7 @@
 
 | 字段名         | 类型            | 说明                                     |
 | -------------- | --------------- | ---------------------------------------- |
-| `roundId`      | int             | 回合编号                                 |
+| `roundId`      | int             | 期次（Epoch）                                 |
 | `lockPrice`    | string(decimal) | 锁定价格                                 |
 | `currentPrice` | string(decimal) | 最新价格                                 |
 | `totalAmount`  | string(decimal) | 总下注金额                               |
@@ -96,7 +94,7 @@
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 回合编号 |
+| `roundId` | int  | 期次（Epoch） |
 ## 3️⃣ 回合锁定通知（`roundLocked` • WS 广播）
 
 - **SignalR 事件**：`roundLocked`
@@ -105,7 +103,7 @@
 
 | 字段名 | 类型 | 说明 |
 | --- | --- | --- |
-| `roundId` | int | 回合编号 |
+| `roundId` | int | 期次（Epoch） |
 
 
 ## 4️⃣ 开始结算通知（`settlementStarted` • WS 广播）
@@ -116,7 +114,7 @@
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 回合编号 |
+| `roundId` | int  | 期次（Epoch） |
 
 ## 5️⃣ 结束结算通知（`settlementEnded` • WS 广播）
 
@@ -126,7 +124,7 @@
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 回合编号 |
+| `roundId` | int  | 期次（Epoch） |
 
 ## 6️⃣ 回合结束通知（`roundEnded` • WS 广播）
 
@@ -136,7 +134,7 @@
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 回合编号 |
+| `roundId` | int  | 期次（Epoch） |
 
 **示例：**
 
@@ -154,7 +152,7 @@
 
 | 字段名        | 类型            | 说明               |
 | ------------- | --------------- | ------------------ |
-| `roundId`     | int             | 回合编号           |
+| `roundId`     | int             | 期次（Epoch）           |
 | `lockPrice`   | string(decimal) | 锁定价格           |
 | `closePrice`  | string(decimal) | 收盘价格           |
 | `totalAmount` | string(decimal) | 总下注金额         |
@@ -194,7 +192,7 @@
 
 | 字段名      | 类型 | 说明           |
 | ----------- | ---- | -------------- |
-| `roundId`   | int  | 回合编号       |
+| `roundId`   | int  | 期次（Epoch）       |
 | `startTime` | int  | 开始时间（秒） |
 | `endTime`   | int  | 结束时间（秒） |
 
@@ -232,7 +230,7 @@ GET /api/predictions/round
 
 | 字段名       | 类型            | 说明                    |
 | ------------ | --------------- | ----------------------- |
-| `roundId`    | int             | 回合编号                |
+| `roundId`    | int             | 期次（Epoch）                |
 | `position`   | enum            | `up` | `down`           |
 | `amount`     | string(decimal) | 押注金额                |
 | `lockPrice`  | string(decimal) | 锁定价格                |
