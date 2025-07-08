@@ -27,7 +27,7 @@ namespace TonPrediction.Infrastructure.Services
             try
             {
                 var url = string.Format(UrlTemplate, vsCurrency);
-                var resp = await _httpClient.GetFromJsonAsync<Response>(url, ct);
+                var resp = await _httpClient.GetFromJsonAsync<Response>(url);
                 var price = resp?.Ton?.Usd ?? 0m;
                 return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
             }

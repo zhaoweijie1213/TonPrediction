@@ -23,8 +23,7 @@ public class TonWalletService(
     /// <inheritdoc />
     public async Task<TransferResult> TransferAsync(
         string address,
-        decimal amount,
-        CancellationToken ct = default)
+        decimal amount)
     {
         try
         {
@@ -36,10 +35,9 @@ public class TonWalletService(
             };
             var resp = await _http.PostAsJsonAsync(
                 $"/v2/blockchain/accounts/{_wallet}/transfer",
-                body,
-                ct);
+                body);
             resp.EnsureSuccessStatusCode();
-            var data = await resp.Content.ReadFromJsonAsync<Response>(ct);
+            var data = await resp.Content.ReadFromJsonAsync<Response>();
             return new TransferResult(
                 data?.Hash ?? string.Empty,
                 data?.Lt ?? 0,

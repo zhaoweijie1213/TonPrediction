@@ -17,45 +17,32 @@ namespace TonPrediction.Application.Database.Repository
         /// <summary>
         /// 获取最新一轮记录。
         /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        Task<RoundEntity?> GetLatestAsync(
-            string symbol,
-            CancellationToken ct = default);
+        /// <param name="symbol"></param>
+        Task<RoundEntity?> GetLatestAsync(string symbol);
 
         /// <summary>
         /// 获取当前进行中的回合。
         /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        Task<RoundEntity?> GetCurrentLiveAsync(
-            string symbol,
-            CancellationToken ct = default);
+        /// <param name="symbol"></param>
+        Task<RoundEntity?> GetCurrentLiveAsync(string symbol);
 
         /// <summary>
         /// 获取当前锁定中的回合。
         /// </summary>
         /// <param name="symbol">币种符号。</param>
-        /// <param name="ct">取消令牌。</param>
-        Task<RoundEntity?> GetCurrentLockedAsync(
-            string symbol,
-            CancellationToken ct = default);
+        Task<RoundEntity?> GetCurrentLockedAsync(string symbol);
 
         /// <summary>
         /// 获取最近结束的若干回合。
         /// </summary>
+        /// <param name="symbol"></param>
         /// <param name="limit">限制数量。</param>
-        /// <param name="ct">取消令牌。</param>
-        Task<List<RoundEntity>> GetEndedAsync(
-            string symbol,
-            int limit,
-            CancellationToken ct = default);
+        Task<List<RoundEntity>> GetEndedAsync(string symbol,int limit);
 
         /// <summary>
         /// 根据编号批量查询回合。
         /// </summary>
         /// <param name="roundIds">回合序号集合。</param>
-        /// <param name="ct">取消令牌。</param>
-        Task<List<RoundEntity>> GetByRoundIdsAsync(
-            long[] roundIds,
-            CancellationToken ct = default);
+        Task<List<RoundEntity>> GetByRoundIdsAsync(long[] roundIds);
     }
 }

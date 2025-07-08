@@ -22,7 +22,7 @@ public class StateRepository(
         IStateRepository
 {
     /// <inheritdoc />
-    public async Task<string?> GetValueAsync(string key, CancellationToken ct = default)
+    public async Task<string?> GetValueAsync(string key)
     {
         var entity = await Db.Queryable<StateEntity>()
             .Where(s => s.Key == key)
@@ -31,7 +31,7 @@ public class StateRepository(
     }
 
     /// <inheritdoc />
-    public async Task SetValueAsync(string key, string value, CancellationToken ct = default)
+    public async Task SetValueAsync(string key, string value)
     {
         var exist = await Db.Queryable<StateEntity>()
             .Where(s => s.Key == key)

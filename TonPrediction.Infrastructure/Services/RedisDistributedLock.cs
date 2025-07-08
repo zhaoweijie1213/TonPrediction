@@ -30,10 +30,7 @@ public class RedisDistributedLock(IEnumerable<IRedisDatabaseProvider> redisDatab
     /// <param name="expiry"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<IDisposable?> AcquireAsync(
-        string key,
-        TimeSpan expiry,
-        CancellationToken ct = default)
+    public async Task<IDisposable?> AcquireAsync(string key,TimeSpan expiry)
     {
         var db = GetDatabase();
         var token = Guid.NewGuid().ToString();

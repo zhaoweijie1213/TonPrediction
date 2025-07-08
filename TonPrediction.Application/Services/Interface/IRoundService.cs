@@ -12,6 +12,7 @@ public interface IRoundService : ITransientDependency
     /// 获取历史回合列表。
     /// </summary>
     /// <param name="limit">最大返回数量。</param>
+    /// <param name="symbol"></param>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>历史回合集合。</returns>
     Task<List<RoundHistoryOutput>> GetHistoryAsync(
@@ -22,6 +23,7 @@ public interface IRoundService : ITransientDependency
     /// <summary>
     /// 获取即将开始的回合时间。
     /// </summary>
+    /// <param name="symbol"></param>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>回合时间集合。</returns>
     Task<List<UpcomingRoundOutput>> GetUpcomingAsync(

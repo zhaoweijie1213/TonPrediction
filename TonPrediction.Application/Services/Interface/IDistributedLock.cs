@@ -12,7 +12,6 @@ public interface IDistributedLock : ITransientDependency
     /// </summary>
     /// <param name="key">锁键。</param>
     /// <param name="expiry">锁过期时间。</param>
-    /// <param name="ct">取消令牌。</param>
     /// <returns>获取成功则返回释放锁的句柄，否则为 null。</returns>
-    Task<IDisposable?> AcquireAsync(string key, TimeSpan expiry, CancellationToken ct = default);
+    Task<IDisposable?> AcquireAsync(string key, TimeSpan expiry);
 }

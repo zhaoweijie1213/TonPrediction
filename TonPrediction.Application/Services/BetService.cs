@@ -27,11 +27,10 @@ public class BetService(
     /// 验证并上报用户下注信息
     /// </summary>
     /// <param name="txHash"></param>
-    /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<bool> ReportAsync(string txHash, CancellationToken ct = default)
+    public async Task<bool> ReportAsync(string txHash)
     {
-        var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}", ct);
+        var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}");
         if (detail == null) return false;
         if (!string.Equals(detail.In_Message?.Destination, _wallet, StringComparison.OrdinalIgnoreCase))
             return false;
@@ -39,9 +38,9 @@ public class BetService(
         if (!match.Success) return false;
         var symbol = match.Groups[1].Value.ToLowerInvariant();
         var side = match.Groups[2].Value.ToLowerInvariant();
-        var round = await _roundRepo.GetCurrentLiveAsync(symbol, ct);
+        var round = await _roundRepo.GetCurrentLiveAsync(symbol);
         if (round == null) return false;
-        if (await _betRepo.GetByTxHashAsync(txHash, ct) != null)
+        if (await _betRepo.GetByTxHashAsync(txHash) != null)
             return false;
         var position = side == "bull" ? Position.Bull : Position.Bear;
         var bet = new BetEntity

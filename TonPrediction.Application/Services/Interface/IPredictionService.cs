@@ -28,7 +28,6 @@ public interface IPredictionService : ITransientDependency
     /// 获取指定地址的盈亏汇总。
     /// </summary>
     /// <param name="address">用户地址。</param>
-    /// <param name="ct">取消任务标记。</param>
     /// <returns>盈亏信息。</returns>
-    Task<PnlOutput> GetPnlAsync(string address, CancellationToken ct = default);
+    Task<PnlOutput> GetPnlAsync(string address);
 }

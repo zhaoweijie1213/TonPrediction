@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
-using PancakeSwap.Api.Hubs;
+using Newtonsoft.Json;
+using TonPrediction.Api.Hubs;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
@@ -9,12 +10,17 @@ namespace TonPrediction.Api.Services;
 /// <summary>
 /// SignalR 推送实现。
 /// </summary>
-public class PredictionHubService(IHubContext<PredictionHub> hub) : IPredictionHubService
+public class PredictionHubService(ILogger<PredictionHubService> logger,IHubContext<PredictionHub> hub) : IPredictionHubService
 {
     private readonly IHubContext<PredictionHub> _hub = hub;
 
-    /// <inheritdoc />
-    public Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice, CancellationToken ct = default)
+    /// <summary>
+    /// 当前回合信息推送
+    /// </summary>
+    /// <param name="round"></param>
+    /// <param name="currentPrice"></param>
+    /// <returns></returns>
+    public Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice)
     {
         var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
         var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
@@ -32,26 +38,52 @@ public class PredictionHubService(IHubContext<PredictionHub> hub) : IPredictionH
             BearOdds = oddsBear.ToString("F8"),
             Status = round.Status
         };
-        return _hub.Clients.All.SendAsync("currentRound", output, ct);
+        logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
+        return _hub.Clients.All.SendAsync("currentRound", output);
     }
 
-    /// <inheritdoc />
-    public Task PushRoundStartedAsync(long roundId, CancellationToken ct = default) =>
-        _hub.Clients.All.SendAsync("roundStarted", new RoundStartedOutput { RoundId = roundId }, ct);
+    /// <summary>
+    /// 回合开始
+    /// </summary>
+    /// <param name="roundId"></param>
+    /// <returns></returns>
+    public Task PushRoundStartedAsync(long roundId)
+    {
+        var output = new RoundStartedOutput { RoundId = roundId };
+        logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
+        return _hub.Clients.All.SendAsync("roundStarted", output);
+    }
+   
 
-    /// <inheritdoc />
-    public Task PushRoundLockedAsync(long roundId, CancellationToken ct = default) =>
-        _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput { RoundId = roundId }, ct);
+    /// <summary>
+    /// 锁定回合
+    /// </summary>
+    /// <param name="roundId"></param>
+    /// <returns></returns>
+    public Task PushRoundLockedAsync(long roundId) =>
+        _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput { RoundId = roundId });
 
-    /// <inheritdoc />
-    public Task PushSettlementStartedAsync(long roundId, CancellationToken ct = default) =>
-        _hub.Clients.All.SendAsync("settlementStarted", new SettlementStartedOutput { RoundId = roundId }, ct);
+    /// <summary>
+    /// 推送开始结算消息
+    /// </summary>
+    /// <param name="roundId"></param>
+    /// <returns></returns>
+    public Task PushSettlementStartedAsync(long roundId) =>
+        _hub.Clients.All.SendAsync("settlementStarted", new SettlementStartedOutput { RoundId = roundId });
 
-    /// <inheritdoc />
-    public Task PushRoundEndedAsync(long roundId, CancellationToken ct = default) =>
-        _hub.Clients.All.SendAsync("roundEnded", new RoundEndedOutput { RoundId = roundId }, ct);
+    /// <summary>
+    /// 回合结束
+    /// </summary>
+    /// <param name="roundId"></param>
+    /// <returns></returns>
+    public Task PushRoundEndedAsync(long roundId) =>
+        _hub.Clients.All.SendAsync("roundEnded", new RoundEndedOutput { RoundId = roundId });
 
-    /// <inheritdoc />
-    public Task PushSettlementEndedAsync(long roundId, CancellationToken ct = default) =>
-        _hub.Clients.All.SendAsync("settlementEnded", new SettlementEndedOutput { RoundId = roundId }, ct);
+    /// <summary>
+    /// 推送结算结束消息
+    /// </summary>
+    /// <param name="roundId"></param>
+    /// <returns></returns>
+    public Task PushSettlementEndedAsync(long roundId) =>
+        _hub.Clients.All.SendAsync("settlementEnded", new SettlementEndedOutput { RoundId = roundId });
 }

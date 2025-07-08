@@ -13,6 +13,7 @@ namespace TonPrediction.Application.Database.Repository
         /// 获取指定时间之后的价格快照。
         /// </summary>
         /// <param name="since">起始时间。</param>
+        /// <param name="symbol"></param>
         /// <param name="ct">取消令牌。</param>
         Task<List<PriceSnapshotEntity>> GetSinceAsync(
             string symbol,

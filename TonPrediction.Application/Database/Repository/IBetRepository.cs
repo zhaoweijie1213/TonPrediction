@@ -62,7 +62,6 @@ namespace TonPrediction.Application.Database.Repository
         /// 根据交易哈希查询下注记录。
         /// </summary>
         /// <param name="txHash">交易哈希。</param>
-        /// <param name="ct">取消令牌。</param>
-        Task<BetEntity?> GetByTxHashAsync(string txHash, CancellationToken ct = default);
+        Task<BetEntity?> GetByTxHashAsync(string txHash);
     }
 }

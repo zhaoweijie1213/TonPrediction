@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace PancakeSwap.Api.Hubs
+namespace TonPrediction.Api.Hubs
 {
     /// <summary>
     /// 实时推送预测数据的 SignalR Hub。

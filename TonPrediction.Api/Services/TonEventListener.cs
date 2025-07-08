@@ -50,11 +50,11 @@ public class TonEventListener(
         using (var scope = _scopeFactory.CreateScope())
         {
             var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
-            var val = await stateRepo.GetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, stoppingToken);
+            var val = await stateRepo.GetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey);
             if (ulong.TryParse(val, out var saved))
             {
                 _lastLt = saved;
-                await FetchMissedAsync(http, stoppingToken);
+                await FetchMissedAsync(http);
             }
         }
 
@@ -64,8 +64,7 @@ public class TonEventListener(
             {
                 using var handle = await _locker.AcquireAsync(
                     CacheKeyCollection.TonEventListenerLockKey,
-                    TimeSpan.FromMinutes(5),
-                    stoppingToken);
+                    TimeSpan.FromMinutes(5));
                 if (handle == null)
                 {
                     await Task.Delay(backoff, stoppingToken);
@@ -79,7 +78,7 @@ public class TonEventListener(
                 string? eventName = null;
                 while (!reader.EndOfStream && !stoppingToken.IsCancellationRequested)
                 {
-                    var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync(CancellationToken.None);
                     if (string.IsNullOrEmpty(line)) continue;
 
                     if (line.StartsWith("event:"))
@@ -102,7 +101,7 @@ public class TonEventListener(
                         if (detail != null)
                         {
                             detail = detail with { Hash = head.Tx_Hash, Lt = head.Lt };
-                            await ProcessTransactionAsync(detail, stoppingToken);
+                            await ProcessTransactionAsync(detail);
                         }
                     }
                 }
@@ -114,7 +113,7 @@ public class TonEventListener(
             catch (Exception ex)
             {
                 _logger.LogError(ex, "SSE 连接中断，{Delay}s 后重试…", backoff.TotalSeconds);
-                await FetchMissedAsync(http, stoppingToken);
+                await FetchMissedAsync(http);
                 await Task.Delay(backoff, stoppingToken);
                 backoff = TimeSpan.FromSeconds(Math.Min(backoff.TotalSeconds * 2, 30));
             }
@@ -125,20 +124,19 @@ public class TonEventListener(
     /// 拉取未处理的历史交易
     /// </summary>
     /// <param name="http"></param>
-    /// <param name="ct"></param>
     /// <returns></returns>
-    private async Task FetchMissedAsync(HttpClient http, CancellationToken ct)
+    private async Task FetchMissedAsync(HttpClient http)
     {
         if (_lastLt == 0) return;
         var url = $"/v2/blockchain/accounts/{_walletAddress}/transactions?limit=20&to_lt={_lastLt}";
         try
         {
-            var resp = await http.GetFromJsonAsync<AccountTxList>(url, ct);
+            var resp = await http.GetFromJsonAsync<AccountTxList>(url);
             if (resp?.Transactions != null)
             {
                 foreach (var tx in resp.Transactions)
                 {
-                    await ProcessTransactionAsync(tx with { Lt = tx.Lt }, ct);
+                    await ProcessTransactionAsync(tx with { Lt = tx.Lt });
                 }
             }
         }
@@ -152,8 +150,7 @@ public class TonEventListener(
     /// 处理一笔入账交易。
     /// </summary>
     /// <param name="tx">交易详情。</param>
-    /// <param name="ct">取消令牌。</param>
-    internal virtual async Task ProcessTransactionAsync(TonTxDetail tx, CancellationToken ct)
+    internal virtual async Task ProcessTransactionAsync(TonTxDetail tx)
     {
         var match = CommentRegex.Match(tx.In_Message.Comment ?? string.Empty);
         if (!match.Success) return;
@@ -169,17 +166,17 @@ public class TonEventListener(
         var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
         var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
 
-        var round = await roundRepo.GetCurrentLiveAsync(symbol, ct);
+        var round = await roundRepo.GetCurrentLiveAsync(symbol);
         if (round == null) return;
 
-        var exist = await betRepo.GetByTxHashAsync(tx.Hash, ct);
+        var exist = await betRepo.GetByTxHashAsync(tx.Hash);
         if (exist != null)
         {
             exist.Status = BetStatus.Confirmed;
             exist.Lt = tx.Lt;
             await betRepo.UpdateByPrimaryKeyAsync(exist);
             _lastLt = tx.Lt;
-            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString(), ct);
+            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString());
         }
         else
         {
@@ -196,7 +193,7 @@ public class TonEventListener(
                 Status = BetStatus.Confirmed
             });
             _lastLt = tx.Lt;
-            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString(), ct);
+            await stateRepo.SetValueAsync(CacheKeyCollection.TonEventListenerLastLtKey, _lastLt.ToString());
         }
 
         round.TotalAmount += amount;
@@ -207,7 +204,7 @@ public class TonEventListener(
         await roundRepo.UpdateByPrimaryKeyAsync(round);
 
         var currentPrice = round.ClosePrice > 0 ? round.ClosePrice : round.LockPrice;
-        await _notifier.PushCurrentRoundAsync(round, currentPrice, ct);
+        await _notifier.PushCurrentRoundAsync(round, currentPrice);
     }
 
 

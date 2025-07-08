@@ -13,7 +13,6 @@ public interface IBetService : ITransientDependency
     /// 根据交易哈希上报下注。
     /// </summary>
     /// <param name="txHash">交易哈希。</param>
-    /// <param name="ct">取消令牌。</param>
     /// <returns>是否受理成功。</returns>
-    Task<bool> ReportAsync(string txHash, CancellationToken ct = default);
+    Task<bool> ReportAsync(string txHash);
 }

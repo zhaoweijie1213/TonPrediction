@@ -1,14 +1,13 @@
-using PancakeSwap.Api.Hubs;
 using QYQ.Base.Common.IOCExtensions;
-using TonPrediction.Application.Database.Config;
-using TonPrediction.Infrastructure.Database;
-using TonPrediction.Infrastructure.Database.Migrations;
+using QYQ.Base.Swagger.Extension;
+using TonPrediction.Api.Hubs;
 using TonPrediction.Api.Services;
-using TonPrediction.Infrastructure.Services;
+using TonPrediction.Application.Database.Config;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure;
-using System;
-using QYQ.Base.Swagger.Extension;
+using TonPrediction.Infrastructure.Database;
+using TonPrediction.Infrastructure.Database.Migrations;
+using TonPrediction.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();

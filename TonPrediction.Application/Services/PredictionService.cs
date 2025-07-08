@@ -35,9 +35,9 @@ public class PredictionService(
     {
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
-        var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize, ct);
+        var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize);
         var roundIds = bets.Select(b => b.RoundId).ToArray();
-        var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds, ct);
+        var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds);
         var map = rounds.ToDictionary(r => r.Epoch);
         var list = new List<BetRecordOutput>();
         foreach (var bet in bets)
@@ -68,9 +68,9 @@ public class PredictionService(
     }
 
     /// <inheritdoc />
-    public async Task<PnlOutput> GetPnlAsync(string address, CancellationToken ct = default)
+    public async Task<PnlOutput> GetPnlAsync(string address)
     {
-        var bets = await _betRepo.GetByAddressAsync(address, ct);
+        var bets = await _betRepo.GetByAddressAsync(address);
         var totalBet = bets.Sum(b => b.Amount);
         var totalReward = bets.Sum(b => b.Reward);
         var rounds = bets.Count;

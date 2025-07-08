@@ -39,8 +39,7 @@ namespace TonPrediction.Api.Services
                 {
                     using var handle = await _locker.AcquireAsync(
                         CacheKeyCollection.PriceMonitorLockKey,
-                        TimeSpan.FromSeconds(30),
-                        stoppingToken);
+                        TimeSpan.FromSeconds(30));
                     if (handle != null)
                     {
                         foreach (var symbol in _symbols)
@@ -78,10 +77,10 @@ namespace TonPrediction.Api.Services
                 Price = price
             });
 
-            var round = await roundRepo.GetCurrentLiveAsync(symbol, token);
+            var round = await roundRepo.GetCurrentLiveAsync(symbol);
             if (round != null)
             {
-                await _notifier.PushCurrentRoundAsync(round, price, token);
+                await _notifier.PushCurrentRoundAsync(round, price);
             }
         }
     }

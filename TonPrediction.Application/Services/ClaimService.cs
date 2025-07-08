@@ -19,13 +19,13 @@ public class ClaimService(
     private readonly IWalletService _walletService = walletService;
 
     /// <inheritdoc />
-    public async Task<ClaimOutput?> ClaimAsync(ClaimInput input, CancellationToken ct = default)
+    public async Task<ClaimOutput?> ClaimAsync(ClaimInput input)
     {
-        var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId, ct);
+        var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId);
         if (bet == null || bet.Claimed || bet.Reward <= 0m)
             return null;
 
-        var result = await _walletService.TransferAsync(input.Address, bet.Reward, ct);
+        var result = await _walletService.TransferAsync(input.Address, bet.Reward);
 
         var entity = new ClaimEntity
         {

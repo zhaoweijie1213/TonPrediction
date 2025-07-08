@@ -15,41 +15,35 @@ public interface IPredictionHubService : ITransientDependency
     /// </summary>
     /// <param name="round">当前回合实体。</param>
     /// <param name="currentPrice">最新价格。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice, CancellationToken ct = default);
+    Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice);
 
     /// <summary>
     /// 推送回合开始消息。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushRoundStartedAsync(long roundId, CancellationToken ct = default);
+    Task PushRoundStartedAsync(long roundId);
 
     /// <summary>
     /// 推送回合锁定消息。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushRoundLockedAsync(long roundId, CancellationToken ct = default);
+    Task PushRoundLockedAsync(long roundId);
 
     /// <summary>
     /// 推送结算开始消息。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushSettlementStartedAsync(long roundId, CancellationToken ct = default);
+    Task PushSettlementStartedAsync(long roundId);
 
     /// <summary>
     /// 推送回合结束消息。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushRoundEndedAsync(long roundId, CancellationToken ct = default);
+    Task PushRoundEndedAsync(long roundId);
 
     /// <summary>
     /// 推送结算结束消息。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
-    /// <param name="ct">取消令牌。</param>
-    Task PushSettlementEndedAsync(long roundId, CancellationToken ct = default);
+    Task PushSettlementEndedAsync(long roundId);
 }

@@ -25,7 +25,7 @@ public class RoundService(
         CancellationToken ct = default)
     {
         limit = limit is <= 0 or > 100 ? 3 : limit;
-        var list = await _roundRepo.GetEndedAsync(symbol, limit, ct);
+        var list = await _roundRepo.GetEndedAsync(symbol, limit);
         return list.Select(r => new RoundHistoryOutput
         {
             RoundId = r.Epoch,
@@ -51,7 +51,7 @@ public class RoundService(
         string symbol = "ton",
         CancellationToken ct = default)
     {
-        var latest = await _roundRepo.GetLatestAsync(symbol, ct);
+        var latest = await _roundRepo.GetLatestAsync(symbol);
         var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var startEpoch = (latest?.Epoch ?? 0) + 1;

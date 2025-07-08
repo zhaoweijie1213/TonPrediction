@@ -42,7 +42,7 @@ namespace TonPrediction.Infrastructure.Services
             var pair = (symbol + currency).ToUpperInvariant();
             if (!_prices.TryGetValue(pair, out var price))
             {
-                price = await FetchRestAsync(pair, ct);
+                price = await FetchRestAsync(pair);
                 _prices[pair] = price;
                 _ = EnsureWebSocketAsync(pair, ct);
             }
@@ -54,14 +54,13 @@ namespace TonPrediction.Infrastructure.Services
         /// 拉取 Binance REST API 获取价格。
         /// </summary>
         /// <param name="pair"></param>
-        /// <param name="ct"></param>
         /// <returns></returns>
-        private async Task<decimal> FetchRestAsync(string pair, CancellationToken ct)
+        private async Task<decimal> FetchRestAsync(string pair)
         {
             var url = $"https://api.binance.com/api/v3/ticker/price?symbol={pair}";
             try
             {
-                var resp = await _httpClient.GetFromJsonAsync<RestResponse>(url, ct);
+                var resp = await _httpClient.GetFromJsonAsync<RestResponse>(url);
                 return resp?.Price ?? 0m;
             }
             catch (Exception ex)
@@ -88,7 +87,7 @@ namespace TonPrediction.Infrastructure.Services
                 await socket.ConnectAsync(new Uri($"wss://stream.binance.com/ws/{pair.ToLower()}@trade"), ct);
                 if (_sockets.TryAdd(pair, socket))
                 {
-                    _ = Task.Run(() => ReceiveLoopAsync(pair, socket, ct));
+                    _ = Task.Run(() => ReceiveLoopAsync(pair, socket, ct), CancellationToken.None);
                 }
             }
             catch (Exception ex)

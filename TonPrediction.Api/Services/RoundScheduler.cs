@@ -55,8 +55,7 @@ namespace TonPrediction.Api.Services
                 {
                     using var handle = await _locker.AcquireAsync(
                         CacheKeyCollection.GetRoundSchedulerLockKey(symbol),
-                        TimeSpan.FromSeconds(10),
-                        token);
+                        TimeSpan.FromSeconds(10));
                     if (handle != null)
                     {
                         await HandleRoundAsync(symbol, token);
@@ -88,7 +87,7 @@ namespace TonPrediction.Api.Services
             var now = DateTime.UtcNow;
 
             // 结束上一回合并结算奖励
-            var locked = await roundRepo.GetCurrentLockedAsync(symbol, token);
+            var locked = await roundRepo.GetCurrentLockedAsync(symbol);
             if (locked != null && locked.CloseTime <= now)
             {
                 var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
@@ -129,16 +128,16 @@ namespace TonPrediction.Api.Services
                 }
 
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
-                await _notifier.PushRoundEndedAsync(locked.Epoch, token);
-                await _notifier.PushSettlementEndedAsync(locked.Epoch, token);
+                await _notifier.PushRoundEndedAsync(locked.Epoch);
+                await _notifier.PushSettlementEndedAsync(locked.Epoch);
             }
 
             // 获取当前可下注的回合
-            var live = await roundRepo.GetCurrentLiveAsync(symbol, token);
+            var live = await roundRepo.GetCurrentLiveAsync(symbol);
             if (live == null)
             {
-                var startPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
-                var last = await roundRepo.GetLatestAsync(symbol, token);
+                var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
+                var last = await roundRepo.GetLatestAsync(symbol);
 
                 if (last == null)
                 {
@@ -155,8 +154,8 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(genesisLocked);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _notifier.PushRoundLockedAsync(genesisLocked.Epoch, token);
-                    await _notifier.PushSettlementStartedAsync(genesisLocked.Epoch, token);
+                    await _notifier.PushRoundLockedAsync(genesisLocked.Epoch);
+                    await _notifier.PushSettlementStartedAsync(genesisLocked.Epoch);
 
                     var liveRound = new RoundEntity
                     {
@@ -170,8 +169,8 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(liveRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _notifier.PushCurrentRoundAsync(liveRound, liveRound.LockPrice, token);
-                    await _notifier.PushRoundStartedAsync(liveRound.Epoch, token);
+                    await _notifier.PushCurrentRoundAsync(liveRound, liveRound.LockPrice);
+                    await _notifier.PushRoundStartedAsync(liveRound.Epoch);
                 }
                 else
                 {
@@ -187,8 +186,8 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(firstRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _notifier.PushCurrentRoundAsync(firstRound, firstRound.LockPrice, token);
-                    await _notifier.PushRoundStartedAsync(firstRound.Epoch, token);
+                    await _notifier.PushCurrentRoundAsync(firstRound, firstRound.LockPrice);
+                    await _notifier.PushRoundStartedAsync(firstRound.Epoch);
                 }
 
                 return;
@@ -204,8 +203,8 @@ namespace TonPrediction.Api.Services
                 live.Status = RoundStatus.Locked;
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
-                await _notifier.PushRoundLockedAsync(live.Epoch, token);
-                await _notifier.PushSettlementStartedAsync(live.Epoch, token);
+                await _notifier.PushRoundLockedAsync(live.Epoch);
+                await _notifier.PushSettlementStartedAsync(live.Epoch);
 
                 var nextPrice = lockPrice;
                 var nextRound = new RoundEntity
@@ -220,8 +219,8 @@ namespace TonPrediction.Api.Services
                 };
                 await roundRepo.InsertAsync(nextRound);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
-                await _notifier.PushCurrentRoundAsync(nextRound, nextRound.LockPrice, token);
-                await _notifier.PushRoundStartedAsync(nextRound.Epoch, token);
+                await _notifier.PushCurrentRoundAsync(nextRound, nextRound.LockPrice);
+                await _notifier.PushRoundStartedAsync(nextRound.Epoch);
             }
         }
     }

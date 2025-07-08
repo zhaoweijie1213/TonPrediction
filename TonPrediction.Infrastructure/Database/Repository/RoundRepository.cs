@@ -23,9 +23,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
             IRoundRepository
     {
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetLatestAsync(
-            string symbol,
-            CancellationToken ct = default)
+        public async Task<RoundEntity?> GetLatestAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol)
@@ -34,9 +32,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetCurrentLiveAsync(
-            string symbol,
-            CancellationToken ct = default)
+        public async Task<RoundEntity?> GetCurrentLiveAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
@@ -45,9 +41,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetCurrentLockedAsync(
-            string symbol,
-            CancellationToken ct = default)
+        public async Task<RoundEntity?> GetCurrentLockedAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Locked)
@@ -56,10 +50,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
-        public async Task<List<RoundEntity>> GetEndedAsync(
-            string symbol,
-            int limit,
-            CancellationToken ct = default)
+        public async Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit)
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Ended)
@@ -74,7 +65,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         /// <param name="roundIds"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        public async Task<List<RoundEntity>> GetByRoundIdsAsync(long[] roundIds, CancellationToken ct = default)
+        public async Task<List<RoundEntity>> GetByRoundIdsAsync(long[] roundIds)
         {
             return await Db.Queryable<RoundEntity>()
                 .Where(r => roundIds.Contains(r.Id))

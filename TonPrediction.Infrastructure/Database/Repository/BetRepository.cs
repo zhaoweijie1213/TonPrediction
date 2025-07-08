@@ -62,7 +62,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
-        public async Task<BetEntity?> GetByTxHashAsync(string txHash, CancellationToken ct = default)
+        public async Task<BetEntity?> GetByTxHashAsync(string txHash)
         {
             return await Db.Queryable<BetEntity>()
                 .Where(b => b.TxHash == txHash)
