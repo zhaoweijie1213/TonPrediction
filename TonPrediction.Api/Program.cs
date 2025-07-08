@@ -37,11 +37,20 @@ builder.AddQYQSwaggerAndApiVersioning(new NSwag.OpenApiInfo()
     Description = "TonPrediction API for prediction game on TON blockchain."
 }, null, false);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+});
+
 builder.AddInfrastructure();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthorization();
 
