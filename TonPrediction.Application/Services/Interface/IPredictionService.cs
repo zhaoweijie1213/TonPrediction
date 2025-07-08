@@ -1,4 +1,5 @@
 using QYQ.Base.Common.IOCExtensions;
+using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Output;
 
 namespace TonPrediction.Application.Services.Interface;
@@ -17,7 +18,7 @@ public interface IPredictionService : ITransientDependency
     /// <param name="pageSize">每页条数。</param>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>下注记录列表。</returns>
-    Task<List<BetRecordOutput>> GetRecordsAsync(
+    Task<ApiResult<List<BetRecordOutput>>> GetRecordsAsync(
         string address,
         string status = "all",
         int page = 1,
@@ -29,5 +30,5 @@ public interface IPredictionService : ITransientDependency
     /// </summary>
     /// <param name="address">用户地址。</param>
     /// <returns>盈亏信息。</returns>
-    Task<PnlOutput> GetPnlAsync(string address);
+    Task<ApiResult<PnlOutput>> GetPnlAsync(string address);
 }

@@ -24,10 +24,7 @@ public class PredictionsController(IPredictionService predictionService) : Contr
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        var list = await _predictionService.GetRecordsAsync(address, status, page, pageSize);
-        var api = new ApiResult<List<BetRecordOutput>>();
-        api.SetRsult(ApiResultCode.Success, list);
-        return api;
+        return await _predictionService.GetRecordsAsync(address, status, page, pageSize);
     }
 
     /// <summary>
@@ -36,9 +33,6 @@ public class PredictionsController(IPredictionService predictionService) : Contr
     [HttpGet("pnl")]
     public async Task<ApiResult<PnlOutput>> GetPnlAsync([FromQuery] string address)
     {
-        var output = await _predictionService.GetPnlAsync(address);
-        var api = new ApiResult<PnlOutput>();
-        api.SetRsult(ApiResultCode.Success, output);
-        return api;
+        return await _predictionService.GetPnlAsync(address);
     }
 }

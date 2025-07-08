@@ -3,6 +3,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Input;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
 
@@ -19,11 +20,15 @@ public class ClaimService(
     private readonly IWalletService _walletService = walletService;
 
     /// <inheritdoc />
-    public async Task<ClaimOutput?> ClaimAsync(ClaimInput input)
+    public async Task<ApiResult<ClaimOutput?>> ClaimAsync(ClaimInput input)
     {
+        var api = new ApiResult<ClaimOutput?>();
         var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId);
         if (bet == null || bet.Claimed || bet.Reward <= 0m)
-            return null;
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, null);
+            return api;
+        }
 
         var result = await _walletService.TransferAsync(input.Address, bet.Reward);
 
@@ -42,12 +47,15 @@ public class ClaimService(
         bet.Claimed = true;
         await _betRepo.UpdateByPrimaryKeyAsync(bet);
 
-        return new ClaimOutput
+        var output = new ClaimOutput
         {
             TxHash = result.TxHash,
             Lt = result.Lt,
             Status = result.Status,
             Timestamp = new DateTimeOffset(result.Timestamp).ToUnixTimeSeconds()
         };
+
+        api.SetRsult(ApiResultCode.Success, output);
+        return api;
     }
 }

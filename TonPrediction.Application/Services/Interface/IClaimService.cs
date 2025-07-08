@@ -1,4 +1,5 @@
 using QYQ.Base.Common.IOCExtensions;
+using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Input;
 using TonPrediction.Application.Output;
 
@@ -13,6 +14,6 @@ public interface IClaimService : ITransientDependency
     /// 执行领奖操作。
     /// </summary>
     /// <param name="input">领奖参数。</param>
-    /// <returns>领奖结果，失败返回 null。</returns>
-    Task<ClaimOutput?> ClaimAsync(ClaimInput input);
+    /// <returns>业务结果。</returns>
+    Task<ApiResult<ClaimOutput?>> ClaimAsync(ClaimInput input);
 }

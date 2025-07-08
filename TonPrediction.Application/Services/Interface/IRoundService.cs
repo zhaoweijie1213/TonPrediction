@@ -1,4 +1,5 @@
 using QYQ.Base.Common.IOCExtensions;
+using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Output;
 
 namespace TonPrediction.Application.Services.Interface;
@@ -15,18 +16,18 @@ public interface IRoundService : ITransientDependency
     /// <param name="symbol"></param>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>历史回合集合。</returns>
-    Task<List<RoundHistoryOutput>> GetHistoryAsync(
+    Task<ApiResult<List<RoundHistoryOutput>>> GetHistoryAsync(
         string symbol = "ton",
         int limit = 3,
         CancellationToken ct = default);
 
     /// <summary>
-    /// 获取即将开始的回合时间。
+    /// 获取下一回合的时间信息。
     /// </summary>
     /// <param name="symbol"></param>
     /// <param name="ct">取消任务标记。</param>
-    /// <returns>回合时间集合。</returns>
-    Task<List<UpcomingRoundOutput>> GetUpcomingAsync(
+    /// <returns>下一回合时间。</returns>
+    Task<ApiResult<UpcomingRoundOutput>> GetUpcomingAsync(
         string symbol = "ton",
         CancellationToken ct = default);
 }
