@@ -41,6 +41,15 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
+        public async Task<RoundEntity?> GetUpcomingAsync(string symbol)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Upcoming)
+                .OrderBy(r => r.Epoch, OrderByType.Asc)
+                .FirstAsync();
+        }
+
+        /// <inheritdoc />
         public async Task<RoundEntity?> GetCurrentLockedAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()

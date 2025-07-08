@@ -22,12 +22,12 @@ public interface IRoundService : ITransientDependency
         CancellationToken ct = default);
 
     /// <summary>
-    /// 获取即将开始的回合时间。
+    /// 获取下一回合的时间信息。
     /// </summary>
     /// <param name="symbol"></param>
     /// <param name="ct">取消任务标记。</param>
-    /// <returns>回合时间集合。</returns>
-    Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
+    /// <returns>下一回合时间。</returns>
+    Task<ApiResult<UpcomingRoundOutput>> GetUpcomingAsync(
         string symbol = "ton",
         CancellationToken ct = default);
 }

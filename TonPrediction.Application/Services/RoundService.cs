@@ -47,33 +47,42 @@ public class RoundService(
     }
 
     /// <summary>
-    /// 获取即将开始的回合时间列表。
+    /// 获取下一回合时间。
     /// </summary>
     /// <param name="symbol"></param>
     /// <param name="ct"></param>
-    /// <returns></returns>
-    public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
+    /// <returns>包含下一回合信息的对象。</returns>
+    public async Task<ApiResult<UpcomingRoundOutput>> GetUpcomingAsync(
         string symbol = "ton",
         CancellationToken ct = default)
     {
-        var api = new ApiResult<List<UpcomingRoundOutput>>();
+        var api = new ApiResult<UpcomingRoundOutput>();
+        var upcoming = await _roundRepo.GetUpcomingAsync(symbol);
+        if (upcoming != null)
+        {
+            var result = new UpcomingRoundOutput
+            {
+                RoundId = upcoming.Id,
+                Epoch = upcoming.Epoch,
+                StartTime = new DateTimeOffset(upcoming.StartTime).ToUnixTimeSeconds(),
+                EndTime = new DateTimeOffset(upcoming.CloseTime).ToUnixTimeSeconds()
+            };
+            api.SetRsult(ApiResultCode.Success, result);
+            return api;
+        }
+
         var latest = await _roundRepo.GetLatestAsync(symbol);
         var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var startEpoch = (latest?.Epoch ?? 0) + 1;
-        var list = new List<UpcomingRoundOutput>();
-        for (var i = 0; i < 2; i++)
+        var fallback = new UpcomingRoundOutput
         {
-            var s = startTime.AddSeconds(intervalSec * i);
-            list.Add(new UpcomingRoundOutput
-            {
-                RoundId = 0,
-                Epoch = startEpoch + i,
-                StartTime = new DateTimeOffset(s).ToUnixTimeSeconds(),
-                EndTime = new DateTimeOffset(s.AddSeconds(intervalSec)).ToUnixTimeSeconds()
-            });
-        }
-        api.SetRsult(ApiResultCode.Success, list);
+            RoundId = 0,
+            Epoch = startEpoch,
+            StartTime = new DateTimeOffset(startTime).ToUnixTimeSeconds(),
+            EndTime = new DateTimeOffset(startTime.AddSeconds(intervalSec)).ToUnixTimeSeconds()
+        };
+        api.SetRsult(ApiResultCode.Success, fallback);
         return api;
     }
 }
