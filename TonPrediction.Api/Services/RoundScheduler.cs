@@ -10,6 +10,7 @@ using TonPrediction.Application.Enums;
 using PancakeSwap.Api.Hubs;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
+using TonPrediction.Application.Output;
 
 namespace TonPrediction.Api.Services
 {
@@ -130,7 +131,10 @@ namespace TonPrediction.Api.Services
                 }
 
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
-                await _hub.Clients.All.SendAsync("roundEnded", new { roundId = locked.Epoch }, token);
+                await _hub.Clients.All.SendAsync("roundEnded", new RoundEndedOutput
+                {
+                    RoundId = locked.Epoch
+                }, token);
             }
 
             // 获取当前可下注的回合
@@ -155,7 +159,10 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(genesisLocked);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _hub.Clients.All.SendAsync("roundLocked", new { roundId = genesisLocked.Epoch }, token);
+                    await _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput
+                    {
+                        RoundId = genesisLocked.Epoch
+                    }, token);
 
                     var liveRound = new RoundEntity
                     {
@@ -169,19 +176,19 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(liveRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _hub.Clients.All.SendAsync("currentRound", new
+                    await _hub.Clients.All.SendAsync("currentRound", new CurrentRoundOutput
                     {
-                        roundId = liveRound.Epoch,
-                        lockPrice = liveRound.LockPrice.ToString("F8"),
-                        currentPrice = liveRound.LockPrice.ToString("F8"),
-                        totalAmount = liveRound.TotalAmount.ToString("F8"),
-                        bullAmount = liveRound.BullAmount.ToString("F8"),
-                        bearAmount = liveRound.BearAmount.ToString("F8"),
-                        rewardPool = liveRound.RewardAmount.ToString("F8"),
-                        endTime = new DateTimeOffset(liveRound.CloseTime).ToUnixTimeSeconds(),
-                        oddsUp = "0",
-                        oddsDown = "0",
-                        status = liveRound.Status
+                        RoundId = liveRound.Epoch,
+                        LockPrice = liveRound.LockPrice.ToString("F8"),
+                        CurrentPrice = liveRound.LockPrice.ToString("F8"),
+                        TotalAmount = liveRound.TotalAmount.ToString("F8"),
+                        BullAmount = liveRound.BullAmount.ToString("F8"),
+                        BearAmount = liveRound.BearAmount.ToString("F8"),
+                        RewardPool = liveRound.RewardAmount.ToString("F8"),
+                        EndTime = new DateTimeOffset(liveRound.CloseTime).ToUnixTimeSeconds(),
+                        BullOdds = "0",
+                        BearOdds = "0",
+                        Status = liveRound.Status
                     }, token);
                 }
                 else
@@ -198,19 +205,19 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(firstRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _hub.Clients.All.SendAsync("currentRound", new
+                    await _hub.Clients.All.SendAsync("currentRound", new CurrentRoundOutput
                     {
-                        roundId = firstRound.Epoch,
-                        lockPrice = firstRound.LockPrice.ToString("F8"),
-                        currentPrice = firstRound.LockPrice.ToString("F8"),
-                        totalAmount = firstRound.TotalAmount.ToString("F8"),
-                        upAmount = firstRound.BullAmount.ToString("F8"),
-                        downAmount = firstRound.BearAmount.ToString("F8"),
-                        rewardPool = firstRound.RewardAmount.ToString("F8"),
-                        endTime = new DateTimeOffset(firstRound.CloseTime).ToUnixTimeSeconds(),
-                        oddsUp = "0",
-                        oddsDown = "0",
-                        status = firstRound.Status
+                        RoundId = firstRound.Epoch,
+                        LockPrice = firstRound.LockPrice.ToString("F8"),
+                        CurrentPrice = firstRound.LockPrice.ToString("F8"),
+                        TotalAmount = firstRound.TotalAmount.ToString("F8"),
+                        BullAmount = firstRound.BullAmount.ToString("F8"),
+                        BearAmount = firstRound.BearAmount.ToString("F8"),
+                        RewardPool = firstRound.RewardAmount.ToString("F8"),
+                        EndTime = new DateTimeOffset(firstRound.CloseTime).ToUnixTimeSeconds(),
+                        BullOdds = "0",
+                        BearOdds = "0",
+                        Status = firstRound.Status
                     }, token);
                 }
 
@@ -227,7 +234,10 @@ namespace TonPrediction.Api.Services
                 live.Status = RoundStatus.Locked;
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
-                await _hub.Clients.All.SendAsync("roundLocked", new { roundId = live.Epoch }, token);
+                await _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput
+                {
+                    RoundId = live.Epoch
+                }, token);
 
                 var nextPrice = lockPrice;
                 var nextRound = new RoundEntity
@@ -242,19 +252,19 @@ namespace TonPrediction.Api.Services
                 };
                 await roundRepo.InsertAsync(nextRound);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
-                await _hub.Clients.All.SendAsync("currentRound", new
+                await _hub.Clients.All.SendAsync("currentRound", new CurrentRoundOutput
                 {
-                    roundId = nextRound.Epoch,
-                    lockPrice = nextRound.LockPrice.ToString("F8"),
-                    currentPrice = nextRound.LockPrice.ToString("F8"),
-                    totalAmount = nextRound.TotalAmount.ToString("F8"),
-                    upAmount = nextRound.BullAmount.ToString("F8"),
-                    downAmount = nextRound.BearAmount.ToString("F8"),
-                    rewardPool = nextRound.RewardAmount.ToString("F8"),
-                    endTime = new DateTimeOffset(nextRound.CloseTime).ToUnixTimeSeconds(),
-                    oddsUp = "0",
-                    oddsDown = "0",
-                    status = nextRound.Status
+                    RoundId = nextRound.Epoch,
+                    LockPrice = nextRound.LockPrice.ToString("F8"),
+                    CurrentPrice = nextRound.LockPrice.ToString("F8"),
+                    TotalAmount = nextRound.TotalAmount.ToString("F8"),
+                    BullAmount = nextRound.BullAmount.ToString("F8"),
+                    BearAmount = nextRound.BearAmount.ToString("F8"),
+                    RewardPool = nextRound.RewardAmount.ToString("F8"),
+                    EndTime = new DateTimeOffset(nextRound.CloseTime).ToUnixTimeSeconds(),
+                    BullOdds = "0",
+                    BearOdds = "0",
+                    Status = nextRound.Status
                 }, token);
             }
         }

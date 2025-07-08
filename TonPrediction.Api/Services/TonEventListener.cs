@@ -4,6 +4,7 @@ using PancakeSwap.Api.Hubs;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
 using System.Text.RegularExpressions;
@@ -212,19 +213,19 @@ public class TonEventListener(
 
         await _hub.Clients.All.SendAsync(
             "currentRound",
-            new
+            new CurrentRoundOutput
             {
-                roundId = round.Epoch,
-                lockPrice = round.LockPrice.ToString("F8"),
-                currentPrice = round.ClosePrice > 0 ? round.ClosePrice.ToString("F8") : round.LockPrice.ToString("F8"),
-                totalAmount = round.TotalAmount.ToString("F8"),
-                upAmount = round.BullAmount.ToString("F8"),
-                downAmount = round.BearAmount.ToString("F8"),
-                rewardPool = round.RewardAmount.ToString("F8"),
-                endTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-                oddsUp = oddsBull.ToString("F8"),
-                oddsDown = oddsBear.ToString("F8"),
-                status = round.Status
+                RoundId = round.Epoch,
+                LockPrice = round.LockPrice.ToString("F8"),
+                CurrentPrice = round.ClosePrice > 0 ? round.ClosePrice.ToString("F8") : round.LockPrice.ToString("F8"),
+                TotalAmount = round.TotalAmount.ToString("F8"),
+                BullAmount = round.BullAmount.ToString("F8"),
+                BearAmount = round.BearAmount.ToString("F8"),
+                RewardPool = round.RewardAmount.ToString("F8"),
+                EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
+                BullOdds = oddsBull.ToString("F8"),
+                BearOdds = oddsBear.ToString("F8"),
+                Status = round.Status
             }, ct);
     }
 

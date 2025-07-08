@@ -47,8 +47,8 @@
 | `bearAmount` | string(decimal) | 押 **下跌** 的金额                       |
 | `rewardPool`   | string(decimal) | 扣除手续费后的可分配奖金池               |
 | `endTime`      | int             | 回合结束时间（Unix 秒）                  |
-| `bullOdds`  | string(decimal) | 上涨赔率 = `totalAmount / upAmount`      |
-| `bearOdds` | string(decimal) | 下跌赔率 = `totalAmount / downAmount`    |
+| `bullOdds`  | string(decimal) | 上涨赔率 = `totalAmount / bullAmount`    |
+| `bearOdds` | string(decimal) | 下跌赔率 = `totalAmount / bearAmount`   |
 | `status`       | enum            | `upcoming` |
 
 **示例：**
@@ -105,12 +105,12 @@
 | `lockPrice`   | string(decimal) | 锁定价格           |
 | `closePrice`  | string(decimal) | 收盘价格           |
 | `totalAmount` | string(decimal) | 总下注金额         |
-| `upAmount`    | string(decimal) | 押 **上涨** 的金额 |
-| `downAmount`  | string(decimal) | 押 **下跌** 的金额 |
+| `bullAmount`  | string(decimal) | 押 **上涨** 的金额 |
+| `bearAmount`  | string(decimal) | 押 **下跌** 的金额 |
 | `rewardPool`  | string(decimal) | 奖金池（扣手续费） |
 | `endTime`     | int             | 结束时间           |
-| `oddsUp`      | string(decimal) | 上涨赔率           |
-| `oddsDown`    | string(decimal) | 下跌赔率           |
+| `bullOdds`    | string(decimal) | 上涨赔率           |
+| `bearOdds`    | string(decimal) | 下跌赔率           |
 
 **示例：**
 
@@ -121,12 +121,12 @@
     "lockPrice": "308.85000000",
     "closePrice": "309.75000000",
     "totalAmount": "1800.00000000",
-    "upAmount": "1000.00000000",
-    "downAmount": "800.00000000",
+    "bullAmount": "1000.00000000",
+    "bearAmount": "800.00000000",
     "rewardPool": "1746.00000000",
     "endTime": 1709999999,
-    "oddsUp": "1.80000000",
-    "oddsDown": "2.25000000"
+    "bullOdds": "1.80000000",
+    "bearOdds": "2.25000000"
   }
 ]
 ```

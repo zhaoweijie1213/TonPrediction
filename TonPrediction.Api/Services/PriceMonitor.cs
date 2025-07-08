@@ -11,6 +11,7 @@ using SqlSugar;
 using System.Collections.Generic;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
+using TonPrediction.Application.Output;
 
 namespace TonPrediction.Api.Services
 {
@@ -83,26 +84,30 @@ namespace TonPrediction.Api.Services
             var data = await repo.GetSinceAsync(symbol, since, token);
             var timestamps = data.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray();
             var prices = data.Select(d => d.Price.ToString("F8")).ToArray();
-            await _hub.Clients.All.SendAsync("chartData", new { timestamps, prices }, token);
+            await _hub.Clients.All.SendAsync("chartData", new ChartDataOutput
+            {
+                Timestamps = timestamps,
+                Prices = prices
+            }, token);
 
             var round = await roundRepo.GetCurrentLiveAsync(symbol, token);
             if (round != null)
             {
                 var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
                 var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
-                await _hub.Clients.All.SendAsync("currentRound", new
+                await _hub.Clients.All.SendAsync("currentRound", new CurrentRoundOutput
                 {
-                    roundId = round.Epoch,
-                    lockPrice = round.LockPrice.ToString("F8"),
-                    currentPrice = price.ToString("F8"),
-                    totalAmount = round.TotalAmount.ToString("F8"),
-                    upAmount = round.BullAmount.ToString("F8"),
-                    downAmount = round.BearAmount.ToString("F8"),
-                    rewardPool = round.RewardAmount.ToString("F8"),
-                    endTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-                    oddsUp = oddsBull.ToString("F8"),
-                    oddsDown = oddsBear.ToString("F8"),
-                    status = round.Status
+                    RoundId = round.Epoch,
+                    LockPrice = round.LockPrice.ToString("F8"),
+                    CurrentPrice = price.ToString("F8"),
+                    TotalAmount = round.TotalAmount.ToString("F8"),
+                    BullAmount = round.BullAmount.ToString("F8"),
+                    BearAmount = round.BearAmount.ToString("F8"),
+                    RewardPool = round.RewardAmount.ToString("F8"),
+                    EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
+                    BullOdds = oddsBull.ToString("F8"),
+                    BearOdds = oddsBear.ToString("F8"),
+                    Status = round.Status
                 }, token);
             }
         }

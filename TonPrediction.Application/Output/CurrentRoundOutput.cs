@@ -28,14 +28,14 @@ public class CurrentRoundOutput
     public string TotalAmount { get; set; } = string.Empty;
 
     /// <summary>
-    /// 押涨金额。
+    /// 押看涨金额。
     /// </summary>
-    public string UpAmount { get; set; } = string.Empty;
+    public string BullAmount { get; set; } = string.Empty;
 
     /// <summary>
-    /// 押跌金额。
+    /// 押看跌金额。
     /// </summary>
-    public string DownAmount { get; set; } = string.Empty;
+    public string BearAmount { get; set; } = string.Empty;
 
     /// <summary>
     /// 奖金池。
@@ -48,14 +48,14 @@ public class CurrentRoundOutput
     public long EndTime { get; set; }
 
     /// <summary>
-    /// 上涨赔率。
+    /// 看涨赔率。
     /// </summary>
-    public string OddsUp { get; set; } = string.Empty;
+    public string BullOdds { get; set; } = string.Empty;
 
     /// <summary>
-    /// 下跌赔率。
+    /// 看跌赔率。
     /// </summary>
-    public string OddsDown { get; set; } = string.Empty;
+    public string BearOdds { get; set; } = string.Empty;
 
     /// <summary>
     /// 回合状态。
