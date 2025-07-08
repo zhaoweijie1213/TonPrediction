@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
-using PancakeSwap.Api.Hubs;
 using System.Linq;
 using SqlSugar;
 using System.Collections.Generic;
@@ -21,13 +19,13 @@ namespace TonPrediction.Api.Services
     public class PriceMonitor(
         IServiceScopeFactory scopeFactory,
         IPriceService priceService,
-        IHubContext<PredictionHub> hub,
+        IPredictionHubService notifier,
         ILogger<PriceMonitor> logger,
         IDistributedLock locker, IConfiguration configuration) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPriceService _priceService = priceService;
-        private readonly IHubContext<PredictionHub> _hub = hub;
+        private readonly IPredictionHubService _notifier = notifier;
         private readonly ILogger<PriceMonitor> _logger = logger;
         private readonly IDistributedLock _locker = locker;
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
@@ -83,22 +81,7 @@ namespace TonPrediction.Api.Services
             var round = await roundRepo.GetCurrentLiveAsync(symbol, token);
             if (round != null)
             {
-                var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
-                var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
-                await _hub.Clients.All.SendAsync("currentRound", new CurrentRoundOutput
-                {
-                    RoundId = round.Epoch,
-                    LockPrice = round.LockPrice.ToString("F8"),
-                    CurrentPrice = price.ToString("F8"),
-                    TotalAmount = round.TotalAmount.ToString("F8"),
-                    BullAmount = round.BullAmount.ToString("F8"),
-                    BearAmount = round.BearAmount.ToString("F8"),
-                    RewardPool = round.RewardAmount.ToString("F8"),
-                    EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-                    BullOdds = oddsBull.ToString("F8"),
-                    BearOdds = oddsBear.ToString("F8"),
-                    Status = round.Status
-                }, token);
+                await _notifier.PushCurrentRoundAsync(round, price, token);
             }
         }
     }
