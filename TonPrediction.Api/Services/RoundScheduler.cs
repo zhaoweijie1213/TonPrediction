@@ -139,9 +139,10 @@ namespace TonPrediction.Api.Services
                 var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
                 var last = await roundRepo.GetLatestAsync(symbol);
 
+                RoundEntity liveRound;
                 if (last == null)
                 {
-                    // 创世回合：立即锁定首轮并同步创建可下注的下一轮
+                    // 创世回合：立即锁定首轮并预创建下一轮
                     var genesisLocked = new RoundEntity
                     {
                         Symbol = symbol,
@@ -157,7 +158,7 @@ namespace TonPrediction.Api.Services
                     await _notifier.PushRoundLockedAsync(genesisLocked.Id, genesisLocked.Epoch);
                     await _notifier.PushSettlementStartedAsync(genesisLocked.Id, genesisLocked.Epoch);
 
-                    var liveRound = new RoundEntity
+                    liveRound = new RoundEntity
                     {
                         Symbol = symbol,
                         Epoch = 2,
@@ -169,31 +170,44 @@ namespace TonPrediction.Api.Services
                     };
                     await roundRepo.InsertAsync(liveRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _notifier.PushCurrentRoundAsync(liveRound, liveRound.LockPrice);
-                    await _notifier.PushRoundStartedAsync(liveRound.Id, liveRound.Epoch);
                 }
                 else
                 {
-                    var firstRound = new RoundEntity
+                    liveRound = new RoundEntity
                     {
                         Symbol = symbol,
-                        Epoch = (last.Epoch) + 1,
+                        Epoch = last.Epoch + 1,
                         StartTime = now,
                         LockTime = now.Add(_interval),
                         CloseTime = now.Add(_interval * 2),
                         LockPrice = startPrice,
                         Status = RoundStatus.Live
                     };
-                    await roundRepo.InsertAsync(firstRound);
+                    await roundRepo.InsertAsync(liveRound);
                     await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                    await _notifier.PushCurrentRoundAsync(firstRound, firstRound.LockPrice);
-                    await _notifier.PushRoundStartedAsync(firstRound.Id, firstRound.Epoch);
                 }
+
+                // 创建下一回合（Upcoming），供玩家预下注
+                var upcoming = new RoundEntity
+                {
+                    Symbol = symbol,
+                    Epoch = liveRound.Epoch + 1,
+                    StartTime = liveRound.LockTime,
+                    LockTime = liveRound.LockTime.Add(_interval),
+                    CloseTime = liveRound.LockTime.Add(_interval * 2),
+                    LockPrice = startPrice,
+                    Status = RoundStatus.Upcoming
+                };
+                await roundRepo.InsertAsync(upcoming);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
+
+                await _notifier.PushCurrentRoundAsync(liveRound, liveRound.LockPrice);
+                await _notifier.PushRoundStartedAsync(liveRound.Id, liveRound.Epoch);
 
                 return;
             }
 
-            // 到达锁定时间时，锁定当前回合并创建下一回合
+            // 到达锁定时间时，锁定当前回合并切换下一回合
             if (live.LockTime <= now && live.Status == RoundStatus.Live)
             {
                 var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
@@ -207,20 +221,48 @@ namespace TonPrediction.Api.Services
                 await _notifier.PushSettlementStartedAsync(live.Id, live.Epoch);
 
                 var nextPrice = lockPrice;
-                var nextRound = new RoundEntity
+                var nextRound = await roundRepo.GetUpcomingAsync(symbol);
+                if (nextRound != null)
                 {
-                    Symbol = symbol,
-                    Epoch = live.Epoch + 1,
-                    StartTime = now,
-                    LockTime = now.Add(_interval),
-                    CloseTime = now.Add(_interval * 2),
-                    LockPrice = nextPrice,
-                    Status = RoundStatus.Live
-                };
-                await roundRepo.InsertAsync(nextRound);
+                    nextRound.StartTime = now;
+                    nextRound.LockTime = now.Add(_interval);
+                    nextRound.CloseTime = now.Add(_interval * 2);
+                    nextRound.LockPrice = nextPrice;
+                    nextRound.Status = RoundStatus.Live;
+                    await roundRepo.UpdateByPrimaryKeyAsync(nextRound);
+                }
+                else
+                {
+                    nextRound = new RoundEntity
+                    {
+                        Symbol = symbol,
+                        Epoch = live.Epoch + 1,
+                        StartTime = now,
+                        LockTime = now.Add(_interval),
+                        CloseTime = now.Add(_interval * 2),
+                        LockPrice = nextPrice,
+                        Status = RoundStatus.Live
+                    };
+                    await roundRepo.InsertAsync(nextRound);
+                }
+
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
                 await _notifier.PushCurrentRoundAsync(nextRound, nextRound.LockPrice);
                 await _notifier.PushRoundStartedAsync(nextRound.Id, nextRound.Epoch);
+
+                // 再创建一个 Upcoming 回合
+                var upcoming = new RoundEntity
+                {
+                    Symbol = symbol,
+                    Epoch = nextRound.Epoch + 1,
+                    StartTime = nextRound.LockTime,
+                    LockTime = nextRound.LockTime.Add(_interval),
+                    CloseTime = nextRound.LockTime.Add(_interval * 2),
+                    LockPrice = nextPrice,
+                    Status = RoundStatus.Upcoming
+                };
+                await roundRepo.InsertAsync(upcoming);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
             }
         }
     }

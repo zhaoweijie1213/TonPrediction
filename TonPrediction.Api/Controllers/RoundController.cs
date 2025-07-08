@@ -26,10 +26,10 @@ public class RoundController(IRoundService roundService) : ControllerBase
     }
 
     /// <summary>
-    /// 获取即将开始的回合。
+    /// 获取下一回合时间。
     /// </summary>
     [HttpGet("upcoming")]
-    public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
+    public async Task<ApiResult<UpcomingRoundOutput>> GetUpcomingAsync(
         [FromQuery] string symbol = "ton")
     {
         return await _roundService.GetUpcomingAsync(symbol);

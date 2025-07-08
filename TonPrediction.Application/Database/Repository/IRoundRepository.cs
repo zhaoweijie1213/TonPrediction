@@ -27,6 +27,12 @@ namespace TonPrediction.Application.Database.Repository
         Task<RoundEntity?> GetCurrentLiveAsync(string symbol);
 
         /// <summary>
+        /// 获取下一回合记录（状态为 Upcoming）。
+        /// </summary>
+        /// <param name="symbol">币种符号。</param>
+        Task<RoundEntity?> GetUpcomingAsync(string symbol);
+
+        /// <summary>
         /// 获取当前锁定中的回合。
         /// </summary>
         /// <param name="symbol">币种符号。</param>
