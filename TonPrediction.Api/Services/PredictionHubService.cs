@@ -10,7 +10,7 @@ namespace TonPrediction.Api.Services;
 /// <summary>
 /// SignalR 推送实现。
 /// </summary>
-public class PredictionHubService(ILogger<PredictionHubService> logger,IHubContext<PredictionHub> hub) : IPredictionHubService
+public class PredictionHubService(ILogger<PredictionHubService> logger, IHubContext<PredictionHub> hub) : IPredictionHubService
 {
     private readonly IHubContext<PredictionHub> _hub = hub;
 
@@ -26,7 +26,8 @@ public class PredictionHubService(ILogger<PredictionHubService> logger,IHubConte
         var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
         var output = new CurrentRoundOutput
         {
-            RoundId = round.Epoch,
+            RoundId = round.Id,
+            Epoch = round.Epoch,
             LockPrice = round.LockPrice.ToString("F8"),
             CurrentPrice = currentPrice.ToString("F8"),
             TotalAmount = round.TotalAmount.ToString("F8"),
@@ -45,45 +46,50 @@ public class PredictionHubService(ILogger<PredictionHubService> logger,IHubConte
     /// <summary>
     /// 回合开始
     /// </summary>
-    /// <param name="roundId"></param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
     /// <returns></returns>
-    public Task PushRoundStartedAsync(long roundId)
+    public Task PushRoundStartedAsync(long roundId, long epoch)
     {
-        var output = new RoundStartedOutput { RoundId = roundId };
+        var output = new RoundStartedOutput { RoundId = roundId, Epoch = epoch };
         logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("roundStarted", output);
     }
-   
+
 
     /// <summary>
     /// 锁定回合
     /// </summary>
-    /// <param name="roundId"></param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
     /// <returns></returns>
-    public Task PushRoundLockedAsync(long roundId) =>
-        _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput { RoundId = roundId });
+    public Task PushRoundLockedAsync(long roundId, long epoch) =>
+        _hub.Clients.All.SendAsync("roundLocked", new RoundLockedOutput { RoundId = roundId, Epoch = epoch });
 
     /// <summary>
     /// 推送开始结算消息
     /// </summary>
-    /// <param name="roundId"></param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
     /// <returns></returns>
-    public Task PushSettlementStartedAsync(long roundId) =>
-        _hub.Clients.All.SendAsync("settlementStarted", new SettlementStartedOutput { RoundId = roundId });
+    public Task PushSettlementStartedAsync(long roundId, long epoch) =>
+        _hub.Clients.All.SendAsync("settlementStarted", new SettlementStartedOutput { RoundId = roundId, Epoch = epoch });
 
     /// <summary>
     /// 回合结束
     /// </summary>
-    /// <param name="roundId"></param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
     /// <returns></returns>
-    public Task PushRoundEndedAsync(long roundId) =>
-        _hub.Clients.All.SendAsync("roundEnded", new RoundEndedOutput { RoundId = roundId });
+    public Task PushRoundEndedAsync(long roundId, long epoch) =>
+        _hub.Clients.All.SendAsync("roundEnded", new RoundEndedOutput { RoundId = roundId, Epoch = epoch });
 
     /// <summary>
     /// 推送结算结束消息
     /// </summary>
-    /// <param name="roundId"></param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
     /// <returns></returns>
-    public Task PushSettlementEndedAsync(long roundId) =>
-        _hub.Clients.All.SendAsync("settlementEnded", new SettlementEndedOutput { RoundId = roundId });
+    public Task PushSettlementEndedAsync(long roundId, long epoch) =>
+        _hub.Clients.All.SendAsync("settlementEnded", new SettlementEndedOutput { RoundId = roundId, Epoch = epoch });
 }

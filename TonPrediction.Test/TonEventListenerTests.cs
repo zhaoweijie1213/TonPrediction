@@ -39,11 +39,11 @@ public class TonEventListenerTests
             .Callback<BetEntity>(b => inserted = b)
             .ReturnsAsync(new BetEntity())
             .Verifiable();
-        betRepo.Setup(b => b.GetByTxHashAsync("hash", It.IsAny<CancellationToken>()))
+        betRepo.Setup(b => b.GetByTxHashAsync("hash"))
             .ReturnsAsync((BetEntity?)null);
 
         var roundRepo = new Mock<IRoundRepository>();
-        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton", It.IsAny<CancellationToken>()))
+        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton"))
             .ReturnsAsync(round);
         roundRepo.Setup(r => r.UpdateByPrimaryKeyAsync(round))
             .ReturnsAsync(true)
@@ -52,8 +52,7 @@ public class TonEventListenerTests
         var notifier = new Mock<IPredictionHubService>();
         notifier.Setup(n => n.PushCurrentRoundAsync(
                 round,
-                It.IsAny<decimal>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<decimal>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
@@ -87,14 +86,13 @@ public class TonEventListenerTests
         {
             Lt = 1
         };
-        await listener.ProcessTransactionAsync(tx, CancellationToken.None);
+        await listener.ProcessTransactionAsync(tx);
 
         betRepo.Verify(b => b.InsertAsync(It.IsAny<BetEntity>()), Times.Once);
         roundRepo.Verify(r => r.UpdateByPrimaryKeyAsync(round), Times.Once);
         notifier.Verify(n => n.PushCurrentRoundAsync(
             round,
-            It.IsAny<decimal>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<decimal>()), Times.Once);
 
         Assert.Equal("hash", inserted?.TxHash);
         Assert.Equal<ulong>(1ul, inserted?.Lt ?? 0);
@@ -115,12 +113,12 @@ public class TonEventListenerTests
 
         var bet = new BetEntity { TxHash = "hash", Lt = 0, Status = BetStatus.Pending };
         var betRepo = new Mock<IBetRepository>();
-        betRepo.Setup(b => b.GetByTxHashAsync("hash", It.IsAny<CancellationToken>()))
+        betRepo.Setup(b => b.GetByTxHashAsync("hash"))
             .ReturnsAsync(bet);
         betRepo.Setup(b => b.UpdateByPrimaryKeyAsync(bet)).ReturnsAsync(true).Verifiable();
 
         var roundRepo = new Mock<IRoundRepository>();
-        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton", It.IsAny<CancellationToken>()))
+        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton"))
             .ReturnsAsync(round);
 
         var notifier = new Mock<IPredictionHubService>();
@@ -150,7 +148,7 @@ public class TonEventListenerTests
             Mock.Of<IDistributedLock>());
 
         var tx = new TonTxDetail(1m, new InMsg("sender", "ton bull", "addr"), "hash") { Lt = 2 };
-        await listener.ProcessTransactionAsync(tx, CancellationToken.None);
+        await listener.ProcessTransactionAsync(tx);
 
         betRepo.Verify(b => b.UpdateByPrimaryKeyAsync(bet), Times.Once);
     }

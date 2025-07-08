@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Output;
@@ -8,8 +9,9 @@ namespace TonPrediction.Application.Output;
 public class BetRecordOutput
 {
     /// <summary>
-    /// 回合编号。
+    /// 回合唯一编号，用于业务请求。
     /// </summary>
+    [JsonPropertyName("id")]
     public long RoundId { get; set; }
 
     /// <summary>
