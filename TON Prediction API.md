@@ -288,3 +288,19 @@ GET /api/predictions/pnl
 | `status` | enum | `pending`\|`confirmed`\|`failed` |
 | `timestamp` | int | 交易时间（秒） |
 
+## 1️⃣3️⃣ 下注上报
+
+### `POST /api/bet/report`
+
+用户在转账后调用此接口上报交易哈希，后台验证后记录下注信息。
+
+请求体：
+```json
+{ "txHash": "<交易哈希>" }
+```
+
+返回字段：
+| 字段名 | 类型 | 说明 |
+| ------ | ---- | ---- |
+| `data` | bool | 是否上报成功 |
+
