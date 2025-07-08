@@ -80,16 +80,6 @@ namespace TonPrediction.Api.Services
                 Price = price
             });
 
-            var since = DateTime.UtcNow.AddMinutes(-10);
-            var data = await repo.GetSinceAsync(symbol, since, token);
-            var timestamps = data.Select(d => new DateTimeOffset(d.Timestamp).ToUnixTimeSeconds()).ToArray();
-            var prices = data.Select(d => d.Price.ToString("F8")).ToArray();
-            await _hub.Clients.All.SendAsync("chartData", new ChartDataOutput
-            {
-                Timestamps = timestamps,
-                Prices = prices
-            }, token);
-
             var round = await roundRepo.GetCurrentLiveAsync(symbol, token);
             if (round != null)
             {
