@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TonPrediction.Application.Output;
 
 /// <summary>
@@ -6,9 +8,15 @@ namespace TonPrediction.Application.Output;
 public class UpcomingRoundOutput
 {
     /// <summary>
-    /// 回合编号（预计）。
+    /// 回合唯一编号（预计），部分回合可能为 0。
     /// </summary>
+    [JsonPropertyName("id")]
     public long RoundId { get; set; }
+
+    /// <summary>
+    /// 回合期次（预计）。
+    /// </summary>
+    public long Epoch { get; set; }
 
     /// <summary>
     /// 开始时间 Unix 秒。

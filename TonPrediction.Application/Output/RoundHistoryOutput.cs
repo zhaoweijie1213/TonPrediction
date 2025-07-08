@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Output;
@@ -8,9 +9,15 @@ namespace TonPrediction.Application.Output;
 public class RoundHistoryOutput
 {
     /// <summary>
-    /// 回合编号。
+    /// 回合唯一编号，用于业务请求。
     /// </summary>
+    [JsonPropertyName("id")]
     public long RoundId { get; set; }
+
+    /// <summary>
+    /// 期次，从 1 开始递增。
+    /// </summary>
+    public long Epoch { get; set; }
 
     /// <summary>
     /// 锁定价格。

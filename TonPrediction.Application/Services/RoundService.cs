@@ -28,7 +28,8 @@ public class RoundService(
         var list = await _roundRepo.GetEndedAsync(symbol, limit);
         return list.Select(r => new RoundHistoryOutput
         {
-            RoundId = r.Epoch,
+            RoundId = r.Id,
+            Epoch = r.Epoch,
             LockPrice = r.LockPrice.ToString("F8"),
             ClosePrice = r.ClosePrice.ToString("F8"),
             TotalAmount = r.TotalAmount.ToString("F8"),
@@ -61,7 +62,8 @@ public class RoundService(
             var s = startTime.AddSeconds(intervalSec * i);
             list.Add(new UpcomingRoundOutput
             {
-                RoundId = startEpoch + i,
+                RoundId = 0,
+                Epoch = startEpoch + i,
                 StartTime = new DateTimeOffset(s).ToUnixTimeSeconds(),
                 EndTime = new DateTimeOffset(s.AddSeconds(intervalSec)).ToUnixTimeSeconds()
             });

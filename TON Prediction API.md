@@ -43,7 +43,7 @@ hub.on("roundEnded", data => { /* ... */ });
 await hub.start();
 ```
 
-> **说明**：所有 `roundId` 字段均表示回合期次（epoch）。
+> **说明**：回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
 ------
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
@@ -54,7 +54,8 @@ await hub.start();
 
 | 字段名         | 类型            | 说明                                     |
 | -------------- | --------------- | ---------------------------------------- |
-| `roundId`      | int             | 期次（Epoch）                                 |
+| `id`      | int             | 回合唯一编号                                 |
+| `epoch`   | int             | 期次（Epoch）                                 |
 | `lockPrice`    | string(decimal) | 锁定价格                                 |
 | `currentPrice` | string(decimal) | 最新价格                                 |
 | `totalAmount`  | string(decimal) | 总下注金额                               |
@@ -70,7 +71,8 @@ await hub.start();
 
 ```json
 {
-  "roundId": 357690,
+  "id": 357690,
+  "epoch": 357690,
   "lockPrice": "308.85000000",
   "currentPrice": "309.12500000",
   "totalAmount": "2500.00000000",
@@ -94,7 +96,8 @@ await hub.start();
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 期次（Epoch） |
+| `id` | int  | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
 ## 3️⃣ 回合锁定通知（`roundLocked` • WS 广播）
 
 - **SignalR 事件**：`roundLocked`
@@ -103,7 +106,8 @@ await hub.start();
 
 | 字段名 | 类型 | 说明 |
 | --- | --- | --- |
-| `roundId` | int | 期次（Epoch） |
+| `id` | int | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
 
 
 ## 4️⃣ 开始结算通知（`settlementStarted` • WS 广播）
@@ -114,7 +118,8 @@ await hub.start();
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 期次（Epoch） |
+| `id` | int  | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
 
 ## 5️⃣ 结束结算通知（`settlementEnded` • WS 广播）
 
@@ -124,7 +129,8 @@ await hub.start();
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 期次（Epoch） |
+| `id` | int  | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
 
 ## 6️⃣ 回合结束通知（`roundEnded` • WS 广播）
 
@@ -134,12 +140,13 @@ await hub.start();
 
 | 字段名    | 类型 | 说明     |
 | --------- | ---- | -------- |
-| `roundId` | int  | 期次（Epoch） |
+| `id` | int  | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
 
 **示例：**
 
 ```json
-{ "roundId": 357690 }
+{ "id": 357690, "epoch": 357690 }
 ```
 
 ------
@@ -152,7 +159,8 @@ await hub.start();
 
 | 字段名        | 类型            | 说明               |
 | ------------- | --------------- | ------------------ |
-| `roundId`     | int             | 期次（Epoch）           |
+| `id`     | int             | 回合唯一编号           |
+| `epoch`  | int             | 期次（Epoch）           |
 | `lockPrice`   | string(decimal) | 锁定价格           |
 | `closePrice`  | string(decimal) | 收盘价格           |
 | `totalAmount` | string(decimal) | 总下注金额         |
@@ -168,7 +176,7 @@ await hub.start();
 ```json
 [
   {
-    "roundId": 357689,
+    "id": 357689,
     "lockPrice": "308.85000000",
     "closePrice": "309.75000000",
     "totalAmount": "1800.00000000",
@@ -192,7 +200,8 @@ await hub.start();
 
 | 字段名      | 类型 | 说明           |
 | ----------- | ---- | -------------- |
-| `roundId`   | int  | 期次（Epoch）       |
+| `id`   | int  | 回合唯一编号（可能为 0） |
+| `epoch` | int  | 期次（Epoch）       |
 | `startTime` | int  | 开始时间（秒） |
 | `endTime`   | int  | 结束时间（秒） |
 
@@ -230,7 +239,8 @@ GET /api/predictions/round
 
 | 字段名       | 类型            | 说明                    |
 | ------------ | --------------- | ----------------------- |
-| `roundId`    | int             | 期次（Epoch）                |
+| `id`    | int             | 回合唯一编号                |
+| `epoch` | int             | 期次（Epoch）                |
 | `position`   | enum            | `up` | `down`           |
 | `amount`     | string(decimal) | 押注金额                |
 | `lockPrice`  | string(decimal) | 锁定价格                |
@@ -266,7 +276,7 @@ GET /api/predictions/pnl
 
 请求体：
 ```json
-{ "roundId": 123, "address": "EQ..." }
+{ "id": 123, "address": "EQ..." }
 ```
 
 返回字段：

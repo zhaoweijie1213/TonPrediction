@@ -37,7 +37,7 @@ namespace TonPrediction.Application.Database.Repository
         /// </summary>
         /// <param name="symbol"></param>
         /// <param name="limit">限制数量。</param>
-        Task<List<RoundEntity>> GetEndedAsync(string symbol,int limit);
+        Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit);
 
         /// <summary>
         /// 根据编号批量查询回合。
