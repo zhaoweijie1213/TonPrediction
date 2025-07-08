@@ -15,12 +15,14 @@ namespace TonPrediction.Infrastructure.Services
     /// </summary>
     public class BinancePriceService(
         IHttpClientFactory httpClientFactory,
-        ILogger<BinancePriceService> logger) : IPriceService, IDisposable
+        ILogger<BinancePriceService> logger) : IPriceService, IDisposable, IAsyncDisposable
     {
         private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
         private readonly ILogger<BinancePriceService> _logger = logger;
         private readonly ConcurrentDictionary<string, decimal> _prices = new();
         private readonly ConcurrentDictionary<string, ClientWebSocket> _sockets = new();
+        private readonly ConcurrentDictionary<string, Task> _tasks = new();
+        private readonly CancellationTokenSource _cts = new();
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
         /// <summary>
@@ -44,7 +46,9 @@ namespace TonPrediction.Infrastructure.Services
             {
                 price = await FetchRestAsync(pair);
                 _prices[pair] = price;
-                _ = EnsureWebSocketAsync(pair, ct);
+                var linkedToken = CancellationTokenSource
+                    .CreateLinkedTokenSource(ct, _cts.Token).Token;
+                _ = EnsureWebSocketAsync(pair, linkedToken);
             }
 
             return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
@@ -87,7 +91,8 @@ namespace TonPrediction.Infrastructure.Services
                 await socket.ConnectAsync(new Uri($"wss://stream.binance.com/ws/{pair.ToLower()}@trade"), ct);
                 if (_sockets.TryAdd(pair, socket))
                 {
-                    _ = Task.Run(() => ReceiveLoopAsync(pair, socket, ct), CancellationToken.None);
+                    var task = Task.Run(() => ReceiveLoopAsync(pair, socket, ct), CancellationToken.None);
+                    _tasks[pair] = task;
                 }
             }
             catch (Exception ex)
@@ -124,12 +129,20 @@ namespace TonPrediction.Infrastructure.Services
                         _prices[pair] = data.Price;
                     }
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // 正常收到取消信号时退出循环
+                    _logger.LogInformation("Binance WebSocket receive canceled");
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Binance WebSocket receive error");
                     break;
                 }
             }
+            _tasks.TryRemove(pair, out _);
+            _sockets.TryRemove(pair, out _);
         }
 
         /// <summary>
@@ -153,15 +166,38 @@ namespace TonPrediction.Infrastructure.Services
         /// <inheritdoc />
         public void Dispose()
         {
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            _cts.Cancel();
+            try
+            {
+                await Task.WhenAll(_tasks.Values);
+            }
+            catch
+            {
+                // ignore
+            }
+
             foreach (var socket in _sockets.Values)
             {
                 try
                 {
-                    socket.Abort();
+                    if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived)
+                    {
+                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                    }
                 }
                 catch
                 {
                     // ignore
+                }
+                finally
+                {
+                    socket.Dispose();
                 }
             }
         }
