@@ -7,5 +7,6 @@ namespace PancakeSwap.Api.Hubs
     /// </summary>
     public class PredictionHub : Hub
     {
+
     }
 }
