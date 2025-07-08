@@ -61,7 +61,7 @@ await foreach (var tx in client.SubscribeTransactions(<MASTER_WALLET_ADDRESS>))
 - 公共 API 需带 XML 注释；Domain 层禁止直接引用 **TonSdk.NET**，只能通过 Application 层接口访问链上逻辑
 - 不得把私钥、Token 写进源码，使用 `<ENV_*>` 占位，例如：`<ENV_MASTER_WALLET_PK>`、`<ENV_PRICE_API_KEY>`
 - 注释使用**简体中文**
-- API 接口统一返回 `ApiResult<T>`（`using QYQ.Base.Common.ApiResult`）
+- API 接口统一返回 `ApiResult<T>`（`using QYQ.Base.Common.ApiResult`,*Application* 层关于控制器的service也需要返回ApiResult<T>,处理业务方面的返回码,而Api层需要处理参数规范等错误的返回码
 - 输出 DTO 统一后缀 `Output`，放在 *Application* 层 `Output` 文件夹；复杂请求体统一后缀 `Input`，放在 `Input` 文件夹
 
 ### 1.2 通用命名
