@@ -5,6 +5,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Extensions;
 using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
@@ -32,15 +33,15 @@ public class RoundService(
         {
             RoundId = r.Id,
             Epoch = r.Epoch,
-            LockPrice = r.LockPrice.ToString("F8"),
-            ClosePrice = r.ClosePrice.ToString("F8"),
-            TotalAmount = r.TotalAmount.ToString("F8"),
-            BullAmount = r.BullAmount.ToString("F8"),
-            BearAmount = r.BearAmount.ToString("F8"),
-            RewardPool = r.RewardAmount.ToString("F8"),
+            LockPrice = r.LockPrice.ToAmountString(),
+            ClosePrice = r.ClosePrice.ToAmountString(),
+            TotalAmount = r.TotalAmount.ToAmountString(),
+            BullAmount = r.BullAmount.ToAmountString(),
+            BearAmount = r.BearAmount.ToAmountString(),
+            RewardPool = r.RewardAmount.ToAmountString(),
             EndTime = new DateTimeOffset(r.CloseTime).ToUnixTimeSeconds(),
-            BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToString("F8") : "0",
-            BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToString("F8") : "0"
+            BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToAmountString() : "0",
+            BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToAmountString() : "0"
         }).ToList();
         api.SetRsult(ApiResultCode.Success, result);
         return api;
