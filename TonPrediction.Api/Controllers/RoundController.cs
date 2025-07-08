@@ -22,10 +22,7 @@ public class RoundController(IRoundService roundService) : ControllerBase
         [FromQuery] string symbol = "ton",
         [FromQuery] int limit = 3)
     {
-        var result = await _roundService.GetHistoryAsync(symbol, limit);
-        var api = new ApiResult<List<RoundHistoryOutput>>();
-        api.SetRsult(ApiResultCode.Success, result);
-        return api;
+        return await _roundService.GetHistoryAsync(symbol, limit);
     }
 
     /// <summary>
@@ -35,9 +32,6 @@ public class RoundController(IRoundService roundService) : ControllerBase
     public async Task<ApiResult<List<UpcomingRoundOutput>>> GetUpcomingAsync(
         [FromQuery] string symbol = "ton")
     {
-        var list = await _roundService.GetUpcomingAsync(symbol);
-        var api = new ApiResult<List<UpcomingRoundOutput>>();
-        api.SetRsult(ApiResultCode.Success, list);
-        return api;
+        return await _roundService.GetUpcomingAsync(symbol);
     }
 }

@@ -1,4 +1,5 @@
 using QYQ.Base.Common.IOCExtensions;
+using QYQ.Base.Common.ApiResult;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,6 @@ public interface IBetService : ITransientDependency
     /// 根据交易哈希上报下注。
     /// </summary>
     /// <param name="txHash">交易哈希。</param>
-    /// <returns>是否受理成功。</returns>
-    Task<bool> ReportAsync(string txHash);
+    /// <returns>业务结果。</returns>
+    Task<ApiResult<bool>> ReportAsync(string txHash);
 }

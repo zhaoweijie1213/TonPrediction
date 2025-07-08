@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
@@ -28,20 +29,39 @@ public class BetService(
     /// </summary>
     /// <param name="txHash"></param>
     /// <returns></returns>
-    public async Task<bool> ReportAsync(string txHash)
+    public async Task<ApiResult<bool>> ReportAsync(string txHash)
     {
+        var api = new ApiResult<bool>();
         var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}");
-        if (detail == null) return false;
+        if (detail == null)
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
         if (!string.Equals(detail.In_Message?.Destination, _wallet, StringComparison.OrdinalIgnoreCase))
-            return false;
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
         var match = CommentRegex.Match(detail.In_Message?.Comment ?? string.Empty);
-        if (!match.Success) return false;
+        if (!match.Success)
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
         var symbol = match.Groups[1].Value.ToLowerInvariant();
         var side = match.Groups[2].Value.ToLowerInvariant();
         var round = await _roundRepo.GetCurrentLiveAsync(symbol);
-        if (round == null) return false;
+        if (round == null)
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
         if (await _betRepo.GetByTxHashAsync(txHash) != null)
-            return false;
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
         var position = side == "bull" ? Position.Bull : Position.Bear;
         var bet = new BetEntity
         {
@@ -56,7 +76,8 @@ public class BetService(
             Status = BetStatus.Pending
         };
         await _betRepo.InsertAsync(bet);
-        return true;
+        api.SetRsult(ApiResultCode.Success, true);
+        return api;
     }
 }
 

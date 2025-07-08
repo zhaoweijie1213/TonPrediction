@@ -4,6 +4,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
 
@@ -26,13 +27,14 @@ public class PredictionService(
     /// <param name="pageSize"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<List<BetRecordOutput>> GetRecordsAsync(
+    public async Task<ApiResult<List<BetRecordOutput>>> GetRecordsAsync(
         string address,
         string status = "all",
         int page = 1,
         int pageSize = 10,
         CancellationToken ct = default)
     {
+        var api = new ApiResult<List<BetRecordOutput>>();
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
         var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize);
@@ -64,18 +66,20 @@ public class PredictionService(
             };
             list.Add(output);
         }
-        return list;
+        api.SetRsult(ApiResultCode.Success, list);
+        return api;
     }
 
     /// <inheritdoc />
-    public async Task<PnlOutput> GetPnlAsync(string address)
+    public async Task<ApiResult<PnlOutput>> GetPnlAsync(string address)
     {
+        var api = new ApiResult<PnlOutput>();
         var bets = await _betRepo.GetByAddressAsync(address);
         var totalBet = bets.Sum(b => b.Amount);
         var totalReward = bets.Sum(b => b.Reward);
         var rounds = bets.Count;
         var winRounds = bets.Count(b => b.Reward > 0m);
-        return new PnlOutput
+        var output = new PnlOutput
         {
             TotalBet = totalBet.ToString("F8"),
             TotalReward = totalReward.ToString("F8"),
@@ -83,5 +87,7 @@ public class PredictionService(
             Rounds = rounds,
             WinRounds = winRounds
         };
+        api.SetRsult(ApiResultCode.Success, output);
+        return api;
     }
 }
