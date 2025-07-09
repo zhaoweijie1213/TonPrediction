@@ -96,10 +96,10 @@ namespace TonPrediction.Application.Database.Entities
         public decimal BearAmount { get; set; }
 
         /// <summary>
-        /// 
+        /// 获胜方。
         /// </summary>
-        [SugarColumn(ColumnName = "winner_side", ColumnDataType = "decimal(18,8)")]
-        public decimal WinnerSide { get; set; }
+        [SugarColumn(ColumnName = "winner_side")]
+        public Position? WinnerSide { get; set; }
 
         /// <summary>
         /// 

@@ -35,7 +35,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         public async Task<RoundEntity?> GetCurrentLiveAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Betting)
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
@@ -53,7 +53,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         public async Task<RoundEntity?> GetCurrentLockedAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Locked)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
@@ -62,7 +62,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         public async Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Ended)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Completed)
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .Take(limit)
                 .ToListAsync();

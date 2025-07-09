@@ -30,7 +30,7 @@ public class TonEventListenerTests
             Epoch = 1,
             CloseTime = DateTime.UtcNow.AddMinutes(5),
             LockPrice = 1m,
-            Status = RoundStatus.Live
+            Status = RoundStatus.Betting
         };
 
         BetEntity? inserted = null;
@@ -108,7 +108,7 @@ public class TonEventListenerTests
             Epoch = 1,
             CloseTime = DateTime.UtcNow.AddMinutes(5),
             LockPrice = 1m,
-            Status = RoundStatus.Live
+            Status = RoundStatus.Betting
         };
 
         var bet = new BetEntity { TxHash = "hash", Lt = 0, Status = BetStatus.Pending };
