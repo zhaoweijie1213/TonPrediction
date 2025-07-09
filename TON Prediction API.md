@@ -321,7 +321,7 @@ GET /api/predictions/pnl
 
 ## 1️⃣5️⃣ 最近回合及下注信息
 
-### `GET /api/rounds/recent?address=<ADDR>&symbol=ton&limit=3`
+### `GET /api/rounds/recent?address=<ADDR>&symbol=ton&limit=5`
 
 返回指定用户最近若干回合及其下注情况。
 
