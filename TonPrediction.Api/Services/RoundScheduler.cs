@@ -6,8 +6,9 @@ using System.Linq;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
-using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using DotNetCore.CAP;
+using TonPrediction.Application.Events;
 using TonPrediction.Application.Cache;
 
 namespace TonPrediction.Api.Services
@@ -20,12 +21,14 @@ namespace TonPrediction.Api.Services
         IConfiguration configuration,
         IPredictionHubService notifier,
         ILogger<RoundScheduler> logger,
-        IDistributedLock locker) : BackgroundService
+        IDistributedLock locker,
+        ICapPublisher publisher) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPredictionHubService _notifier = notifier;
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly IDistributedLock _locker = locker;
+        private readonly ICapPublisher _publisher = publisher;
         private const decimal TreasuryFeeRate = 0.03m;
         private readonly int _interval = configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
@@ -123,7 +126,6 @@ namespace TonPrediction.Api.Services
             var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
             var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
-            var statRepo = scope.ServiceProvider.GetRequiredService<IPnlStatRepository>();
 
             var now = DateTime.UtcNow;
 
@@ -176,39 +178,9 @@ namespace TonPrediction.Api.Services
                     }
                     bet.Reward = reward;
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
-
-                    var stat = await statRepo.GetByAddressAsync(symbol, bet.UserAddress);
-                    var profit = reward - bet.Amount;
-                    var win = reward > 0m;
-                    if (stat == null)
-                    {
-                        stat = new PnlStatEntity
-                        {
-                            Symbol = symbol,
-                            UserAddress = bet.UserAddress,
-                            TotalBet = bet.Amount,
-                            TotalReward = reward,
-                            Rounds = 1,
-                            WinRounds = win ? 1 : 0,
-                            BestRoundId = locked.Id,
-                            BestRoundProfit = profit
-                        };
-                        await statRepo.InsertAsync(stat);
-                    }
-                    else
-                    {
-                        stat.TotalBet += bet.Amount;
-                        stat.TotalReward += reward;
-                        stat.Rounds += 1;
-                        if (win) stat.WinRounds += 1;
-                        if (profit > stat.BestRoundProfit)
-                        {
-                            stat.BestRoundProfit = profit;
-                            stat.BestRoundId = locked.Id;
-                        }
-                        await statRepo.UpdateByPrimaryKeyAsync(stat);
-                    }
                 }
+
+                await _publisher.PublishAsync("round.stat.update", new RoundStatEvent(symbol, locked.Id));
 
                 locked.Status = winner switch
                 {

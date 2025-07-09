@@ -28,6 +28,19 @@ builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("Con
 builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
+builder.Services.AddTransient<StatEventHandler>();
+
+builder.Services.AddCap(options =>
+{
+    options.UseMySql(builder.Configuration.GetConnectionString("Default"));
+    options.UseRabbitMQ(cfg =>
+    {
+        cfg.HostName = builder.Configuration["ENV_RABBITMQ_HOST"] ?? "localhost";
+        cfg.UserName = builder.Configuration["ENV_RABBITMQ_USER"] ?? "guest";
+        cfg.Password = builder.Configuration["ENV_RABBITMQ_PASSWORD"] ?? "guest";
+    });
+    options.UseDashboard();
+});
 
 builder.AddQYQSwaggerAndApiVersioning(new NSwag.OpenApiInfo()
 {
