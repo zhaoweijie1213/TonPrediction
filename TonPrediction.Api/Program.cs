@@ -30,17 +30,27 @@ builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
 builder.Services.AddTransient<StatEventHandler>();
 
+#region  CAP
+
 builder.Services.AddCap(options =>
 {
-    options.UseMySql(builder.Configuration.GetConnectionString("Default"));
-    options.UseRabbitMQ(cfg =>
+    var configuration = builder.Configuration;
+    options.UseRabbitMQ(config =>
     {
-        cfg.HostName = builder.Configuration["ENV_RABBITMQ_HOST"] ?? "localhost";
-        cfg.UserName = builder.Configuration["ENV_RABBITMQ_USER"] ?? "guest";
-        cfg.Password = builder.Configuration["ENV_RABBITMQ_PASSWORD"] ?? "guest";
+        config.HostName = configuration["CAP:RabbitMQ:HostName"]!;
+        config.Port = configuration.GetSection("CAP:RabbitMQ:Port").Get<int>();
+        config.UserName = configuration["CAP:RabbitMQ:UserName"]!;
+        config.Password = configuration["CAP:RabbitMQ:Password"]!;
+        config.ExchangeName = configuration["CAP:RabbitMQ:ExchangeName"]!;
     });
-    options.UseDashboard();
+    options.UseMySql(opt =>
+    {
+        opt.ConnectionString = configuration["ConnectionStrings:SysCap"]!;
+        opt.TableNamePrefix = AppDomain.CurrentDomain.FriendlyName;
+    });
 });
+
+#endregion
 
 builder.AddQYQSwaggerAndApiVersioning(new NSwag.OpenApiInfo()
 {
