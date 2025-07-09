@@ -9,17 +9,25 @@ namespace TonPrediction.Application.Enums
         /// 即将开始。
         /// </summary>
         Upcoming = 0,
+
         /// <summary>
-        /// 正在进行。
+        /// 下注进行中。
         /// </summary>
-        Live = 1,
+        Betting = 1,
+
         /// <summary>
-        /// 已锁定，不可下注。
+        /// 已锁价，等待收盘。
         /// </summary>
-        Locked = 2,
+        Live = 2,
+
         /// <summary>
-        /// 已结束。
+        /// 结算中。
         /// </summary>
-        Ended = 3
+        Calculating = 3,
+
+        /// <summary>
+        /// 已完成，可领取奖励。
+        /// </summary>
+        Completed = 4
     }
 }
