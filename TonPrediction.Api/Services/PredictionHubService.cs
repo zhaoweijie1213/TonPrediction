@@ -46,31 +46,20 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
 
 
     /// <summary>
-    /// 下个回合信息推送
+    /// 下个回合奖池信息推送。
     /// </summary>
-    /// <param name="round"></param>
-    /// <param name="currentPrice"></param>
+    /// <param name="round">回合实体。</param>
+    /// <param name="currentPrice">当前价格（忽略）。</param>
     /// <returns></returns>
     public Task PushNextRoundAsync(RoundEntity round, decimal currentPrice)
     {
-        var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
-        var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
-        var output = new CurrentRoundOutput
+        var output = new NextRoundOutput
         {
             RoundId = round.Id,
-            Epoch = round.Epoch,
-            LockPrice = round.LockPrice.ToAmountString(),
-            CurrentPrice = currentPrice.ToAmountString(),
-            TotalAmount = round.TotalAmount.ToAmountString(),
-            BullAmount = round.BullAmount.ToAmountString(),
-            BearAmount = round.BearAmount.ToAmountString(),
             RewardPool = round.RewardAmount.ToAmountString(),
-            EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
-            BullOdds = oddsBull.ToAmountString(),
-            BearOdds = oddsBear.ToAmountString(),
-            Status = round.Status
+            Symbol = round.Symbol
         };
-        logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
+        logger.LogDebug("PushNextRoundAsync.下个回合奖池推送:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("nextRound", output);
     }
 
