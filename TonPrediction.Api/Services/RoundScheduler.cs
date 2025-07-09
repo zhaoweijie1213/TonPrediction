@@ -177,13 +177,14 @@ namespace TonPrediction.Api.Services
                     bet.Reward = reward;
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
 
-                    var stat = await statRepo.GetByAddressAsync(bet.UserAddress);
+                    var stat = await statRepo.GetByAddressAsync(symbol, bet.UserAddress);
                     var profit = reward - bet.Amount;
                     var win = reward > 0m;
                     if (stat == null)
                     {
                         stat = new PnlStatEntity
                         {
+                            Symbol = symbol,
                             UserAddress = bet.UserAddress,
                             TotalBet = bet.Amount,
                             TotalReward = reward,

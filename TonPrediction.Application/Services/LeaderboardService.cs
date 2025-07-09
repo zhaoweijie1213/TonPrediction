@@ -15,6 +15,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
 
     /// <inheritdoc />
     public async Task<ApiResult<LeaderboardOutput>> GetListAsync(
+        string symbol = "ton",
         string rankBy = "netProfit",
         int page = 1,
         int pageSize = 10,
@@ -23,7 +24,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
         var api = new ApiResult<LeaderboardOutput>();
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
-        var stats = await _repo.GetPagedAsync(rankBy, page, pageSize);
+        var stats = await _repo.GetPagedAsync(symbol, rankBy, page, pageSize);
         var list = new List<LeaderboardItemOutput>();
         for (var i = 0; i < stats.Count; i++)
         {
@@ -45,7 +46,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
         var output = new LeaderboardOutput { List = list };
         if (!string.IsNullOrWhiteSpace(address))
         {
-            var rank = await _repo.GetRankAsync(address, rankBy);
+            var rank = await _repo.GetRankAsync(symbol, address, rankBy);
             if (rank > 0)
             {
                 output.AddressRank = rank;

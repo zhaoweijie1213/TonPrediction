@@ -9,6 +9,11 @@ namespace TonPrediction.Application.Database.Entities;
 public class PnlStatEntity
 {
     /// <summary>
+    /// 预测币种符号，主键之一。
+    /// </summary>
+    [SugarColumn(IsPrimaryKey = true, ColumnName = "symbol", Length = 16)]
+    public string Symbol { get; set; } = string.Empty;
+    /// <summary>
     /// 用户地址，主键。
     /// </summary>
     [SugarColumn(IsPrimaryKey = true, ColumnName = "user_address")]

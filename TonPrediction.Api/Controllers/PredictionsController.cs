@@ -31,8 +31,10 @@ public class PredictionsController(IPredictionService predictionService) : Contr
     /// 获取盈亏汇总。
     /// </summary>
     [HttpGet("pnl")]
-    public async Task<ApiResult<PnlOutput>> GetPnlAsync([FromQuery] string address)
+    public async Task<ApiResult<PnlOutput>> GetPnlAsync(
+        [FromQuery] string address,
+        [FromQuery] string symbol = "ton")
     {
-        return await _predictionService.GetPnlAsync(address);
+        return await _predictionService.GetPnlAsync(symbol, address);
     }
 }
