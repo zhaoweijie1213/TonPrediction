@@ -34,12 +34,12 @@ public interface IRoundService : ITransientDependency
     /// <summary>
     /// 获取最近回合以及用户下注信息。
     /// </summary>
-    /// <param name="address">用户地址。</param>
+    /// <param name="address">用户地址，可为空。</param>
     /// <param name="symbol">币种符号。</param>
     /// <param name="limit">返回数量限制。</param>
     /// <param name="ct">取消任务标记。</param>
     Task<ApiResult<List<RoundUserBetOutput>>> GetRecentAsync(
-        string address,
+        string? address,
         string symbol = "ton",
         int limit = 5,
         CancellationToken ct = default);
