@@ -33,11 +33,11 @@ namespace TonPrediction.Application.Database.Repository
         /// <param name="symbol"></param>
         Task<RoundEntity?> GetCurrentBettingAsync(string symbol);
 
-        /// <summary>
-        /// 获取下一回合记录（状态为 Upcoming）。
-        /// </summary>
-        /// <param name="symbol">币种符号。</param>
-        Task<RoundEntity?> GetUpcomingAsync(string symbol);
+        ///// <summary>
+        ///// 获取下一回合记录（状态为 Upcoming）。
+        ///// </summary>
+        ///// <param name="symbol">币种符号。</param>
+        //Task<RoundEntity?> GetUpcomingAsync(string symbol);
 
         /// <summary>
         /// 获取当前锁定中的回合。
@@ -51,6 +51,13 @@ namespace TonPrediction.Application.Database.Repository
         /// <param name="symbol"></param>
         /// <param name="limit">限制数量。</param>
         Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit);
+
+        /// <summary>
+        /// 获取回合信息通过回合编号。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Task<RoundEntity> GetByIdAsync(long id);
 
         /// <summary>
         /// 根据编号批量查询回合。

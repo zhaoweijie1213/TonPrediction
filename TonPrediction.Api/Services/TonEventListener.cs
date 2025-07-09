@@ -156,6 +156,7 @@ public class TonEventListener(
         if (!match.Success) return;
         var symbol = match.Groups[1].Value.ToLowerInvariant();
         var side = match.Groups[2].Value.ToLowerInvariant();
+        //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
         var amount = tx.Amount;        // TonAPI 已返回普通 TON
         var sender = tx.In_Message.Source ?? string.Empty;

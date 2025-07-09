@@ -16,7 +16,7 @@ public class BetService(
     IHttpClientFactory httpClientFactory,
     IConfiguration configuration,
     IBetRepository betRepo,
-    IRoundRepository roundRepo) : IBetService
+    IRoundRepository roundRepo, IPredictionHubService predictionHubService) : IBetService
 {
     private readonly HttpClient _http = httpClientFactory.CreateClient("TonApi");
     private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;

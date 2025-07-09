@@ -91,8 +91,8 @@ namespace TonPrediction.Api.Services
             {
                 var now = DateTime.UtcNow;
                 var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
-                var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
-                var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
+                //var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
+                //var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
 
                 round = new RoundEntity
                 {
@@ -101,11 +101,11 @@ namespace TonPrediction.Api.Services
                     StartTime = now,
                     LockTime = now.AddSeconds(_interval),
                     CloseTime = now.AddSeconds(_interval * 2),
-                    LockPrice = startPrice,
+                    //LockPrice = startPrice,
                     Status = RoundStatus.Betting
                 };
                 await roundRepo.InsertAsync(round);
-                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
+                //await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
             }
         }
 

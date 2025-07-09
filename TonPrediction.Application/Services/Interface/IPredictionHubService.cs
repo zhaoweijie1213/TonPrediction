@@ -18,6 +18,14 @@ public interface IPredictionHubService : ITransientDependency
     Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice);
 
     /// <summary>
+    /// 下个回合信息推送
+    /// </summary>
+    /// <param name="round"></param>
+    /// <param name="currentPrice"></param>
+    /// <returns></returns>
+    Task PushNextRoundAsync(RoundEntity round, decimal currentPrice);
+
+    /// <summary>
     /// 推送回合开始消息。
     /// </summary>
     /// <param name="roundId">回合唯一编号。</param>

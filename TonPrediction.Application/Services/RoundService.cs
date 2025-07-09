@@ -48,7 +48,7 @@ public class RoundService(
     }
 
     /// <summary>
-    /// 获取下一回合时间。
+    /// 获取下一回合信息
     /// </summary>
     /// <param name="symbol"></param>
     /// <param name="ct"></param>
@@ -58,7 +58,7 @@ public class RoundService(
         CancellationToken ct = default)
     {
         var api = new ApiResult<UpcomingRoundOutput>();
-        var upcoming = await _roundRepo.GetUpcomingAsync(symbol);
+        var upcoming = await _roundRepo.GetCurrentBettingAsync(symbol);
         if (upcoming != null)
         {
             var result = new UpcomingRoundOutput

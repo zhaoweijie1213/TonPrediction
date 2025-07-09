@@ -44,6 +44,36 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         return _hub.Clients.All.SendAsync("currentRound", output);
     }
 
+
+    /// <summary>
+    /// 下个回合信息推送
+    /// </summary>
+    /// <param name="round"></param>
+    /// <param name="currentPrice"></param>
+    /// <returns></returns>
+    public Task PushNextRoundAsync(RoundEntity round, decimal currentPrice)
+    {
+        var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
+        var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
+        var output = new CurrentRoundOutput
+        {
+            RoundId = round.Id,
+            Epoch = round.Epoch,
+            LockPrice = round.LockPrice.ToAmountString(),
+            CurrentPrice = currentPrice.ToAmountString(),
+            TotalAmount = round.TotalAmount.ToAmountString(),
+            BullAmount = round.BullAmount.ToAmountString(),
+            BearAmount = round.BearAmount.ToAmountString(),
+            RewardPool = round.RewardAmount.ToAmountString(),
+            EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
+            BullOdds = oddsBull.ToAmountString(),
+            BearOdds = oddsBear.ToAmountString(),
+            Status = round.Status
+        };
+        logger.LogDebug("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
+        return _hub.Clients.All.SendAsync("nextRound", output);
+    }
+
     /// <summary>
     /// 回合开始
     /// </summary>

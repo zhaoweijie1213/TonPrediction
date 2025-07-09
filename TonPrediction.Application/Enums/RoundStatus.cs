@@ -5,13 +5,13 @@ namespace TonPrediction.Application.Enums
     /// </summary>
     public enum RoundStatus
     {
-        /// <summary>
-        /// 预生成、未开始
-        /// </summary>
-        Upcoming = 0,
+        ///// <summary>
+        ///// 预生成、未开始
+        ///// </summary>
+        //Upcoming = 0,
 
         /// <summary>
-        /// 正在下注
+        /// 未开始,正在下注
         /// </summary>
         Betting = 1,
 

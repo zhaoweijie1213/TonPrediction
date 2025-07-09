@@ -53,13 +53,13 @@ namespace TonPrediction.Infrastructure.Database.Repository
         }
 
         /// <inheritdoc />
-        public async Task<RoundEntity?> GetUpcomingAsync(string symbol)
-        {
-            return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Upcoming)
-                .OrderBy(r => r.Epoch, OrderByType.Asc)
-                .FirstAsync();
-        }
+        //public async Task<RoundEntity?> GetUpcomingAsync(string symbol)
+        //{
+        //    return await Db.Queryable<RoundEntity>()
+        //        .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Upcoming)
+        //        .OrderBy(r => r.Epoch, OrderByType.Asc)
+        //        .FirstAsync();
+        //}
 
         /// <inheritdoc />
         public async Task<RoundEntity?> GetCurrentLockedAsync(string symbol)
@@ -78,6 +78,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .Take(limit)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取回合信息通过回合编号。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<RoundEntity> GetByIdAsync(long id)
+        {
+            return await Db.Queryable<RoundEntity>().FirstAsync(i => i.Id == id);
         }
 
         /// <summary>
