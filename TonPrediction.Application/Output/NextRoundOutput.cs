@@ -22,4 +22,19 @@ public class NextRoundOutput
     /// 预测币种符号，如 ton、btc、eth。
     /// </summary>
     public string Symbol { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 当前价格。
+    /// </summary>
+    public string CurrentPrice { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 看涨赔率。
+    /// </summary>
+    public string BullOdds { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 看跌赔率。
+    /// </summary>
+    public string BearOdds { get; set; } = string.Empty;
 }

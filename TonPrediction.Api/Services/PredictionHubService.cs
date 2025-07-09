@@ -53,11 +53,16 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
     /// <returns></returns>
     public Task PushNextRoundAsync(RoundEntity round, decimal currentPrice)
     {
+        var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
+        var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
         var output = new NextRoundOutput
         {
             RoundId = round.Id,
             RewardPool = round.RewardAmount.ToAmountString(),
-            Symbol = round.Symbol
+            Symbol = round.Symbol,
+            CurrentPrice = currentPrice.ToAmountString(),
+            BullOdds = oddsBull.ToAmountString(),
+            BearOdds = oddsBear.ToAmountString()
         };
         logger.LogDebug("PushNextRoundAsync.下个回合奖池推送:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("nextRound", output);
