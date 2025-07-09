@@ -15,6 +15,15 @@ public class BetController(IBetService betService) : ControllerBase
     private readonly IBetService _betService = betService;
 
     /// <summary>
+    /// 验证指定回合是否可以下注。
+    /// </summary>
+    [HttpGet("verify")]
+    public async Task<ApiResult<bool>> VerifyAsync([FromQuery] long roundId)
+    {
+        return await _betService.VerifyAsync(roundId);
+    }
+
+    /// <summary>
     /// 用户提交交易哈希以记录下注。
     /// </summary>
     [HttpPost("report")]

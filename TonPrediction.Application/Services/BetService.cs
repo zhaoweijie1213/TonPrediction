@@ -78,6 +78,27 @@ public class BetService(
         api.SetRsult(ApiResultCode.Success, true);
         return api;
     }
+
+    /// <summary>
+    /// 验证指定回合是否可下注。
+    /// </summary>
+    /// <param name="roundId">回合编号。</param>
+    /// <returns>验证结果。</returns>
+    public async Task<ApiResult<bool>> VerifyAsync(long roundId)
+    {
+        var api = new ApiResult<bool>();
+        var round = await _roundRepo.GetByIdAsync(roundId);
+        if (round == null)
+        {
+            api.SetRsult(ApiResultCode.DataNotFound, false);
+            return api;
+        }
+
+        var now = DateTime.UtcNow;
+        var ok = round.Status == RoundStatus.Betting && round.LockTime > now;
+        api.SetRsult(ok ? ApiResultCode.Success : ApiResultCode.Fail, ok);
+        return api;
+    }
 }
 
 /// <summary>

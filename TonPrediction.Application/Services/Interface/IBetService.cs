@@ -16,4 +16,11 @@ public interface IBetService : ITransientDependency
     /// <param name="txHash">交易哈希。</param>
     /// <returns>业务结果。</returns>
     Task<ApiResult<bool>> ReportAsync(string txHash);
+
+    /// <summary>
+    /// 验证指定回合是否可下注。
+    /// </summary>
+    /// <param name="roundId">回合编号。</param>
+    /// <returns>验证结果。</returns>
+    Task<ApiResult<bool>> VerifyAsync(long roundId);
 }
