@@ -18,11 +18,11 @@ public interface IPredictionHubService : ITransientDependency
     Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice);
 
     /// <summary>
-    /// 下个回合信息推送
+    /// 下个回合信息推送，包括奖池、倍率和价格等。
     /// </summary>
-    /// <param name="round"></param>
-    /// <param name="currentPrice"></param>
-    /// <returns></returns>
+    /// <param name="round">回合实体。</param>
+    /// <param name="currentPrice">当前价格。</param>
+    /// <returns>异步任务。</returns>
     Task PushNextRoundAsync(RoundEntity round, decimal currentPrice);
 
     /// <summary>
