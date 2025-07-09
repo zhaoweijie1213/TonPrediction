@@ -15,10 +15,12 @@ namespace TonPrediction.Application.Services;
 /// </summary>
 public class PredictionService(
     IBetRepository betRepo,
-    IRoundRepository roundRepo) : IPredictionService
+    IRoundRepository roundRepo,
+    IPnlStatRepository statRepo) : IPredictionService
 {
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IRoundRepository _roundRepo = roundRepo;
+    private readonly IPnlStatRepository _statRepo = statRepo;
 
     /// <summary>
     /// 获取用户的投注记录
@@ -79,24 +81,27 @@ public class PredictionService(
     }
 
     /// <inheritdoc />
-    public async Task<ApiResult<PnlOutput>> GetPnlAsync(string address)
+    public async Task<ApiResult<PnlOutput>> GetPnlAsync(string symbol, string address)
     {
         var api = new ApiResult<PnlOutput>();
-        var bets = await _betRepo.GetByAddressAsync(address);
-        var totalBet = bets.Sum(b => b.Amount);
-        var totalReward = bets.Sum(b => b.Reward);
-        var rounds = bets.Count;
-        var winRounds = bets.Count(b => b.Reward > 0m);
+        var stat = await _statRepo.GetByAddressAsync(symbol, address);
+        if (stat == null)
+        {
+            api.SetRsult(ApiResultCode.Success, new PnlOutput());
+            return api;
+        }
+
+        var totalBet = stat.TotalBet;
+        var totalReward = stat.TotalReward;
+        var rounds = stat.Rounds;
+        var winRounds = stat.WinRounds;
         var loseRounds = rounds - winRounds;
         var netProfit = totalReward - totalBet;
-        var winRate = rounds > 0
-            ? ((decimal)winRounds / rounds).ToAmountString()
-            : "0";
+        var winRate = rounds > 0 ? ((decimal)winRounds / rounds).ToAmountString() : "0";
         var avgBet = rounds > 0 ? (totalBet / rounds).ToAmountString() : "0";
         var avgReturn = rounds > 0 ? (totalReward / rounds).ToAmountString() : "0";
-        var best = bets.OrderByDescending(b => b.Reward - b.Amount).FirstOrDefault();
-        var bestId = best?.RoundId ?? 0;
-        var bestProfit = best != null ? (best.Reward - best.Amount).ToAmountString() : "0";
+        var bestId = stat.BestRoundId;
+        var bestProfit = stat.BestRoundProfit.ToAmountString();
         var output = new PnlOutput
         {
             TotalBet = totalBet.ToAmountString(),

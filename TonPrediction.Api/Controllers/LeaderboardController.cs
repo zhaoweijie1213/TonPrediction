@@ -19,11 +19,12 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     /// </summary>
     [HttpGet("list")]
     public async Task<ApiResult<LeaderboardOutput>> GetListAsync(
+        [FromQuery] string symbol = "ton",
         [FromQuery] string rankBy = "netProfit",
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? address = null)
     {
-        return await _service.GetListAsync(rankBy, page, pageSize, address);
+        return await _service.GetListAsync(symbol, rankBy, page, pageSize, address);
     }
 }

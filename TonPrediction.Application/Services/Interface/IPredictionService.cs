@@ -28,7 +28,8 @@ public interface IPredictionService : ITransientDependency
     /// <summary>
     /// 获取指定地址的盈亏汇总。
     /// </summary>
+    /// <param name="symbol">币种符号。</param>
     /// <param name="address">用户地址。</param>
     /// <returns>盈亏信息。</returns>
-    Task<ApiResult<PnlOutput>> GetPnlAsync(string address);
+    Task<ApiResult<PnlOutput>> GetPnlAsync(string symbol, string address);
 }

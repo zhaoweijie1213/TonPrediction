@@ -17,6 +17,7 @@ public interface ILeaderboardService : ITransientDependency
     /// <param name="pageSize">分页大小。</param>
     /// <param name="address">可选地址。</param>
     Task<ApiResult<LeaderboardOutput>> GetListAsync(
+        string symbol = "ton",
         string rankBy = "netProfit",
         int page = 1,
         int pageSize = 10,

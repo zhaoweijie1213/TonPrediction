@@ -12,21 +12,24 @@ public interface IPnlStatRepository : IBaseRepository<PnlStatEntity>, ITransient
     /// <summary>
     /// 根据地址获取统计记录。
     /// </summary>
+    /// <param name="symbol">币种符号。</param>
     /// <param name="address">用户地址。</param>
-    Task<PnlStatEntity?> GetByAddressAsync(string address);
+    Task<PnlStatEntity?> GetByAddressAsync(string symbol, string address);
 
     /// <summary>
     /// 分页获取排行榜数据。
     /// </summary>
+    /// <param name="symbol">币种符号。</param>
     /// <param name="rankBy">排序字段。</param>
     /// <param name="page">页码。</param>
     /// <param name="pageSize">分页大小。</param>
-    Task<List<PnlStatEntity>> GetPagedAsync(string rankBy, int page, int pageSize);
+    Task<List<PnlStatEntity>> GetPagedAsync(string symbol, string rankBy, int page, int pageSize);
 
     /// <summary>
     /// 获取指定地址的排名。
     /// </summary>
+    /// <param name="symbol">币种符号。</param>
     /// <param name="address">用户地址。</param>
     /// <param name="rankBy">排序字段。</param>
-    Task<int> GetRankAsync(string address, string rankBy);
+    Task<int> GetRankAsync(string symbol, string address, string rankBy);
 }
