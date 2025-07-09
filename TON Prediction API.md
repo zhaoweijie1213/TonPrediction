@@ -6,6 +6,7 @@
 >
 > - 时间使用 **Unix 时间戳（秒）**，默认时区 UTC+0。
 >
+> - 转账下注时需在 Comment 中填写 `<回合ID> bull` 或 `<回合ID> bear`，表示看多或看空。
 > - 所有 REST 接口统一返回包裹：
 >
 >   ```json
@@ -34,6 +35,7 @@
 >  .build();
 >
 >hub.on("currentRound", data => { /* ... */ });
+>hub.on("nextRound", data => { /* ... */ });
 >hub.on("roundStarted", data => { /* ... */ });
 >hub.on("roundLocked", data => { /* ... */ });
 >hub.on("settlementStarted", data => { /* ... */ });
@@ -89,7 +91,17 @@
 
 ------
 
-## 2️⃣ 回合开始通知（`roundStarted` • WS 广播）
+## 2️⃣ 当前下注回合（`nextRound` • WS 推送）
+
+- **SignalR 事件**：`nextRound`
+
+- **推送频率**：下注变动时实时推送
+
+字段与 `currentRound` 完全一致，用于展示当前可下注回合的奖池变化。
+
+------
+
+## 3️⃣ 回合开始通知（`roundStarted` • WS 广播）
 
 - **SignalR 事件**：`roundStarted`
 
@@ -99,7 +111,7 @@
 | --------- | ---- | -------- |
 | `id` | int  | 回合唯一编号 |
 | `epoch` | int | 期次（Epoch） |
-## 3️⃣ 回合锁定通知（`roundLocked` • WS 广播）
+## 4️⃣ 回合锁定通知（`roundLocked` • WS 广播）
 
 - **SignalR 事件**：`roundLocked`
 
@@ -111,7 +123,7 @@
 | `epoch` | int | 期次（Epoch） |
 
 
-## 4️⃣ 开始结算通知（`settlementStarted` • WS 广播）
+## 5️⃣ 开始结算通知（`settlementStarted` • WS 广播）
 
 - **SignalR 事件**：`settlementStarted`
 
@@ -122,7 +134,7 @@
 | `id` | int  | 回合唯一编号 |
 | `epoch` | int | 期次（Epoch） |
 
-## 5️⃣ 结束结算通知（`settlementEnded` • WS 广播）
+## 6️⃣ 结束结算通知（`settlementEnded` • WS 广播）
 
 - **SignalR 事件**：`settlementEnded`
 
@@ -133,7 +145,7 @@
 | `id` | int  | 回合唯一编号 |
 | `epoch` | int | 期次（Epoch） |
 
-## 6️⃣ 回合结束通知（`roundEnded` • WS 广播）
+## 7️⃣ 回合结束通知（`roundEnded` • WS 广播）
 
 - **SignalR 事件**：`roundEnded`
 
@@ -152,7 +164,7 @@
 
 ------
 
-## 7️⃣ 历史回合列表
+## 8️⃣ 历史回合列表
 
 ### `GET /api/rounds/history?limit=3`
 
@@ -193,7 +205,7 @@
 
 ------
 
-## 8️⃣ 即将开始回合
+## 9️⃣ 即将开始回合
 
 ### `GET /api/rounds/upcoming`
 
@@ -208,7 +220,7 @@
 
 ------
 
-## 9️⃣ 价格走势图
+## 1️⃣0️⃣ 价格走势图
 
 ### `GET /api/price/chart`
 
@@ -221,7 +233,7 @@
 
 ------
 
-## 1️⃣0️⃣ 我的下注记录
+## 1️⃣1️⃣ 我的下注记录
 
 ### mode = `round`
 
@@ -260,7 +272,7 @@ GET /api/predictions/pnl
 
 ------
 
-## 1️⃣1️⃣ 排行榜
+## 1️⃣2️⃣ 排行榜
 
 ### `GET /api/leaderboard/list`
 
@@ -271,7 +283,7 @@ GET /api/predictions/pnl
 | `page`     | int    | 1         | 当前页                                     |
 | `pageSize` | int    | 10        | 分页大小，<=100                            |
 | `address`  | string |           | 若传入则返回该地址在列表中的页码 & 排名    |
-## 1️⃣2️⃣ 领奖
+## 1️⃣3️⃣ 领奖
 
 ### `POST /api/claim`
 
@@ -288,11 +300,12 @@ GET /api/predictions/pnl
 | `status` | enum | `pending`\|`confirmed`\|`failed` |
 | `timestamp` | int | 交易时间（秒） |
 
-## 1️⃣3️⃣ 下注上报
+## 1️⃣4️⃣ 下注上报
 
 ### `POST /api/bet/report`
 
 用户在转账后调用此接口上报交易哈希，后台验证后记录下注信息。
+转账 Comment 格式为 `<回合ID> bull` 或 `<回合ID> bear`。
 
 请求体：
 ```json

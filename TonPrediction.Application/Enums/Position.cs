@@ -17,6 +17,6 @@ namespace TonPrediction.Application.Enums
         /// <summary>
         /// 平盘，退本金
         /// </summary>
-        Tie = 3 
+        Tie = 3
     }
 }

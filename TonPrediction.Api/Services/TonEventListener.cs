@@ -29,7 +29,7 @@ public class TonEventListener(
     private ulong _lastLt;
     private const string SseUrlTemplate =
         "/v2/sse/accounts/transactions?accounts={0}";
-    private static readonly Regex CommentRegex = new(@"^\s*(\w+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
+    private static readonly Regex CommentRegex = new(@"^\s*(\d+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
     /// 执行
@@ -153,8 +153,7 @@ public class TonEventListener(
     internal virtual async Task ProcessTransactionAsync(TonTxDetail tx)
     {
         var match = CommentRegex.Match(tx.In_Message.Comment ?? string.Empty);
-        if (!match.Success) return;
-        var symbol = match.Groups[1].Value.ToLowerInvariant();
+        if (!match.Success || !long.TryParse(match.Groups[1].Value, out var roundId)) return;
         var side = match.Groups[2].Value.ToLowerInvariant();
         //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
@@ -167,8 +166,8 @@ public class TonEventListener(
         var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
         var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
 
-        var round = await roundRepo.GetCurrentBettingAsync(symbol);
-        if (round == null) return;
+        var round = await roundRepo.GetByIdAsync(roundId);
+        if (round == null || round.Status != RoundStatus.Betting) return;
 
         var exist = await betRepo.GetByTxHashAsync(tx.Hash);
         if (exist != null)
@@ -205,7 +204,7 @@ public class TonEventListener(
         await roundRepo.UpdateByPrimaryKeyAsync(round);
 
         var currentPrice = round.ClosePrice > 0 ? round.ClosePrice : round.LockPrice;
-        await _notifier.PushCurrentRoundAsync(round, currentPrice);
+        await _notifier.PushNextRoundAsync(round, currentPrice);
     }
 
 
