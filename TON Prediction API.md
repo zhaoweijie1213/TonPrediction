@@ -252,17 +252,24 @@ GET /api/predictions/round
 
 **data[] 字段：**
 
-| 字段名       | 类型            | 说明                    |
-| ------------ | --------------- | ----------------------- |
-| `id`    | int             | 回合唯一编号                |
-| `epoch` | int             | 期次（Epoch）                |
-| `position`   | enum            | `up` | `down`           |
-| `amount`     | string(decimal) | 押注金额                |
-| `lockPrice`  | string(decimal) | 锁定价格                |
-| `closePrice` | string(decimal) | 收盘价格                |
-| `reward`     | string(decimal) | 奖励（可能为 0）        |
-| `claimed`    | bool            | 是否已领取              |
-| `result`     | enum            | `win` | `lose` | `draw` |
+| 字段名 | 类型 | 说明 |
+| ------ | ---- | ---- |
+| `id` | int | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
+| `lockPrice` | string(decimal) | 锁定价格 |
+| `closePrice` | string(decimal) | 收盘价格 |
+| `totalAmount` | string(decimal) | 总下注金额 |
+| `bullAmount` | string(decimal) | 押 **上涨** 的金额 |
+| `bearAmount` | string(decimal) | 押 **下跌** 的金额 |
+| `rewardPool` | string(decimal) | 奖金池（扣手续费） |
+| `startTime` | int | 开始时间 |
+| `endTime` | int | 结束时间 |
+| `bullOdds` | string(decimal) | 上涨赔率 |
+| `bearOdds` | string(decimal) | 下跌赔率 |
+| `position` | enum | 用户下注方向，可能为 null |
+| `betAmount` | string(decimal) | 用户下注金额 |
+| `reward` | string(decimal) | 奖励金额 |
+| `claimed` | bool | 是否已领取 |
 
 ### mode = `pnl`
 
@@ -270,7 +277,21 @@ GET /api/predictions/round
 GET /api/predictions/pnl
 ```
 
-返回盈亏汇总，字段同现有文档，字段名保持不变。
+返回盈亏汇总：
+
+| 字段名 | 类型 | 说明 |
+| ------ | ---- | ---- |
+| `totalBet` | string(decimal) | 累计下注金额 |
+| `totalReward` | string(decimal) | 累计奖励金额 |
+| `netProfit` | string(decimal) | 最终盈亏 |
+| `rounds` | int | 参与回合数 |
+| `winRounds` | int | 获胜回合数 |
+| `loseRounds` | int | 失利回合数 |
+| `winRate` | string | 胜率（0-1） |
+| `averageBet` | string(decimal) | 平均投入/回合 |
+| `averageReturn` | string(decimal) | 平均奖励/回合 |
+| `bestRoundId` | int | 最佳回合编号 |
+| `bestRoundProfit` | string(decimal) | 最佳回合收益 |
 
 ------
 
