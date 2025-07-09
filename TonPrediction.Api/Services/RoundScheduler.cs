@@ -6,9 +6,9 @@ using System.Linq;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
-using TonPrediction.Application.Output;
 
 namespace TonPrediction.Api.Services
 {
@@ -123,6 +123,7 @@ namespace TonPrediction.Api.Services
             var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
             var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
+            var statRepo = scope.ServiceProvider.GetRequiredService<IPnlStatRepository>();
 
             var now = DateTime.UtcNow;
 
@@ -175,6 +176,37 @@ namespace TonPrediction.Api.Services
                     }
                     bet.Reward = reward;
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
+
+                    var stat = await statRepo.GetByAddressAsync(bet.UserAddress);
+                    var profit = reward - bet.Amount;
+                    var win = reward > 0m;
+                    if (stat == null)
+                    {
+                        stat = new PnlStatEntity
+                        {
+                            UserAddress = bet.UserAddress,
+                            TotalBet = bet.Amount,
+                            TotalReward = reward,
+                            Rounds = 1,
+                            WinRounds = win ? 1 : 0,
+                            BestRoundId = locked.Id,
+                            BestRoundProfit = profit
+                        };
+                        await statRepo.InsertAsync(stat);
+                    }
+                    else
+                    {
+                        stat.TotalBet += bet.Amount;
+                        stat.TotalReward += reward;
+                        stat.Rounds += 1;
+                        if (win) stat.WinRounds += 1;
+                        if (profit > stat.BestRoundProfit)
+                        {
+                            stat.BestRoundProfit = profit;
+                            stat.BestRoundId = locked.Id;
+                        }
+                        await statRepo.UpdateByPrimaryKeyAsync(stat);
+                    }
                 }
 
                 locked.Status = winner switch

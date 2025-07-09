@@ -19,6 +19,7 @@ namespace TonPrediction.Infrastructure.Database.Migrations
             db.CodeFirst.InitTables<PriceSnapshotEntity>();
             db.CodeFirst.InitTables<ClaimEntity>();
             db.CodeFirst.InitTables<StateEntity>();
+            db.CodeFirst.InitTables<PnlStatEntity>();
         }
     }
 }
