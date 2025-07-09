@@ -22,7 +22,7 @@ public class BetService(
     private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IRoundRepository _roundRepo = roundRepo;
-    private static readonly Regex CommentRegex = new(@"^\s*(\w+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
+    private static readonly Regex CommentRegex = new(@"^\s*(\d+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
     /// 验证并上报用户下注信息
@@ -44,15 +44,14 @@ public class BetService(
             return api;
         }
         var match = CommentRegex.Match(detail.In_Message?.Comment ?? string.Empty);
-        if (!match.Success)
+        if (!match.Success || !long.TryParse(match.Groups[1].Value, out var roundId))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
-        var symbol = match.Groups[1].Value.ToLowerInvariant();
         var side = match.Groups[2].Value.ToLowerInvariant();
-        var round = await _roundRepo.GetCurrentBettingAsync(symbol);
-        if (round == null)
+        var round = await _roundRepo.GetByIdAsync(roundId);
+        if (round == null || round.Status != RoundStatus.Betting)
         {
             api.SetRsult(ApiResultCode.Fail, false);
             return api;

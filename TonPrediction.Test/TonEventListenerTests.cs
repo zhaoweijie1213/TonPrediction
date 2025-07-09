@@ -43,14 +43,14 @@ public class TonEventListenerTests
             .ReturnsAsync((BetEntity?)null);
 
         var roundRepo = new Mock<IRoundRepository>();
-        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton"))
+        roundRepo.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(round);
         roundRepo.Setup(r => r.UpdateByPrimaryKeyAsync(round))
             .ReturnsAsync(true)
             .Verifiable();
 
         var notifier = new Mock<IPredictionHubService>();
-        notifier.Setup(n => n.PushCurrentRoundAsync(
+        notifier.Setup(n => n.PushNextRoundAsync(
                 round,
                 It.IsAny<decimal>()))
             .Returns(Task.CompletedTask)
@@ -82,7 +82,7 @@ public class TonEventListenerTests
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
 
-        var tx = new TonTxDetail(2m, new InMsg("sender", "ton bull", "addr"), "hash")
+        var tx = new TonTxDetail(2m, new InMsg("sender", "1 bull", "addr"), "hash")
         {
             Lt = 1
         };
@@ -90,7 +90,7 @@ public class TonEventListenerTests
 
         betRepo.Verify(b => b.InsertAsync(It.IsAny<BetEntity>()), Times.Once);
         roundRepo.Verify(r => r.UpdateByPrimaryKeyAsync(round), Times.Once);
-        notifier.Verify(n => n.PushCurrentRoundAsync(
+        notifier.Verify(n => n.PushNextRoundAsync(
             round,
             It.IsAny<decimal>()), Times.Once);
 
@@ -118,7 +118,7 @@ public class TonEventListenerTests
         betRepo.Setup(b => b.UpdateByPrimaryKeyAsync(bet)).ReturnsAsync(true).Verifiable();
 
         var roundRepo = new Mock<IRoundRepository>();
-        roundRepo.Setup(r => r.GetCurrentLiveAsync("ton"))
+        roundRepo.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(round);
 
         var notifier = new Mock<IPredictionHubService>();
@@ -147,7 +147,7 @@ public class TonEventListenerTests
             new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>());
 
-        var tx = new TonTxDetail(1m, new InMsg("sender", "ton bull", "addr"), "hash") { Lt = 2 };
+        var tx = new TonTxDetail(1m, new InMsg("sender", "1 bull", "addr"), "hash") { Lt = 2 };
         await listener.ProcessTransactionAsync(tx);
 
         betRepo.Verify(b => b.UpdateByPrimaryKeyAsync(bet), Times.Once);
