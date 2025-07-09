@@ -128,7 +128,7 @@ namespace TonPrediction.Api.Services
 
             // 结束上一回合并结算奖励
             var locked = await roundRepo.GetCurrentLockedAsync(symbol);
-            if (locked != null && locked.CloseTime <= now)
+            if (locked?.Status == RoundStatus.Locked && locked.CloseTime <= now)
             {
                 var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 locked.CloseTime = now;
@@ -194,6 +194,7 @@ namespace TonPrediction.Api.Services
             // 到达锁定时间时，锁定当前回合并创建下一回合
             if (live?.LockTime <= now && live.Status == RoundStatus.Betting)
             {
+                // 锁定当前回合
                 var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 live.LockPrice = lockPrice;
                 live.Status = RoundStatus.Locked;
@@ -202,8 +203,10 @@ namespace TonPrediction.Api.Services
                 await _notifier.PushRoundLockedAsync(live.Id, live.Epoch);
                 await _notifier.PushSettlementStartedAsync(live.Id, live.Epoch);
 
+                // 创建下一回合
                 var nextPrice = lockPrice;
-                var nextRound = await roundRepo.GetByEpochAsync(symbol, live.Epoch + 1);
+                long nextEpoch = live.Epoch + 1;
+                var nextRound = await roundRepo.GetByEpochAsync(symbol, nextEpoch);
                 if (nextRound != null)
                 {
                     nextRound.StartTime = now;
@@ -218,7 +221,7 @@ namespace TonPrediction.Api.Services
                     nextRound = new RoundEntity
                     {
                         Symbol = symbol,
-                        Epoch = live.Epoch + 1,
+                        Epoch = nextEpoch,
                         StartTime = now,
                         LockTime = now.AddSeconds(_interval),
                         CloseTime = now.AddSeconds(_interval * 2),

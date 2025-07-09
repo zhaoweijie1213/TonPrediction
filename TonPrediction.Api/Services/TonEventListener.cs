@@ -166,7 +166,7 @@ public class TonEventListener(
         var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
         var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
 
-        var round = await roundRepo.GetCurrentLiveAsync(symbol);
+        var round = await roundRepo.GetCurrentBettingAsync(symbol);
         if (round == null) return;
 
         var exist = await betRepo.GetByTxHashAsync(tx.Hash);

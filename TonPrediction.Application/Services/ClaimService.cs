@@ -26,7 +26,7 @@ public class ClaimService(
         var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId);
         if (bet == null || bet.Claimed || bet.Reward <= 0m)
         {
-            api.SetRsult(ApiResultCode.ErrorParams, null);
+            api.SetRsult(ApiResultCode.DataNotFound, null);
             return api;
         }
 
