@@ -98,7 +98,7 @@ public class RoundService(
     /// <param name="ct"></param>
     /// <returns></returns>
     public async Task<ApiResult<List<RoundUserBetOutput>>> GetRecentAsync(
-        string address,
+        string? address,
         string symbol = "ton",
         int limit = 5,
         CancellationToken ct = default)
@@ -107,9 +107,9 @@ public class RoundService(
         limit = limit is <= 0 or > 100 ? 3 : limit;
         var rounds = await _roundRepo.GetRecentAsync(symbol, limit);
         var roundIds = rounds.Select(r => r.Id).ToArray();
-        var bets = roundIds.Length == 0
+        var bets = roundIds.Length == 0 || string.IsNullOrWhiteSpace(address)
             ? new List<BetEntity>()
-            : await _betRepo.GetByAddressAndRoundsAsync(address, roundIds, ct);
+            : await _betRepo.GetByAddressAndRoundsAsync(address!, roundIds, ct);
         var betMap = bets.ToDictionary(b => b.RoundId);
 
         var list = new List<RoundUserBetOutput>();

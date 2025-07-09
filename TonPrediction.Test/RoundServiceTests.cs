@@ -73,4 +73,35 @@ public class RoundServiceTests
         Assert.Equal(2, result.Data.Count);
         Assert.Equal("10", result.Data[0].BetAmount);
     }
+
+    [Fact]
+    public async Task GetRecentAsync_WithoutAddress_ReturnsRoundsOnly()
+    {
+        var rounds = new List<RoundEntity>
+        {
+            new()
+            {
+                Id = 1,
+                Epoch = 1,
+                StartTime = DateTime.UtcNow.AddMinutes(-10),
+                CloseTime = DateTime.UtcNow.AddMinutes(-5),
+                LockPrice = 1m,
+                ClosePrice = 1.2m,
+                TotalAmount = 100m,
+                BullAmount = 60m,
+                BearAmount = 40m,
+                RewardAmount = 95m
+            }
+        };
+
+        var roundRepo = new Mock<IRoundRepository>();
+        roundRepo.Setup(r => r.GetRecentAsync("ton", 1)).ReturnsAsync(rounds);
+        var betRepo = new Mock<IBetRepository>();
+        var service = new RoundService(roundRepo.Object, new ConfigurationBuilder().Build(), betRepo.Object);
+
+        var result = await service.GetRecentAsync(null, "ton", 1);
+
+        Assert.Single(result.Data);
+        Assert.Equal("0", result.Data[0].BetAmount);
+    }
 }
