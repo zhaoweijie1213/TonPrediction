@@ -28,7 +28,7 @@ public class RoundService(
     {
         var api = new ApiResult<List<RoundHistoryOutput>>();
         limit = limit is <= 0 or > 100 ? 3 : limit;
-        var list = await _roundRepo.GetEndedAsync(symbol, limit);
+        var list = await _roundRepo.GetRoundsAsync(symbol, limit);
         var result = list.Select(r => new RoundHistoryOutput
         {
             RoundId = r.Id,

@@ -50,7 +50,7 @@ namespace TonPrediction.Application.Database.Repository
         /// </summary>
         /// <param name="symbol"></param>
         /// <param name="limit">限制数量。</param>
-        Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit);
+        Task<List<RoundEntity>> GetRoundsAsync(string symbol, int limit);
 
         /// <summary>
         /// 获取回合信息通过回合编号。

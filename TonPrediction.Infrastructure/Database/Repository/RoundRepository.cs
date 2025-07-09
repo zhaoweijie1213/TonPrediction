@@ -70,11 +70,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .FirstAsync();
         }
 
-        /// <inheritdoc />
-        public async Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        public async Task<List<RoundEntity>> GetRoundsAsync(string symbol, int limit)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Completed || r.Status == RoundStatus.Cancelled)
+                .Where(r => r.Symbol == symbol)
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .Take(limit)
                 .ToListAsync();
