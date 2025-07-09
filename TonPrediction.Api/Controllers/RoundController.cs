@@ -31,13 +31,4 @@ public class RoundController(IRoundService roundService) : ControllerBase
     {
         return await _roundService.GetUpcomingAsync(symbol);
     }
-
-    /// <summary>
-    /// 获取下一回合。
-    /// </summary>
-    [HttpGet("next")]
-    public async Task<ApiResult<UpcomingRoundOutput>> GetNextAsync([FromQuery] string symbol = "ton")
-    {
-        return await _roundService.GetUpcomingAsync(symbol);
-    }
 }
