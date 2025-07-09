@@ -15,16 +15,6 @@ public class CurrentRoundOutput
     public long RoundId { get; set; }
 
     /// <summary>
-    /// 期次，从 1 开始递增。
-    /// </summary>
-    public long Epoch { get; set; }
-
-    /// <summary>
-    /// 锁定价格。
-    /// </summary>
-    public string LockPrice { get; set; } = string.Empty;
-
-    /// <summary>
     /// 最新价格。
     /// </summary>
     public string CurrentPrice { get; set; } = string.Empty;
@@ -50,11 +40,6 @@ public class CurrentRoundOutput
     public string RewardPool { get; set; } = string.Empty;
 
     /// <summary>
-    /// 结束时间 Unix 秒。
-    /// </summary>
-    public long EndTime { get; set; }
-
-    /// <summary>
     /// 看涨赔率。
     /// </summary>
     public string BullOdds { get; set; } = string.Empty;
@@ -63,9 +48,4 @@ public class CurrentRoundOutput
     /// 看跌赔率。
     /// </summary>
     public string BearOdds { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 回合状态。
-    /// </summary>
-    public RoundStatus Status { get; set; }
 }

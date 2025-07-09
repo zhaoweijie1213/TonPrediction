@@ -45,7 +45,7 @@
 >await hub.start();
 > ```
 >
->**说明**：回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
+>**说明**：除 `currentRound` 与 `nextRound` 外，其他回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
 
 ------
 
@@ -55,35 +55,27 @@
 
 - **推送频率**：每 5 秒（或当有下注 / 价格变化时实时推送）
 
-| 字段名         | 类型            | 说明                                     |
-| -------------- | --------------- | ---------------------------------------- |
-| `id`      | int             | 回合唯一编号                                 |
-| `epoch`   | int             | 期次（Epoch）                                 |
-| `lockPrice`    | string(decimal) | 锁定价格                                 |
-| `currentPrice` | string(decimal) | 最新价格                                 |
-| `totalAmount`  | string(decimal) | 总下注金额                               |
-| `bullAmount` | string(decimal) | 押 **上涨** 的金额                       |
-| `bearAmount` | string(decimal) | 押 **下跌** 的金额                       |
-| `rewardPool`   | string(decimal) | 扣除手续费后的可分配奖金池               |
-| `endTime`      | int             | 回合结束时间（Unix 秒）                  |
-| `bullOdds`  | string(decimal) | 上涨赔率 = `totalAmount / bullAmount`    |
-| `bearOdds` | string(decimal) | 下跌赔率 = `totalAmount / bearAmount`   |
-| `status`       | enum            | `upcoming` |
+| 字段名       | 类型            | 说明                                   |
+| ------------ | --------------- | -------------------------------------- |
+| `id`         | int             | 回合唯一编号                           |
+| `currentPrice` | string(decimal) | 最新价格                               |
+| `totalAmount`  | string(decimal) | 总下注金额                             |
+| `bullAmount`   | string(decimal) | 押 **上涨** 的金额                     |
+| `bearAmount`   | string(decimal) | 押 **下跌** 的金额                     |
+| `rewardPool`   | string(decimal) | 扣除手续费后的可分配奖金池             |
+| `bullOdds`     | string(decimal) | 上涨赔率 = `totalAmount / bullAmount` |
+| `bearOdds`     | string(decimal) | 下跌赔率 = `totalAmount / bearAmount` |
 
 **示例：**
 
 ```json
 {
   "id": 357690,
-  "epoch": 357690,
-  "lockPrice": "308.85",
   "currentPrice": "309.125",
   "totalAmount": "2500",
   "bullAmount": "1400",
   "bearAmount": "1100",
   "rewardPool": "2425",
-  "endTime": 1710001234,
-  "status": "live",
   "bullOdds": "1.78571428",
   "bearOdds": "2.20454545"
 }
@@ -97,13 +89,17 @@
 
 - **推送频率**：下注变动时实时推送
 
-仅推送下个回合的奖池变化，字段如下：
+仅推送下个回合实时变化的字段：
 
-| 字段名       | 类型            | 说明                     |
-| ------------ | --------------- | ------------------------ |
-| `id`         | int             | 回合唯一编号             |
-| `rewardPool` | string(decimal) | 扣除手续费后的可分配奖金 |
-| `symbol`     | string          | 币种符号，如 `ton`       |
+| 字段名       | 类型            | 说明                                   |
+| ------------ | --------------- | -------------------------------------- |
+| `id`         | int             | 回合唯一编号                           |
+| `totalAmount`| string(decimal) | 总下注金额                             |
+| `bullAmount` | string(decimal) | 押 **上涨** 的金额                     |
+| `bearAmount` | string(decimal) | 押 **下跌** 的金额                     |
+| `rewardPool` | string(decimal) | 扣除手续费后的可分配奖金               |
+| `bullOdds`   | string(decimal) | 上涨赔率 = `totalAmount / bullAmount` |
+| `bearOdds`   | string(decimal) | 下跌赔率 = `totalAmount / bearAmount` |
 
 ------
 
