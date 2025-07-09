@@ -19,7 +19,7 @@ namespace TonPrediction.Application.Enums
         /// 已锁价，等待收盘
         /// start
         /// </summary>
-        Live = 2,
+        Locked = 2,
 
         /// <summary>
         /// 拿到 closePrice，结算中

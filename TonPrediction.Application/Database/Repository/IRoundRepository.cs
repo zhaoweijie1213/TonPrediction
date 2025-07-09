@@ -15,16 +15,23 @@ namespace TonPrediction.Application.Database.Repository
     public interface IRoundRepository : IBaseRepository<RoundEntity>, ITransientDependency
     {
         /// <summary>
+        /// 获取创世回合信息
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        public Task<RoundEntity?> GetGenesisRoundAsync(string symbol);
+
+        /// <summary>
         /// 获取最新一轮记录。
         /// </summary>
         /// <param name="symbol"></param>
         Task<RoundEntity?> GetLatestAsync(string symbol);
 
         /// <summary>
-        /// 获取当前进行中的回合。
+        /// 获取当前下注中的回合。
         /// </summary>
         /// <param name="symbol"></param>
-        Task<RoundEntity?> GetCurrentLiveAsync(string symbol);
+        Task<RoundEntity?> GetCurrentBettingAsync(string symbol);
 
         /// <summary>
         /// 获取下一回合记录（状态为 Upcoming）。
@@ -50,5 +57,13 @@ namespace TonPrediction.Application.Database.Repository
         /// </summary>
         /// <param name="roundIds">回合序号集合。</param>
         Task<List<RoundEntity>> GetByRoundIdsAsync(long[] roundIds);
+
+        /// <summary>
+        /// 获取指定币种和回合编号的回合信息。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="epoch"></param>
+        /// <returns></returns>
+        public Task<RoundEntity> GetByEpochAsync(string symbol, long epoch);
     }
 }

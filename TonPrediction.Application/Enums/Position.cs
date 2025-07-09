@@ -12,6 +12,11 @@ namespace TonPrediction.Application.Enums
         /// <summary>
         /// 看跌。
         /// </summary>
-        Bear = 2
+        Bear = 2,
+
+        /// <summary>
+        /// 平盘，退本金
+        /// </summary>
+        Tie = 3 
     }
 }

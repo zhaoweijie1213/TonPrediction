@@ -77,7 +77,8 @@ namespace TonPrediction.Api.Services
                 Price = price
             });
 
-            var round = await roundRepo.GetCurrentLiveAsync(symbol);
+            //获取当前锁定的回合
+            var round = await roundRepo.GetCurrentLockedAsync(symbol);
             if (round != null)
             {
                 await _notifier.PushCurrentRoundAsync(round, price);

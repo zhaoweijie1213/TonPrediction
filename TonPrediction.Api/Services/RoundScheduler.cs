@@ -49,6 +49,10 @@ namespace TonPrediction.Api.Services
         /// <returns></returns>
         private async Task RunSymbolLoopAsync(string symbol, CancellationToken token)
         {
+            // 确保创世回合已执行
+            await ExcuteGenesisRoundAsync(symbol);
+
+            //正常执行回合
             while (!token.IsCancellationRequested)
             {
                 try
@@ -58,7 +62,7 @@ namespace TonPrediction.Api.Services
                         TimeSpan.FromSeconds(10));
                     if (handle != null)
                     {
-                        await HandleRoundAsync(symbol, token);
+                        await ExecuteRoundAsync(symbol, token);
                     }
                 }
                 catch (Exception ex)
@@ -66,9 +70,45 @@ namespace TonPrediction.Api.Services
                     _logger.LogError(ex, "Round scheduler error for {Symbol}", symbol);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), token);
+                await Task.Delay(TimeSpan.FromSeconds(1), token);
             }
         }
+
+        /// <summary>
+        /// 执行创世回合
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        public async Task ExcuteGenesisRoundAsync(string symbol)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
+
+            // 创世回合：给予首轮下注窗口
+            var genesisRound = await roundRepo.GetGenesisRoundAsync(symbol);
+            RoundEntity round;
+            if (genesisRound == null)
+            {
+                var now = DateTime.UtcNow;
+                var priceRepo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
+                var priceService = scope.ServiceProvider.GetRequiredService<IPriceService>();
+                var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
+
+                round = new RoundEntity
+                {
+                    Symbol = symbol,
+                    Epoch = 1,
+                    StartTime = now,
+                    LockTime = now.AddSeconds(_interval),
+                    CloseTime = now.AddSeconds(_interval * 2),
+                    LockPrice = startPrice,
+                    Status = RoundStatus.Betting
+                };
+                await roundRepo.InsertAsync(round);
+                await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
+            }
+        }
+
 
         /// <summary>
         /// 回合处理
@@ -76,7 +116,7 @@ namespace TonPrediction.Api.Services
         /// <param name="symbol"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        private async Task HandleRoundAsync(string symbol, CancellationToken token)
+        private async Task ExecuteRoundAsync(string symbol, CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
@@ -99,6 +139,7 @@ namespace TonPrediction.Api.Services
                 Position? winner = null;
                 if (closePrice > locked.LockPrice) winner = Position.Bull;
                 else if (closePrice < locked.LockPrice) winner = Position.Bear;
+                else if (closePrice == locked.LockPrice) winner = Position.Tie;
 
                 locked.WinnerSide = winner;
                 locked.RewardBaseCalAmount = winner switch
@@ -136,7 +177,11 @@ namespace TonPrediction.Api.Services
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
                 }
 
-                locked.Status = RoundStatus.Completed;
+                locked.Status = winner switch
+                {
+                    Position.Tie => RoundStatus.Cancelled,
+                    _ => RoundStatus.Completed
+                };
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
 
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
@@ -144,83 +189,21 @@ namespace TonPrediction.Api.Services
                 await _notifier.PushSettlementEndedAsync(locked.Id, locked.Epoch);
             }
 
-            // 获取当前正在进行的回合
-            var live = await roundRepo.GetCurrentLiveAsync(symbol);
-            if (live == null)
-            {
-                var startPrice = (await priceService.GetAsync(symbol, "usd")).Price;
-                var last = await roundRepo.GetLatestAsync(symbol);
-
-                RoundEntity liveRound;
-                if (last == null)
-                {
-                    // 创世回合：给予首轮下注窗口
-                    liveRound = new RoundEntity
-                    {
-                        Symbol = symbol,
-                        Epoch = 1,
-                        StartTime = now,
-                        LockTime = now.AddSeconds(_interval),
-                        CloseTime = now.AddSeconds(_interval * 2),
-                        LockPrice = startPrice,
-                        Status = RoundStatus.Betting
-                    };
-                    await roundRepo.InsertAsync(liveRound);
-                    await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                }
-                else
-                {
-                    liveRound = new RoundEntity
-                    {
-                        Symbol = symbol,
-                        Epoch = last.Epoch + 1,
-                        StartTime = now,
-                        LockTime = now.AddSeconds(_interval),
-                        CloseTime = now.AddSeconds(_interval * 2),
-                        LockPrice = startPrice,
-                        Status = RoundStatus.Betting
-                    };
-                    await roundRepo.InsertAsync(liveRound);
-                    await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                }
-
-                // 创建下一回合（Upcoming），供玩家预下注
-                var upcoming = await roundRepo.GetUpcomingAsync(symbol);
-                if (upcoming == null)
-                {
-                    upcoming = new RoundEntity
-                    {
-                        Symbol = symbol,
-                        Epoch = liveRound.Epoch + 1,
-                        StartTime = liveRound.LockTime,
-                        LockTime = liveRound.LockTime.AddSeconds(_interval),
-                        CloseTime = liveRound.LockTime.AddSeconds(_interval * 2),
-                        LockPrice = startPrice,
-                        Status = RoundStatus.Upcoming
-                    };
-                    await roundRepo.InsertAsync(upcoming);
-                    await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = startPrice });
-                }
-
-                await _notifier.PushCurrentRoundAsync(liveRound, liveRound.LockPrice);
-                await _notifier.PushRoundStartedAsync(liveRound.Id, liveRound.Epoch);
-
-                return;
-            }
-
-            // 到达锁定时间时，锁定当前回合并切换下一回合
-            if (live.LockTime <= now && live.Status == RoundStatus.Betting)
+            // 获取当前正在下注的回合
+            var live = await roundRepo.GetCurrentBettingAsync(symbol);
+            // 到达锁定时间时，锁定当前回合并创建下一回合
+            if (live?.LockTime <= now && live.Status == RoundStatus.Betting)
             {
                 var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 live.LockPrice = lockPrice;
-                live.Status = RoundStatus.Live;
+                live.Status = RoundStatus.Locked;
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
                 await _notifier.PushRoundLockedAsync(live.Id, live.Epoch);
                 await _notifier.PushSettlementStartedAsync(live.Id, live.Epoch);
 
                 var nextPrice = lockPrice;
-                var nextRound = await roundRepo.GetUpcomingAsync(symbol);
+                var nextRound = await roundRepo.GetByEpochAsync(symbol, live.Epoch + 1);
                 if (nextRound != null)
                 {
                     nextRound.StartTime = now;
@@ -246,26 +229,6 @@ namespace TonPrediction.Api.Services
                 }
 
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
-                await _notifier.PushCurrentRoundAsync(nextRound, nextRound.LockPrice);
-                await _notifier.PushRoundStartedAsync(nextRound.Id, nextRound.Epoch);
-
-                // 再创建一个 Upcoming 回合
-                var upcoming = await roundRepo.GetUpcomingAsync(symbol);
-                if (upcoming == null)
-                {
-                    upcoming = new RoundEntity
-                    {
-                        Symbol = symbol,
-                        Epoch = nextRound.Epoch + 1,
-                        StartTime = nextRound.LockTime,
-                        LockTime = nextRound.LockTime.AddSeconds(_interval),
-                        CloseTime = nextRound.LockTime.AddSeconds(_interval * 2),
-                        LockPrice = nextPrice,
-                        Status = RoundStatus.Upcoming
-                    };
-                    await roundRepo.InsertAsync(upcoming);
-                    await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = nextPrice });
-                }
             }
         }
     }

@@ -51,15 +51,15 @@ public class BetService(
         }
         var symbol = match.Groups[1].Value.ToLowerInvariant();
         var side = match.Groups[2].Value.ToLowerInvariant();
-        var round = await _roundRepo.GetCurrentLiveAsync(symbol);
+        var round = await _roundRepo.GetCurrentBettingAsync(symbol);
         if (round == null)
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
+            api.SetRsult(ApiResultCode.Fail, false);
             return api;
         }
         if (await _betRepo.GetByTxHashAsync(txHash) != null)
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
+            api.SetRsult(ApiResultCode.ErrorParams, false, "TxHash is exist");
             return api;
         }
         var position = side == "bull" ? Position.Bull : Position.Bear;

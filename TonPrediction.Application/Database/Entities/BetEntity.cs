@@ -52,6 +52,12 @@ namespace TonPrediction.Application.Database.Entities
         public decimal Reward { get; set; }
 
         /// <summary>
+        /// 手续费
+        /// </summary>
+        [SugarColumn(ColumnName = "treasury_fee", ColumnDataType = "decimal(18,8)")]
+        public decimal TreasuryFee { get; set; }
+
+        /// <summary>
         /// 下注交易哈希，唯一索引避免重复插入。
         /// </summary>
         [SugarColumn(ColumnName = "tx_hash", UniqueGroupNameList = new[] { "uq_tx_hash" })]
