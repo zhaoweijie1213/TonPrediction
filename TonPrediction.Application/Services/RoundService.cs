@@ -89,11 +89,18 @@ public class RoundService(
         return api;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 获取最近回合及用户下注信息。
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="symbol"></param>
+    /// <param name="limit"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<ApiResult<List<RoundUserBetOutput>>> GetRecentAsync(
         string address,
         string symbol = "ton",
-        int limit = 3,
+        int limit = 5,
         CancellationToken ct = default)
     {
         var api = new ApiResult<List<RoundUserBetOutput>>();

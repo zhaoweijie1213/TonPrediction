@@ -41,6 +41,6 @@ public interface IRoundService : ITransientDependency
     Task<ApiResult<List<RoundUserBetOutput>>> GetRecentAsync(
         string address,
         string symbol = "ton",
-        int limit = 3,
+        int limit = 5,
         CancellationToken ct = default);
 }
