@@ -11,7 +11,7 @@ public class UpcomingRoundOutput
     /// 回合唯一编号（预计），部分回合可能为 0。
     /// </summary>
     [JsonPropertyName("id")]
-    public long RoundId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 回合期次（预计）。

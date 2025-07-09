@@ -98,7 +98,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 获胜方。
         /// </summary>
-        [SugarColumn(ColumnName = "winner_side")]
+        [SugarColumn(ColumnName = "winner_side", IsNullable = true)]
         public Position? WinnerSide { get; set; }
 
         /// <summary>

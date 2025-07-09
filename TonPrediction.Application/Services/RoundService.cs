@@ -63,7 +63,7 @@ public class RoundService(
         {
             var result = new UpcomingRoundOutput
             {
-                RoundId = upcoming.Id,
+                Id = upcoming.Id,
                 Epoch = upcoming.Epoch,
                 StartTime = new DateTimeOffset(upcoming.StartTime).ToUnixTimeSeconds(),
                 EndTime = new DateTimeOffset(upcoming.CloseTime).ToUnixTimeSeconds()
@@ -78,7 +78,7 @@ public class RoundService(
         var startEpoch = (latest?.Epoch ?? 0) + 1;
         var fallback = new UpcomingRoundOutput
         {
-            RoundId = 0,
+            Id = 0,
             Epoch = startEpoch,
             StartTime = new DateTimeOffset(startTime).ToUnixTimeSeconds(),
             EndTime = new DateTimeOffset(startTime.AddSeconds(intervalSec)).ToUnixTimeSeconds()

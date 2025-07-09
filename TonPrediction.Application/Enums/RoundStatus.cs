@@ -6,28 +6,34 @@ namespace TonPrediction.Application.Enums
     public enum RoundStatus
     {
         /// <summary>
-        /// 即将开始。
+        /// 预生成、未开始
         /// </summary>
         Upcoming = 0,
 
         /// <summary>
-        /// 下注进行中。
+        /// 正在下注
         /// </summary>
         Betting = 1,
 
         /// <summary>
-        /// 已锁价，等待收盘。
+        /// 已锁价，等待收盘
+        /// start
         /// </summary>
         Live = 2,
 
         /// <summary>
-        /// 结算中。
+        /// 拿到 closePrice，结算中
         /// </summary>
         Calculating = 3,
 
         /// <summary>
-        /// 已完成，可领取奖励。
+        /// 结算完，玩家可 claim
         /// </summary>
-        Completed = 4
+        Completed = 4,
+
+        /// <summary>
+        /// 平盘 / 预言机异常 / 强行退款
+        /// </summary>
+        Cancelled = 5
     }
 }

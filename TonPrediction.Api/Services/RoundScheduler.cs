@@ -27,12 +27,11 @@ namespace TonPrediction.Api.Services
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly IDistributedLock _locker = locker;
         private const decimal TreasuryFeeRate = 0.03m;
-        private readonly TimeSpan _interval =
-            TimeSpan.FromSeconds(configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300));
+        private readonly int _interval = configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
         /// <summary>
-        /// 
+        /// 执行任务的入口点。此方法会在服务启动时被调用
         /// </summary>
         /// <param name="stoppingToken"></param>
         /// <returns></returns>
@@ -96,6 +95,7 @@ namespace TonPrediction.Api.Services
                 locked.ClosePrice = closePrice;
                 locked.Status = RoundStatus.Calculating;
 
+                //计算获胜方
                 Position? winner = null;
                 if (closePrice > locked.LockPrice) winner = Position.Bull;
                 else if (closePrice < locked.LockPrice) winner = Position.Bear;
@@ -110,6 +110,8 @@ namespace TonPrediction.Api.Services
                 locked.RewardAmount = locked.TotalAmount * (1 - TreasuryFeeRate);
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
 
+
+                //计算奖励并更新下注记录
                 var bets = await betRepo.GetByRoundAsync(locked.Id, token);
                 var winTotal = winner switch
                 {
@@ -142,7 +144,7 @@ namespace TonPrediction.Api.Services
                 await _notifier.PushSettlementEndedAsync(locked.Id, locked.Epoch);
             }
 
-            // 获取当前可下注的回合
+            // 获取当前正在进行的回合
             var live = await roundRepo.GetCurrentLiveAsync(symbol);
             if (live == null)
             {
@@ -158,8 +160,8 @@ namespace TonPrediction.Api.Services
                         Symbol = symbol,
                         Epoch = 1,
                         StartTime = now,
-                        LockTime = now.Add(_interval),
-                        CloseTime = now.Add(_interval * 2),
+                        LockTime = now.AddSeconds(_interval),
+                        CloseTime = now.AddSeconds(_interval * 2),
                         LockPrice = startPrice,
                         Status = RoundStatus.Betting
                     };
@@ -173,8 +175,8 @@ namespace TonPrediction.Api.Services
                         Symbol = symbol,
                         Epoch = last.Epoch + 1,
                         StartTime = now,
-                        LockTime = now.Add(_interval),
-                        CloseTime = now.Add(_interval * 2),
+                        LockTime = now.AddSeconds(_interval),
+                        CloseTime = now.AddSeconds(_interval * 2),
                         LockPrice = startPrice,
                         Status = RoundStatus.Betting
                     };
@@ -191,8 +193,8 @@ namespace TonPrediction.Api.Services
                         Symbol = symbol,
                         Epoch = liveRound.Epoch + 1,
                         StartTime = liveRound.LockTime,
-                        LockTime = liveRound.LockTime.Add(_interval),
-                        CloseTime = liveRound.LockTime.Add(_interval * 2),
+                        LockTime = liveRound.LockTime.AddSeconds(_interval),
+                        CloseTime = liveRound.LockTime.AddSeconds(_interval * 2),
                         LockPrice = startPrice,
                         Status = RoundStatus.Upcoming
                     };
@@ -222,8 +224,8 @@ namespace TonPrediction.Api.Services
                 if (nextRound != null)
                 {
                     nextRound.StartTime = now;
-                    nextRound.LockTime = now.Add(_interval);
-                    nextRound.CloseTime = now.Add(_interval * 2);
+                    nextRound.LockTime = now.AddSeconds(_interval);
+                    nextRound.CloseTime = now.AddSeconds(_interval * 2);
                     nextRound.LockPrice = nextPrice;
                     nextRound.Status = RoundStatus.Betting;
                     await roundRepo.UpdateByPrimaryKeyAsync(nextRound);
@@ -235,8 +237,8 @@ namespace TonPrediction.Api.Services
                         Symbol = symbol,
                         Epoch = live.Epoch + 1,
                         StartTime = now,
-                        LockTime = now.Add(_interval),
-                        CloseTime = now.Add(_interval * 2),
+                        LockTime = now.AddSeconds(_interval),
+                        CloseTime = now.AddSeconds(_interval * 2),
                         LockPrice = nextPrice,
                         Status = RoundStatus.Betting
                     };
@@ -256,8 +258,8 @@ namespace TonPrediction.Api.Services
                         Symbol = symbol,
                         Epoch = nextRound.Epoch + 1,
                         StartTime = nextRound.LockTime,
-                        LockTime = nextRound.LockTime.Add(_interval),
-                        CloseTime = nextRound.LockTime.Add(_interval * 2),
+                        LockTime = nextRound.LockTime.AddSeconds(_interval),
+                        CloseTime = nextRound.LockTime.AddSeconds(_interval * 2),
                         LockPrice = nextPrice,
                         Status = RoundStatus.Upcoming
                     };

@@ -35,7 +35,7 @@ namespace TonPrediction.Infrastructure.Database.Repository
         public async Task<RoundEntity?> GetCurrentLiveAsync(string symbol)
         {
             return await Db.Queryable<RoundEntity>()
-                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Betting)
+                .Where(r => r.Symbol == symbol && r.Status == RoundStatus.Live)
                 .OrderBy(r => r.Epoch, OrderByType.Desc)
                 .FirstAsync();
         }
