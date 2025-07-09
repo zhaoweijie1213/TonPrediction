@@ -14,19 +14,24 @@ public class NextRoundOutput
     public long RoundId { get; set; }
 
     /// <summary>
+    /// 总下注金额。
+    /// </summary>
+    public string TotalAmount { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 押看涨金额。
+    /// </summary>
+    public string BullAmount { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 押看跌金额。
+    /// </summary>
+    public string BearAmount { get; set; } = string.Empty;
+
+    /// <summary>
     /// 奖池金额，扣除手续费后可分配的奖励。
     /// </summary>
     public string RewardPool { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 预测币种符号，如 ton、btc、eth。
-    /// </summary>
-    public string Symbol { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 当前价格。
-    /// </summary>
-    public string CurrentPrice { get; set; } = string.Empty;
 
     /// <summary>
     /// 看涨赔率。

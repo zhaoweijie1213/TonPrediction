@@ -28,17 +28,13 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         var output = new CurrentRoundOutput
         {
             RoundId = round.Id,
-            Epoch = round.Epoch,
-            LockPrice = round.LockPrice.ToAmountString(),
             CurrentPrice = currentPrice.ToAmountString(),
             TotalAmount = round.TotalAmount.ToAmountString(),
             BullAmount = round.BullAmount.ToAmountString(),
             BearAmount = round.BearAmount.ToAmountString(),
             RewardPool = round.RewardAmount.ToAmountString(),
-            EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
             BullOdds = oddsBull.ToAmountString(),
-            BearOdds = oddsBear.ToAmountString(),
-            Status = round.Status
+            BearOdds = oddsBear.ToAmountString()
         };
         logger.LogInformation("PushCurrentRoundAsync.当前回合信息推送:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("currentRound", output);
@@ -58,9 +54,10 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         var output = new NextRoundOutput
         {
             RoundId = round.Id,
+            TotalAmount = round.TotalAmount.ToAmountString(),
+            BullAmount = round.BullAmount.ToAmountString(),
+            BearAmount = round.BearAmount.ToAmountString(),
             RewardPool = round.RewardAmount.ToAmountString(),
-            Symbol = round.Symbol,
-            CurrentPrice = currentPrice.ToAmountString(),
             BullOdds = oddsBull.ToAmountString(),
             BearOdds = oddsBear.ToAmountString()
         };
@@ -94,7 +91,7 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         logger.LogInformation("PushRoundLockedAsync.锁定回合推送:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("roundLocked", output);
     }
-       
+
 
     /// <summary>
     /// 推送开始结算消息
@@ -108,7 +105,7 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         logger.LogInformation("PushSettlementStartedAsync.推送开始结算消息:{output}", JsonConvert.SerializeObject(output));
         return _hub.Clients.All.SendAsync("settlementStarted", output);
     }
-       
+
 
     /// <summary>
     /// 回合结束
