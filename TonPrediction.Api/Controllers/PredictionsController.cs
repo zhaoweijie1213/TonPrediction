@@ -18,7 +18,7 @@ public class PredictionsController(IPredictionService predictionService) : Contr
     /// 分页获取下注记录。
     /// </summary>
     [HttpGet("round")]
-    public async Task<ApiResult<List<BetRecordOutput>>> GetRoundAsync(
+    public async Task<ApiResult<List<RoundUserBetOutput>>> GetRoundAsync(
         [FromQuery] string address,
         [FromQuery] string status = "all",
         [FromQuery] int page = 1,

@@ -17,8 +17,8 @@ public interface IPredictionService : ITransientDependency
     /// <param name="page">页码。</param>
     /// <param name="pageSize">每页条数。</param>
     /// <param name="ct">取消任务标记。</param>
-    /// <returns>下注记录列表。</returns>
-    Task<ApiResult<List<BetRecordOutput>>> GetRecordsAsync(
+    /// <returns>回合及下注信息列表。</returns>
+    Task<ApiResult<List<RoundUserBetOutput>>> GetRecordsAsync(
         string address,
         string status = "all",
         int page = 1,

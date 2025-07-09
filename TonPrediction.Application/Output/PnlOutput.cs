@@ -29,4 +29,34 @@ public class PnlOutput
     /// 获胜回合数。
     /// </summary>
     public int WinRounds { get; set; }
+
+    /// <summary>
+    /// 失利回合数。
+    /// </summary>
+    public int LoseRounds { get; set; }
+
+    /// <summary>
+    /// 胜率（0-1）。
+    /// </summary>
+    public string WinRate { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 回合平均投入。
+    /// </summary>
+    public string AverageBet { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 回合平均收益。
+    /// </summary>
+    public string AverageReturn { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 最佳回合编号。
+    /// </summary>
+    public long BestRoundId { get; set; }
+
+    /// <summary>
+    /// 最佳回合收益。
+    /// </summary>
+    public string BestRoundProfit { get; set; } = string.Empty;
 }
