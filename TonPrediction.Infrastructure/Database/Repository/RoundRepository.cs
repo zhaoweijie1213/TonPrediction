@@ -80,6 +80,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .ToListAsync();
         }
 
+        /// <inheritdoc />
+        public async Task<List<RoundEntity>> GetRecentAsync(string symbol, int limit)
+        {
+            return await Db.Queryable<RoundEntity>()
+                .Where(r => r.Symbol == symbol)
+                .OrderBy(r => r.Epoch, OrderByType.Desc)
+                .Take(limit)
+                .ToListAsync();
+        }
+
         /// <summary>
         /// 获取回合信息通过回合编号。
         /// </summary>

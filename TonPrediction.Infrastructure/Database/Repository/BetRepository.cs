@@ -79,5 +79,16 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .Where(b => b.UserAddress == address && b.RoundId == roundId)
                 .FirstAsync();
         }
+
+        /// <inheritdoc />
+        public async Task<List<BetEntity>> GetByAddressAndRoundsAsync(
+            string address,
+            long[] roundIds,
+            CancellationToken ct = default)
+        {
+            return await Db.Queryable<BetEntity>()
+                .Where(b => b.UserAddress == address && roundIds.Contains(b.RoundId))
+                .ToListAsync();
+        }
     }
 }

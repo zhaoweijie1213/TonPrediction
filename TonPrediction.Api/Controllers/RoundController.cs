@@ -31,4 +31,16 @@ public class RoundController(IRoundService roundService) : ControllerBase
     {
         return await _roundService.GetUpcomingAsync(symbol);
     }
+
+    /// <summary>
+    /// 获取最近回合及用户下注信息。
+    /// </summary>
+    [HttpGet("recent")]
+    public async Task<ApiResult<List<RoundUserBetOutput>>> GetRecentAsync(
+        [FromQuery] string address,
+        [FromQuery] string symbol = "ton",
+        [FromQuery] int limit = 3)
+    {
+        return await _roundService.GetRecentAsync(address, symbol, limit);
+    }
 }

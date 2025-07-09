@@ -53,6 +53,13 @@ namespace TonPrediction.Application.Database.Repository
         Task<List<RoundEntity>> GetEndedAsync(string symbol, int limit);
 
         /// <summary>
+        /// 获取最近若干回合（不限状态）。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="limit">限制数量。</param>
+        Task<List<RoundEntity>> GetRecentAsync(string symbol, int limit);
+
+        /// <summary>
         /// 获取回合信息通过回合编号。
         /// </summary>
         /// <param name="id"></param>

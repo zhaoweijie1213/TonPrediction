@@ -323,3 +323,28 @@ GET /api/predictions/pnl
 | ------ | ---- | ---- |
 | `data` | bool | 是否上报成功 |
 
+## 1️⃣5️⃣ 最近回合及下注信息
+
+### `GET /api/rounds/recent?address=<ADDR>&symbol=ton&limit=3`
+
+返回指定用户最近若干回合及其下注情况。
+
+| 字段名 | 类型 | 说明 |
+| ------ | ---- | ---- |
+| `id` | int | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
+| `lockPrice` | string(decimal) | 锁定价格 |
+| `closePrice` | string(decimal) | 收盘价格 |
+| `totalAmount` | string(decimal) | 总下注金额 |
+| `bullAmount` | string(decimal) | 押 **上涨** 的金额 |
+| `bearAmount` | string(decimal) | 押 **下跌** 的金额 |
+| `rewardPool` | string(decimal) | 奖金池（扣手续费） |
+| `startTime` | int | 开始时间 |
+| `endTime` | int | 结束时间 |
+| `bullOdds` | string(decimal) | 上涨赔率 |
+| `bearOdds` | string(decimal) | 下跌赔率 |
+| `position` | enum | 用户下注方向，可能为 null |
+| `betAmount` | string(decimal) | 用户下注金额 |
+| `reward` | string(decimal) | 奖励金额 |
+| `claimed` | bool | 是否已领取 |
+

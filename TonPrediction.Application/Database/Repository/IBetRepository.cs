@@ -59,6 +59,17 @@ namespace TonPrediction.Application.Database.Repository
             CancellationToken ct = default);
 
         /// <summary>
+        /// 根据地址和多个回合查询下注记录。
+        /// </summary>
+        /// <param name="address">用户地址。</param>
+        /// <param name="roundIds">回合编号集合。</param>
+        /// <param name="ct">取消令牌。</param>
+        Task<List<BetEntity>> GetByAddressAndRoundsAsync(
+            string address,
+            long[] roundIds,
+            CancellationToken ct = default);
+
+        /// <summary>
         /// 根据交易哈希查询下注记录。
         /// </summary>
         /// <param name="txHash">交易哈希。</param>
