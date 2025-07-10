@@ -69,7 +69,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         }
 
         var backoff = TimeSpan.FromSeconds(3);
-        var http = _httpFactory.CreateClient("TonApi");
+        var   = _httpFactory.CreateClient("TonApi");
 
         using (var scope = _scopeFactory.CreateScope())
         {
@@ -105,6 +105,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
                     var line = await reader.ReadLineAsync(CancellationToken.None);
                     if (string.IsNullOrEmpty(line)) continue;
 
+                    logger.LogInformation("ExecuteAsync.钱包监听数据:{line}", line);
                     if (line.StartsWith("event:"))
                     {
                         eventName = line["event:".Length..].Trim();

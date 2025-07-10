@@ -53,7 +53,7 @@ namespace TonPrediction.Api.Services
                     _logger.LogError(ex, "Price monitor error");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
         }
 

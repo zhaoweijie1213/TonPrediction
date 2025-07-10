@@ -67,13 +67,15 @@ namespace TonPrediction.Api.Services
                     {
                         await ExecuteRoundAsync(symbol, token);
                     }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Round scheduler error for {Symbol}", symbol);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), token);
+       
             }
         }
 
@@ -133,6 +135,8 @@ namespace TonPrediction.Api.Services
             var locked = await roundRepo.GetCurrentLockedAsync(symbol);
             if (locked?.Status == RoundStatus.Locked && locked.CloseTime <= now)
             {
+                await _notifier.PushSettlementStartedAsync(locked.Id, locked.Epoch);
+
                 var closePrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
                 locked.CloseTime = now;
                 locked.ClosePrice = closePrice;
@@ -206,7 +210,6 @@ namespace TonPrediction.Api.Services
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = lockPrice });
                 await _notifier.PushRoundLockedAsync(live.Id, live.Epoch);
-                await _notifier.PushSettlementStartedAsync(live.Id, live.Epoch);
 
                 // 创建下一回合
                 var nextPrice = lockPrice;
