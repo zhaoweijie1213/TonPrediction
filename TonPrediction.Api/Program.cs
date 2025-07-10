@@ -21,6 +21,11 @@ builder.Services.AddHttpClient("TonApi", c =>
 {
     var baseUrl = builder.Configuration["TonConfig:BaseUrl"] ?? "https://tonapi.io";
     c.BaseAddress = new Uri(baseUrl);
+    var apiKey = builder.Configuration["TonConfig:ApiKey"];
+    if (!string.IsNullOrWhiteSpace(apiKey))
+    {
+        c.DefaultRequestHeaders.Authorization = new("Bearer", apiKey);
+    }
 });
 builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();

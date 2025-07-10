@@ -56,7 +56,7 @@ namespace TonPrediction.Api.Services
                     _logger.LogError(ex, "Price monitor error");
                 }
 
-           
+
             }
         }
 
