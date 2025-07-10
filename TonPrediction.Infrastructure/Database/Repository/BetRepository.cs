@@ -5,6 +5,7 @@ using SqlSugar;
 using TonPrediction.Application.Database.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
+using System.Linq.Expressions;
 
 namespace TonPrediction.Infrastructure.Database.Repository
 {
@@ -24,19 +25,15 @@ namespace TonPrediction.Infrastructure.Database.Repository
         /// <inheritdoc />
         public async Task<List<BetEntity>> GetPagedByAddressAsync(
             string address,
-            string status,
+            Expression<Func<BetEntity, bool>>? predicate,
             int page,
             int pageSize,
             CancellationToken ct = default)
         {
             var query = Db.Queryable<BetEntity>()
                 .Where(b => b.UserAddress == address);
-            query = status switch
-            {
-                "claimed" => query.Where(b => b.Claimed),
-                "unclaimed" => query.Where(b => !b.Claimed),
-                _ => query
-            };
+            if (predicate != null)
+                query = query.Where(predicate);
             return await query.OrderBy(b => b.Id, OrderByType.Desc)
                 .ToPageListAsync(page, pageSize);
         }
