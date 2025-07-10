@@ -26,6 +26,16 @@ builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services.AddSingleton<WalletConfig>(service =>
+{
+    var configuration = service.GetRequiredService<IConfiguration>();
+
+    return new WalletConfig
+    {
+        ENV_MASTER_WALLET_ADDRESS = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? "",
+        ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? ""
+    };
+});
 builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();

@@ -1,27 +1,25 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using TonSdk.Core;
-using TonSdk.Core.Block;
-using TonSdk.Core.Boc;
-using TonSdk.Contracts.Wallet;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using TonSdk.Contracts.Wallet;
+using TonSdk.Core;
+using TonSdk.Core.Block;
+using TonSdk.Core.Boc;
 
 namespace TonPrediction.Infrastructure.Services;
 
 /// <summary>
 /// 使用 TonSdk 通过 TonCenter 转账。
 /// </summary>
-public class TonWalletService(
-    IConfiguration configuration,
-    ITonClientWrapper client,
-    ILogger<TonWalletService> logger) : IWalletService
+public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrapper client, WalletConfig walletConfig) : IWalletService
 {
     private readonly ITonClientWrapper _client = client;
     private readonly ILogger<TonWalletService> _logger = logger;
-    private readonly Address _master = new(configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty);
-    private readonly byte[] _pk = Convert.FromHexString(configuration["ENV_MASTER_WALLET_PK"] ?? string.Empty);
+    private readonly Address _master = new(walletConfig.ENV_MASTER_WALLET_ADDRESS);
+    private readonly byte[] _pk = Convert.FromHexString(walletConfig.ENV_MASTER_WALLET_PK);
     private PreprocessedV2? _wallet;
     private byte[]? _pubKey;
 
