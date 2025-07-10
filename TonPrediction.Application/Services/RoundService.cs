@@ -138,7 +138,7 @@ public class RoundService(
             };
             list.Add(item);
         }
-
+        list = list.OrderBy(x => x.Epoch).ToList();
         api.SetRsult(ApiResultCode.Success, list);
         return api;
     }
