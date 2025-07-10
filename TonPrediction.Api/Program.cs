@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("TonApi", c =>

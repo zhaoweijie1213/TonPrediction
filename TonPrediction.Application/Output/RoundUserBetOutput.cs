@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 using TonPrediction.Application.Enums;
 
@@ -62,6 +63,7 @@ public class RoundUserBetOutput
     /// <summary>
     /// 回合当前状态。
     /// </summary>
+    [JsonProperty()]
     public RoundStatus Status { get; set; }
 
     /// <summary>
