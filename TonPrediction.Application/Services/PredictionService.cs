@@ -67,6 +67,7 @@ public class PredictionService(
                 RewardPool = round.RewardAmount.ToAmountString(),
                 StartTime = new DateTimeOffset(round.StartTime).ToUnixTimeSeconds(),
                 EndTime = new DateTimeOffset(round.CloseTime).ToUnixTimeSeconds(),
+                Status = round.Status,
                 BullOdds = round.BullAmount > 0m ? (round.TotalAmount / round.BullAmount).ToAmountString() : "0",
                 BearOdds = round.BearAmount > 0m ? (round.TotalAmount / round.BearAmount).ToAmountString() : "0",
                 Position = bet.Position,

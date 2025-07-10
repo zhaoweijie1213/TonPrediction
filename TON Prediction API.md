@@ -264,6 +264,7 @@ GET /api/predictions/round
 | `rewardPool` | string(decimal) | 奖金池（扣手续费） |
 | `startTime` | int | 开始时间 |
 | `endTime` | int | 结束时间 |
+| `status` | enum | 回合状态 |
 | `bullOdds` | string(decimal) | 上涨赔率 |
 | `bearOdds` | string(decimal) | 下跌赔率 |
 | `position` | enum | 用户下注方向，可能为 null |

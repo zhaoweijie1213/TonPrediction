@@ -31,7 +31,8 @@ public class RoundServiceTests
                 TotalAmount = 100m,
                 BullAmount = 60m,
                 BearAmount = 40m,
-                RewardAmount = 95m
+                RewardAmount = 95m,
+                Status = RoundStatus.Completed
             },
             new()
             {
@@ -44,7 +45,8 @@ public class RoundServiceTests
                 TotalAmount = 80m,
                 BullAmount = 30m,
                 BearAmount = 50m,
-                RewardAmount = 76m
+                RewardAmount = 76m,
+                Status = RoundStatus.Locked
             }
         };
 
@@ -72,6 +74,8 @@ public class RoundServiceTests
 
         Assert.Equal(2, result.Data.Count);
         Assert.Equal("10", result.Data[0].BetAmount);
+        Assert.Equal(RoundStatus.Completed, result.Data[0].Status);
+        Assert.Equal(RoundStatus.Locked, result.Data[1].Status);
     }
 
     [Fact]
@@ -90,7 +94,8 @@ public class RoundServiceTests
                 TotalAmount = 100m,
                 BullAmount = 60m,
                 BearAmount = 40m,
-                RewardAmount = 95m
+                RewardAmount = 95m,
+                Status = RoundStatus.Completed
             }
         };
 
@@ -103,5 +108,6 @@ public class RoundServiceTests
 
         Assert.Single(result.Data);
         Assert.Equal("0", result.Data[0].BetAmount);
+        Assert.Equal(RoundStatus.Completed, result.Data[0].Status);
     }
 }

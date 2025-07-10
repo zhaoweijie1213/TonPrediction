@@ -60,6 +60,11 @@ public class RoundUserBetOutput
     public long EndTime { get; set; }
 
     /// <summary>
+    /// 回合当前状态。
+    /// </summary>
+    public RoundStatus Status { get; set; }
+
+    /// <summary>
     /// 看涨赔率。
     /// </summary>
     public string BullOdds { get; set; } = string.Empty;
