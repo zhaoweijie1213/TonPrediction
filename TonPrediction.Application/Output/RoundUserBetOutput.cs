@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json.Converters;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Output;
@@ -12,8 +12,8 @@ public class RoundUserBetOutput
     /// <summary>
     /// 回合唯一编号，用于业务请求。
     /// </summary>
-    [JsonPropertyName("id")]
-    public long RoundId { get; set; }
+    [JsonProperty("id")]
+    public long Id { get; set; }
 
     /// <summary>
     /// 期次，从 1 开始递增。
@@ -63,7 +63,7 @@ public class RoundUserBetOutput
     /// <summary>
     /// 回合当前状态。
     /// </summary>
-    [JsonProperty()]
+    [JsonConverter(typeof(StringEnumConverter))]
     public RoundStatus Status { get; set; }
 
     /// <summary>

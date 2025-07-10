@@ -64,7 +64,7 @@ public class PredictionService(
                 result = bet.Position == Position.Bear ? BetResult.Win : BetResult.Lose;
             var output = new RoundUserBetOutput
             {
-                RoundId = bet.RoundId,
+                Id = bet.RoundId,
                 Epoch = round.Epoch,
                 LockPrice = round.LockPrice.ToAmountString(),
                 ClosePrice = round.ClosePrice.ToAmountString(),

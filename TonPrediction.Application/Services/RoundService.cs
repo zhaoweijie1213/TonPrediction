@@ -118,7 +118,7 @@ public class RoundService(
             betMap.TryGetValue(r.Id, out var bet);
             var item = new RoundUserBetOutput
             {
-                RoundId = r.Id,
+                Id = r.Id,
                 Epoch = r.Epoch,
                 LockPrice = r.LockPrice.ToAmountString(),
                 ClosePrice = r.ClosePrice.ToAmountString(),
