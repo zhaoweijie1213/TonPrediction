@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StackExchange.Redis;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure.Services;
 using TonSdk.Client;
@@ -33,6 +34,7 @@ namespace TonPrediction.Infrastructure
                 }, "DefaultRedis").WithMessagePack("DefaultRedis");
             });
 
+            #endregion
             var redisSection = builder.Configuration.GetSection("Redis");
             var options = new ConfigurationOptions
             {
@@ -47,16 +49,21 @@ namespace TonPrediction.Infrastructure
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
             builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
 
+            #region TON SDK Client
+
+            var tonConfig = builder.Configuration.GetSection(TonConfig.BindingName);
+            builder.Services.Configure<TonConfig>(tonConfig);
             var tonParams = new HttpParameters
             {
-                Endpoint = builder.Configuration["ENV_TONCENTER_ENDPOINT"] ?? "https://toncenter.com/api/v2/jsonRPC",
-                ApiKey = builder.Configuration["ENV_TONCENTER_API_KEY"] ?? string.Empty
+                Endpoint = tonConfig.Get<TonConfig>()?.TonCenterEndPoint ?? "https://toncenter.com/api/v2/jsonRPC",
+                ApiKey = tonConfig.Get<TonConfig>()?.ApiKey ?? string.Empty
             };
             var tonClient = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, tonParams);
             builder.Services.AddSingleton<ITonClientWrapper>(new TonClientWrapper(tonClient));
             builder.Services.AddSingleton<IWalletService, TonWalletService>();
 
             #endregion
+
             return builder;
         }
     }

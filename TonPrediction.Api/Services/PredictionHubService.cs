@@ -53,7 +53,8 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
         var output = new NextRoundOutput
         {
-            RoundId = round.Id,
+            Id = round.Id,
+            Symbol = round.Symbol,
             TotalAmount = round.TotalAmount.ToAmountString(),
             BullAmount = round.BullAmount.ToAmountString(),
             BearAmount = round.BearAmount.ToAmountString(),

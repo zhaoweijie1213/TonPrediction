@@ -25,7 +25,12 @@ public class TonWalletService(
     private PreprocessedV2? _wallet;
     private byte[]? _pubKey;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 转账到指定地址。
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
     public async Task<TransferResult> TransferAsync(string address, decimal amount)
     {
         try

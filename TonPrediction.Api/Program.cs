@@ -2,6 +2,7 @@ using QYQ.Base.Common.IOCExtensions;
 using QYQ.Base.Swagger.Extension;
 using TonPrediction.Api.Hubs;
 using TonPrediction.Api.Services;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Database.Config;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure;
@@ -18,7 +19,7 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("TonApi", c =>
 {
-    var baseUrl = builder.Configuration["TonApi:BaseUrl"] ?? "https://tonapi.io";
+    var baseUrl = builder.Configuration["TonConfig:BaseUrl"] ?? "https://tonapi.io";
     c.BaseAddress = new Uri(baseUrl);
 });
 builder.Services.AddMultipleService("^TonPrediction");
