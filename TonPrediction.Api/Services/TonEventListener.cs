@@ -69,7 +69,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         }
 
         var backoff = TimeSpan.FromSeconds(3);
-        var   = _httpFactory.CreateClient("TonApi");
+        var http = _httpFactory.CreateClient("TonApi");
 
         using (var scope = _scopeFactory.CreateScope())
         {
