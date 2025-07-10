@@ -1,10 +1,10 @@
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using TonSdk.Core;
+using TonSdk.Core.Boc;
+using TonSdk.Client;
+using TonPrediction.Application.Enums;
 using TonPrediction.Infrastructure.Services;
 using Xunit;
 
@@ -15,45 +15,33 @@ namespace TonPrediction.Test;
 /// </summary>
 public class TonWalletServiceTests
 {
-    private sealed class FakeHandler : HttpMessageHandler
+    private sealed class FakeClient : ITonClientWrapper
     {
-        public HttpRequestMessage? Request { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public bool SendCalled { get; private set; }
+        public Task<byte[]?> GetPublicKeyAsync(Address address) => Task.FromResult<byte[]?>(new byte[32]);
+        public Task<uint?> GetSeqnoAsync(Address address) => Task.FromResult<uint?>(1);
+        public Task<SendBocResult?> SendBocAsync(Cell boc)
         {
-            Request = request;
-            var resp = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"hash\":\"h\",\"lt\":1}")
-            };
-            return Task.FromResult(resp);
+            SendCalled = true;
+            return Task.FromResult<SendBocResult?>(new SendBocResult { Hash = "h" });
         }
     }
 
-    private sealed class FakeFactory(HttpClient client) : IHttpClientFactory
-    {
-        private readonly HttpClient _client = client;
-        public HttpClient CreateClient(string name) => _client;
-    }
-
     [Fact]
-    public async Task TransferAsync_CallsTonApi()
+    public async Task TransferAsync_SendsBoc()
     {
-        var handler = new FakeHandler();
-        var client = new HttpClient(handler) { BaseAddress = new System.Uri("https://tonapi.io") };
-        var factory = new FakeFactory(client);
+        var client = new FakeClient();
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-            new KeyValuePair<string,string>("ENV_MASTER_WALLET_ADDRESS","master")
+            new KeyValuePair<string,string>("ENV_MASTER_WALLET_ADDRESS","EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF"),
+            new KeyValuePair<string,string>("ENV_MASTER_WALLET_PK","0000000000000000000000000000000000000000000000000000000000000000")
         }).Build();
-        var service = new TonWalletService(config, factory, NullLogger<TonWalletService>.Instance);
+        var service = new TonWalletService(config, client, NullLogger<TonWalletService>.Instance);
 
-        var result = await service.TransferAsync("addr", 1m);
+        var result = await service.TransferAsync("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF", 1m);
 
+        Assert.True(client.SendCalled);
         Assert.Equal("h", result.TxHash);
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/v2/blockchain/accounts/master/transfer", handler.Request!.RequestUri!.AbsolutePath);
-        var body = JsonDocument.Parse(await handler.Request.Content!.ReadAsStringAsync());
-        Assert.Equal("addr", body.RootElement.GetProperty("to").GetString());
+        Assert.Equal(ClaimStatus.Confirmed, result.Status);
     }
 }

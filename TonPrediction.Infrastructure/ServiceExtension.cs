@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using StackExchange.Redis;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure.Services;
+using TonSdk.Client;
 
 namespace TonPrediction.Infrastructure
 {
@@ -45,6 +46,14 @@ namespace TonPrediction.Infrastructure
             }
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
             builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
+
+            var tonParams = new HttpParameters
+            {
+                Endpoint = builder.Configuration["ENV_TONCENTER_ENDPOINT"] ?? "https://toncenter.com/api/v2/jsonRPC",
+                ApiKey = builder.Configuration["ENV_TONCENTER_API_KEY"] ?? string.Empty
+            };
+            var tonClient = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, tonParams);
+            builder.Services.AddSingleton<ITonClientWrapper>(new TonClientWrapper(tonClient));
             builder.Services.AddSingleton<IWalletService, TonWalletService>();
 
             #endregion
