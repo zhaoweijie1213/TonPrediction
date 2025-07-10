@@ -75,7 +75,7 @@ namespace TonPrediction.Api.Services
                     _logger.LogError(ex, "Round scheduler error for {Symbol}", symbol);
                 }
 
-       
+
             }
         }
 
