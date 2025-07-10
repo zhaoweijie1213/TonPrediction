@@ -44,8 +44,8 @@ public class PredictionService(
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
         Expression<Func<BetEntity, bool>>? filter = status switch
         {
-            BetRecordStatus.Claimed => b => b.Claimed,
-            BetRecordStatus.Unclaimed => b => !b.Claimed,
+            BetRecordStatus.Claimed => b => b.Claimed == true,
+            BetRecordStatus.Unclaimed => b => b.Claimed == false,
             _ => null
         };
         var bets = await _betRepo.GetPagedByAddressAsync(address, filter, page, pageSize, ct);
