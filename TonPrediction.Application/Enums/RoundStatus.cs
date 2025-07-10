@@ -5,10 +5,10 @@ namespace TonPrediction.Application.Enums
     /// </summary>
     public enum RoundStatus
     {
-        ///// <summary>
-        ///// 预生成、未开始
-        ///// </summary>
-        //Upcoming = 0,
+        /// <summary>
+        /// 预生成、未开始(只有前端使用这个值)
+        /// </summary>
+        Upcoming = 0,
 
         /// <summary>
         /// 未开始,正在下注
