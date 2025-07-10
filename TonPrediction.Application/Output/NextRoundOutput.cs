@@ -14,11 +14,6 @@ public class NextRoundOutput
     public long Id { get; set; }
 
     /// <summary>
-    /// 币种
-    /// </summary>
-    public string Symbol { get; set; } = string.Empty;
-
-    /// <summary>
     /// 总下注金额。
     /// </summary>
     public string TotalAmount { get; set; } = string.Empty;

@@ -9,7 +9,8 @@
       "applicationUrl": "http://localhost:5259",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ENV_MASTER_WALLET_ADDRESS": "UQAYggOW1C4eKqtMo3k40CsIq1TAolCy0KmLsrbGgxkoPL-f"
+        "ENV_MASTER_WALLET_ADDRESS": "0QC1Gml6UnpB1GHDZ2icamIS7TalR5-_IrXlz6SDdyXu6riV",
+        "ENV_MASTER_WALLET_PK": "77eb78640d48873712f4dfee0271e835a74e66b50059c53f40875143cb95c90984196b8aae4da58418632c55d0af70ed7db86014cf6dc4e72f7fea5f0376c9d5"
       }
     }
   }

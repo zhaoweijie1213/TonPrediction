@@ -27,7 +27,8 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
         var output = new CurrentRoundOutput
         {
-            RoundId = round.Id,
+            Id = round.Id,
+            Symbol = round.Symbol,
             CurrentPrice = currentPrice.ToAmountString(),
             TotalAmount = round.TotalAmount.ToAmountString(),
             BullAmount = round.BullAmount.ToAmountString(),
@@ -54,7 +55,6 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
         var output = new NextRoundOutput
         {
             Id = round.Id,
-            Symbol = round.Symbol,
             TotalAmount = round.TotalAmount.ToAmountString(),
             BullAmount = round.BullAmount.ToAmountString(),
             BearAmount = round.BearAmount.ToAmountString(),

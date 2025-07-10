@@ -1,0 +1,37 @@
+{
+    "items": [
+        {
+            "name": "seGiver",
+            "description": "EverNode SE Default Giver Keys",
+            "keys": {
+                "public": "2ada2e65ab8eeab09490e3521415f45b6e42df9c760a639bcf53957550b25a16",
+                "secret": "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3"
+            }
+        },
+        {
+            "name": "dev_signer",
+            "description": "",
+            "keys": {
+                "public": "295d81143546c18055298ea65378d088c7534d063461dc285046cf9232d70153",
+                "secret": "571ca51df687f1ceb0f6ce1c2b82a6f5cb599ed1e1ddf204883f4b6aaf13f82f"
+            },
+            "mnemonic": {
+                "dictionary": 1,
+                "phrase": "art section tag cash caught genuine spoon purse walnut mother wrist crash"
+            }
+        },
+        {
+            "name": "dev_signer24",
+            "description": "",
+            "keys": {
+                "public": "77eb78640d48873712f4dfee0271e835a74e66b50059c53f40875143cb95c909",
+                "secret": "84196b8aae4da58418632c55d0af70ed7db86014cf6dc4e72f7fea5f0376c9d5"
+            },
+            "mnemonic": {
+                "dictionary": 1,
+                "phrase": "coffee public deer host another give design choose slice slab wedding finish wrist comic jaguar bring library wagon clown knock shoot solar crisp rabbit"
+            }
+        }
+    ],
+    "default": "seGiver"
+}

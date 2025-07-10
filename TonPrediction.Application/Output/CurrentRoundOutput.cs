@@ -12,7 +12,12 @@ public class CurrentRoundOutput
     /// 回合唯一编号，用于业务请求。
     /// </summary>
     [JsonPropertyName("id")]
-    public long RoundId { get; set; }
+    public long Id { get; set; }
+
+    /// <summary>
+    /// 币种
+    /// </summary>
+    public string Symbol { get; set; } = string.Empty;
 
     /// <summary>
     /// 最新价格。
