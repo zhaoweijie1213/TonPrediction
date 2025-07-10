@@ -12,6 +12,8 @@ TON 网络的中心化预测游戏后端，提供回合创建、下注结算与�
 | `ENV_MASTER_WALLET_ADDRESS` | 主钱包地址 |
 | `ENV_MASTER_WALLET_PK` | 主钱包私钥 |
 | `ENV_PRICE_API_KEY` | 行情 API 密钥 |
+| `ENV_TONCENTER_ENDPOINT` | TonCenter API 地址 |
+| `ENV_TONCENTER_API_KEY` | TonCenter API 密钥 |
 | `ENV_RABBITMQ_HOST` | RabbitMQ 地址 |
 | `ENV_RABBITMQ_USER` | RabbitMQ 用户名 |
 | `ENV_RABBITMQ_PASSWORD` | RabbitMQ 密码 |
