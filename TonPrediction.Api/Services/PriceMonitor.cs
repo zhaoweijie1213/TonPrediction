@@ -46,14 +46,17 @@ namespace TonPrediction.Api.Services
                         {
                             await RecordPriceAsync(symbol, stoppingToken);
                         }
+
+                        await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
+
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Price monitor error");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+           
             }
         }
 
