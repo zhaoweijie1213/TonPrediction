@@ -128,6 +128,7 @@ public class RoundService(
                 RewardPool = r.RewardAmount.ToAmountString(),
                 StartTime = new DateTimeOffset(r.StartTime).ToUnixTimeSeconds(),
                 EndTime = new DateTimeOffset(r.CloseTime).ToUnixTimeSeconds(),
+                Status = r.Status,
                 BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToAmountString() : "0",
                 BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToAmountString() : "0",
                 Position = bet?.Position,
