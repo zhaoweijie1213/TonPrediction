@@ -48,6 +48,58 @@
 >**说明**：除 `currentRound` 与 `nextRound` 外，其他回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
 
 ------
+## 枚举说明
+
+### 回合状态（RoundStatus）
+
+| 值 | 名称 | 说明 |
+| --- | --- | --- |
+| 1 | Betting | 未开始，正在下注 |
+| 2 | Locked | 已锁价，等待收盘 |
+| 3 | Calculating | 结算中 |
+| 4 | Completed | 结算完成，可领奖 |
+| 5 | Cancelled | 回合取消或平盘 |
+
+### 下注方向（Position）
+
+| 值 | 名称 | 说明 |
+| --- | --- | --- |
+| 1 | Bull | 看涨 |
+| 2 | Bear | 看跌 |
+| 3 | Tie | 平盘或退还本金 |
+
+### 领奖交易状态（ClaimStatus）
+
+| 值 | 名称 | 说明 |
+| --- | --- | --- |
+| 0 | Pending | 交易已提交待确认 |
+| 1 | Confirmed | 交易已确认 |
+| 2 | Failed | 交易失败 |
+
+### 下注记录状态（BetStatus）
+
+| 值 | 名称 | 说明 |
+| --- | --- | --- |
+| 0 | Pending | 待确认 |
+| 1 | Confirmed | 已确认 |
+| 2 | Failed | 失败或超时 |
+
+### 我的下注记录筛选（status）
+
+| 枚举值 | 说明 |
+| --- | --- |
+| all | 全部记录 |
+| claimed | 已领取 |
+| unclaimed | 未领取 |
+
+### 排行榜排序字段（rankBy）
+
+| 枚举值 | 说明 |
+| --- | --- |
+| rounds | 参与回合数 |
+| netProfit | 净收益 |
+| totalBet | 累计下注 |
+| winRate | 胜率 |
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
 
