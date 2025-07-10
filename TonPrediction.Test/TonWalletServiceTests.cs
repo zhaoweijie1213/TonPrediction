@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
 using TonSdk.Client;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Config;
 using TonPrediction.Infrastructure.Services;
 using Xunit;
 
@@ -31,12 +31,12 @@ public class TonWalletServiceTests
     public async Task TransferAsync_SendsBoc()
     {
         var client = new FakeClient();
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        var walletConfig = new WalletConfig
         {
-            new KeyValuePair<string,string>("ENV_MASTER_WALLET_ADDRESS","EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF"),
-            new KeyValuePair<string,string>("ENV_MASTER_WALLET_PK","0000000000000000000000000000000000000000000000000000000000000000")
-        }).Build();
-        var service = new TonWalletService(config, client, NullLogger<TonWalletService>.Instance);
+            ENV_MASTER_WALLET_ADDRESS = "EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF",
+            ENV_MASTER_WALLET_PK = "0000000000000000000000000000000000000000000000000000000000000000"
+        };
+        var service = new TonWalletService(NullLogger<TonWalletService>.Instance, client, walletConfig);
 
         var result = await service.TransferAsync("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF", 1m);
 

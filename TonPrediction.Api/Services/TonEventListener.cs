@@ -46,10 +46,9 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     /// 钱包地址
     /// </summary>
     private readonly string _walletAddress = walletConfig.ENV_MASTER_WALLET_ADDRESS;
-    
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     private ulong _lastLt;
     private const string SseUrlTemplate =

@@ -2,6 +2,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Input;
 using TonPrediction.Application.Output;
+using Microsoft.Extensions.Configuration;
 using TonPrediction.Application.Services.Interface;
 using QYQ.Base.Common.ApiResult;
 
@@ -13,11 +14,13 @@ namespace TonPrediction.Application.Services;
 public class ClaimService(
     IBetRepository betRepo,
     IClaimRepository claimRepo,
-    IWalletService walletService) : IClaimService
+    IWalletService walletService,
+    IConfiguration configuration) : IClaimService
 {
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IClaimRepository _claimRepo = claimRepo;
     private readonly IWalletService _walletService = walletService;
+    private readonly IConfiguration _configuration = configuration;
 
     /// <inheritdoc />
     public async Task<ApiResult<ClaimOutput?>> ClaimAsync(ClaimInput input)
@@ -30,13 +33,16 @@ public class ClaimService(
             return api;
         }
 
-        var result = await _walletService.TransferAsync(input.Address, bet.Reward);
+        var rate = _configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
+        var fee = bet.Reward * rate;
+        var amount = bet.Reward - fee;
+        var result = await _walletService.TransferAsync(input.Address, amount);
 
         var entity = new ClaimEntity
         {
             RoundId = input.RoundId,
             UserAddress = input.Address,
-            Reward = bet.Reward,
+            Reward = amount,
             TxHash = result.TxHash,
             Status = result.Status,
             Lt = result.Lt,
@@ -45,6 +51,7 @@ public class ClaimService(
         await _claimRepo.InsertAsync(entity);
 
         bet.Claimed = true;
+        bet.TreasuryFee = fee;
         await _betRepo.UpdateByPrimaryKeyAsync(bet);
 
         var output = new ClaimOutput

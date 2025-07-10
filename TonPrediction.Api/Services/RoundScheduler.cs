@@ -29,7 +29,7 @@ namespace TonPrediction.Api.Services
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly IDistributedLock _locker = locker;
         private readonly ICapPublisher _publisher = publisher;
-        private const decimal TreasuryFeeRate = 0.03m;
+        private readonly decimal _treasuryFeeRate = configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
         private readonly int _interval = configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
@@ -151,7 +151,7 @@ namespace TonPrediction.Api.Services
                     Position.Bear => locked.BearAmount,
                     _ => locked.TotalAmount
                 };
-                locked.RewardAmount = locked.TotalAmount * (1 - TreasuryFeeRate);
+                locked.RewardAmount = locked.TotalAmount;
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
 
 
