@@ -6,26 +6,51 @@ using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
 using System.Text.RegularExpressions;
+using TonPrediction.Application.Config;
 
 namespace TonPrediction.Api.Services;
 
 /// <summary>
 /// 监听主钱包入账的后台服务。
 /// </summary>
-public class TonEventListener(
-    IServiceScopeFactory scopeFactory,
-    IConfiguration configuration,
-    IPredictionHubService notifier,
-    ILogger<TonEventListener> logger,
-    IHttpClientFactory httpFactory,
-    IDistributedLock locker) : BackgroundService
+public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubService notifier, ILogger<TonEventListener> logger, IHttpClientFactory httpFactory, IDistributedLock locker
+    , WalletConfig walletConfig) : BackgroundService
 {
+
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly IPredictionHubService _notifier = notifier;
+
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly ILogger<TonEventListener> _logger = logger;
+
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly IHttpClientFactory _httpFactory = httpFactory;
+
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly IDistributedLock _locker = locker;
-    private readonly string _walletAddress = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
+
+    /// <summary>
+    /// 钱包地址
+    /// </summary>
+    private readonly string _walletAddress = walletConfig.ENV_MASTER_WALLET_ADDRESS;
+    
+
+    /// <summary>
+    /// 
+    /// </summary>
     private ulong _lastLt;
     private const string SseUrlTemplate =
         "/v2/sse/accounts/transactions?accounts={0}";

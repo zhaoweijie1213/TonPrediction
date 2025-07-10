@@ -35,18 +35,18 @@ namespace TonPrediction.Infrastructure
             });
 
             #endregion
-            var redisSection = builder.Configuration.GetSection("Redis");
-            var options = new ConfigurationOptions
-            {
-                Password = redisSection["Password"],
-                AllowAdmin = redisSection.GetValue<bool>("AllowAdmin"),
-                DefaultDatabase = redisSection.GetValue<int>("Database")
-            };
-            foreach (var ep in redisSection.GetSection("Endpoints").GetChildren())
-            {
-                options.EndPoints.Add($"{ep["Host"]}:{ep.GetValue<int>("Port")}");
-            }
-            builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
+            //var redisSection = builder.Configuration.GetSection("Redis");
+            //var options = new ConfigurationOptions
+            //{
+            //    Password = redisSection["Password"],
+            //    AllowAdmin = redisSection.GetValue<bool>("AllowAdmin"),
+            //    DefaultDatabase = redisSection.GetValue<int>("Database")
+            //};
+            //foreach (var ep in redisSection.GetSection("Endpoints").GetChildren())
+            //{
+            //    options.EndPoints.Add($"{ep["Host"]}:{ep.GetValue<int>("Port")}");
+            //}
+            //builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
             builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
 
             #region TON SDK Client
