@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -10,6 +9,7 @@ using TonPrediction.Api.Services;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Services.Interface;
 using Xunit;
 
@@ -68,19 +68,15 @@ public class TonEventListenerTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
-            {
-                {"ENV_MASTER_WALLET_ADDRESS", "addr"}
-            }).Build();
+        var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
 
         var listener = new TonEventListener(
             scopeFactory.Object,
-            config,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
             new Mock<IHttpClientFactory>().Object,
-            Mock.Of<IDistributedLock>());
+            Mock.Of<IDistributedLock>(),
+            walletConfig);
 
         var tx = new TonTxDetail(2m, new InMsg("sender", "1 bull", "addr"), "hash")
         {
@@ -135,17 +131,15 @@ public class TonEventListenerTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string> { { "ENV_MASTER_WALLET_ADDRESS", "addr" } })
-            .Build();
+        var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
 
         var listener = new TonEventListener(
             scopeFactory.Object,
-            config,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
             new Mock<IHttpClientFactory>().Object,
-            Mock.Of<IDistributedLock>());
+            Mock.Of<IDistributedLock>(),
+            walletConfig);
 
         var tx = new TonTxDetail(1m, new InMsg("sender", "1 bull", "addr"), "hash") { Lt = 2 };
         await listener.ProcessTransactionAsync(tx);

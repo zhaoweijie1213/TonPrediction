@@ -17,6 +17,7 @@ TON 网络的中心化预测游戏后端，提供回合创建、下注结算与�
 | `ENV_RABBITMQ_HOST` | RabbitMQ 地址 |
 | `ENV_RABBITMQ_USER` | RabbitMQ 用户名 |
 | `ENV_RABBITMQ_PASSWORD` | RabbitMQ 密码 |
+| `TreasuryFeeRate` | 领奖手续费比例 |
 
 3. 运行 `docker compose up -d db redis ton-node price-oracle`。
 4. 执行 `dotnet run --project TonPrediction.Api`。
