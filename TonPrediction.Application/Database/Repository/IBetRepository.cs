@@ -4,6 +4,7 @@ using QYQ.Base.SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,13 +19,13 @@ namespace TonPrediction.Application.Database.Repository
         /// 获取指定地址的分页下注记录。
         /// </summary>
         /// <param name="address">用户地址。</param>
-        /// <param name="status">记录状态过滤。</param>
+        /// <param name="predicate">额外的筛选条件。</param>
         /// <param name="page">页码。</param>
         /// <param name="pageSize">每页数量。</param>
         /// <param name="ct">取消令牌。</param>
         Task<List<BetEntity>> GetPagedByAddressAsync(
             string address,
-            string status,
+            Expression<Func<BetEntity, bool>>? predicate,
             int page,
             int pageSize,
             CancellationToken ct = default);

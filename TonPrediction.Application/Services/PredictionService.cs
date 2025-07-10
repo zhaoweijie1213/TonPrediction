@@ -7,6 +7,7 @@ using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Extensions;
 using QYQ.Base.Common.ApiResult;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace TonPrediction.Application.Services;
 
@@ -33,7 +34,7 @@ public class PredictionService(
     /// <returns></returns>
     public async Task<ApiResult<List<RoundUserBetOutput>>> GetRecordsAsync(
         string address,
-        string status = "all",
+        BetRecordStatus status = BetRecordStatus.All,
         int page = 1,
         int pageSize = 10,
         CancellationToken ct = default)
@@ -41,7 +42,13 @@ public class PredictionService(
         var api = new ApiResult<List<RoundUserBetOutput>>();
         page = page <= 0 ? 1 : page;
         pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
-        var bets = await _betRepo.GetPagedByAddressAsync(address, status, page, pageSize);
+        Expression<Func<BetEntity, bool>>? filter = status switch
+        {
+            BetRecordStatus.Claimed => b => b.Claimed,
+            BetRecordStatus.Unclaimed => b => !b.Claimed,
+            _ => null
+        };
+        var bets = await _betRepo.GetPagedByAddressAsync(address, filter, page, pageSize, ct);
         var roundIds = bets.Select(b => b.RoundId).ToArray();
         var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds);
         var map = rounds.ToDictionary(r => r.Epoch);

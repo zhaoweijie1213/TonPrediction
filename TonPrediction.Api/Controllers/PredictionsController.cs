@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Output;
+using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Controllers;
@@ -20,7 +21,7 @@ public class PredictionsController(IPredictionService predictionService) : Contr
     [HttpGet("round")]
     public async Task<ApiResult<List<RoundUserBetOutput>>> GetRoundAsync(
         [FromQuery] string address,
-        [FromQuery] string status = "all",
+        [FromQuery] BetRecordStatus status = BetRecordStatus.All,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {

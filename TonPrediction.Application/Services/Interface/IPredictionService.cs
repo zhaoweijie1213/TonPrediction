@@ -1,6 +1,7 @@
 using QYQ.Base.Common.IOCExtensions;
 using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Output;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Services.Interface;
 
@@ -13,14 +14,14 @@ public interface IPredictionService : ITransientDependency
     /// 分页获取指定地址的下注记录。
     /// </summary>
     /// <param name="address">用户地址。</param>
-    /// <param name="status">记录状态：all/claimed/unclaimed。</param>
+    /// <param name="status">记录状态。</param>
     /// <param name="page">页码。</param>
     /// <param name="pageSize">每页条数。</param>
     /// <param name="ct">取消任务标记。</param>
     /// <returns>回合及下注信息列表。</returns>
     Task<ApiResult<List<RoundUserBetOutput>>> GetRecordsAsync(
         string address,
-        string status = "all",
+        BetRecordStatus status = BetRecordStatus.All,
         int page = 1,
         int pageSize = 10,
         CancellationToken ct = default);
