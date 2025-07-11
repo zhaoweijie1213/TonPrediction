@@ -84,7 +84,7 @@ public class BetService(
         {
             RoundId = round.Id,
             UserAddress = detail.In_Msg?.Source.Address ?? string.Empty,
-            Amount = detail.Amount.ToNanoTon(),
+            Amount = detail.Amount,
             Position = position,
             Claimed = false,
             Reward = 0,
