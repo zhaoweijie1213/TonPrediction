@@ -88,7 +88,7 @@ public class TonEventListenerTests
                 Source = new AddressInfo { Address = "sender" },
                 Destination = new AddressInfo { Address = "addr" },
                 Value = 2m,
-                Decoded_Body = new DecodedBody { Text = "1 bull" }
+                Decoded_Body = new DecodedBody { Text = "Bet 1 bull" }
             }
         };
         await listener.ProcessTransactionAsync(tx);
@@ -159,7 +159,7 @@ public class TonEventListenerTests
                 Source = new AddressInfo { Address = "sender" },
                 Destination = new AddressInfo { Address = "addr" },
                 Value = 1m,
-                Decoded_Body = new DecodedBody { Text = "1 bull" }
+                Decoded_Body = new DecodedBody { Text = "Bet 1 bull" }
             }
         };
         await listener.ProcessTransactionAsync(tx);
