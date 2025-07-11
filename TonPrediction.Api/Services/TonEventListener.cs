@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
@@ -7,14 +6,16 @@ using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
 using System.Text.RegularExpressions;
 using TonPrediction.Application.Config;
+using TonPrediction.Application.Services;
+using TonPrediction.Api.Services.WalletListeners;
 
 namespace TonPrediction.Api.Services;
 
 /// <summary>
 /// 监听主钱包入账的后台服务。
 /// </summary>
-public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubService notifier, ILogger<TonEventListener> logger, IHttpClientFactory httpFactory, IDistributedLock locker
-    , WalletConfig walletConfig) : BackgroundService
+public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubService notifier, ILogger<TonEventListener> logger, IDistributedLock locker,
+    IWalletListener walletListener, WalletConfig walletConfig) : BackgroundService
 {
 
     /// <summary>
@@ -33,9 +34,9 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     private readonly ILogger<TonEventListener> _logger = logger;
 
     /// <summary>
-    /// 
+    /// 钱包监听实现。
     /// </summary>
-    private readonly IHttpClientFactory _httpFactory = httpFactory;
+    private readonly IWalletListener _walletListener = walletListener;
 
     /// <summary>
     /// 
@@ -51,8 +52,6 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     ///
     /// </summary>
     private ulong _lastLt;
-    private const string SseUrlTemplate =
-        "/v2/sse/accounts/transactions?accounts={0}";
     private static readonly Regex CommentRegex = new(@"^\s*(\d+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
@@ -68,9 +67,6 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
             return;
         }
 
-        var backoff = TimeSpan.FromSeconds(3);
-        var http = _httpFactory.CreateClient("TonApi");
-
         using (var scope = _scopeFactory.CreateScope())
         {
             var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
@@ -78,7 +74,6 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
             if (ulong.TryParse(val, out var saved))
             {
                 _lastLt = saved;
-                await FetchMissedAsync(http);
             }
         }
 
@@ -91,44 +86,13 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
                     TimeSpan.FromMinutes(5));
                 if (handle == null)
                 {
-                    await Task.Delay(backoff, stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
                     continue;
                 }
 
-                await using var stream = await http.GetStreamAsync(
-                    string.Format(SseUrlTemplate, _walletAddress), stoppingToken);
-                using var reader = new StreamReader(stream);
-
-                string? eventName = null;
-                while (!reader.EndOfStream && !stoppingToken.IsCancellationRequested)
+                await foreach (var tx in _walletListener.ListenAsync(_walletAddress, _lastLt, stoppingToken))
                 {
-                    var line = await reader.ReadLineAsync(CancellationToken.None);
-                    if (string.IsNullOrEmpty(line)) continue;
-
-                    logger.LogInformation("ExecuteAsync.钱包监听数据:{line}", line);
-                    if (line.StartsWith("event:"))
-                    {
-                        eventName = line["event:".Length..].Trim();
-                        continue;
-                    }
-
-                    if (line.StartsWith("data:") && eventName == "message")
-                    {
-                        var json = line["data:".Length..].Trim();
-                        var head = JsonConvert.DeserializeObject<SseTxHead>(json)!;
-
-                        // 拉取完整交易详情
-                        var detail = await http
-                            .GetFromJsonAsync<TonTxDetail>(
-                                $"/v2/blockchain/transactions/{head.Tx_Hash}",
-                                stoppingToken);
-
-                        if (detail != null)
-                        {
-                            detail = detail with { Hash = head.Tx_Hash, Lt = head.Lt };
-                            await ProcessTransactionAsync(detail);
-                        }
-                    }
+                    await ProcessTransactionAsync(tx);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -137,39 +101,12 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "SSE 连接中断，{Delay}s 后重试…", backoff.TotalSeconds);
-                await FetchMissedAsync(http);
-                await Task.Delay(backoff, stoppingToken);
-                backoff = TimeSpan.FromSeconds(Math.Min(backoff.TotalSeconds * 2, 30));
+                _logger.LogError(ex, "钱包监听错误");
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
     }
 
-    /// <summary>
-    /// 拉取未处理的历史交易
-    /// </summary>
-    /// <param name="http"></param>
-    /// <returns></returns>
-    private async Task FetchMissedAsync(HttpClient http)
-    {
-        if (_lastLt == 0) return;
-        var url = $"/v2/blockchain/accounts/{_walletAddress}/transactions?limit=20&to_lt={_lastLt}";
-        try
-        {
-            var resp = await http.GetFromJsonAsync<AccountTxList>(url);
-            if (resp?.Transactions != null)
-            {
-                foreach (var tx in resp.Transactions)
-                {
-                    await ProcessTransactionAsync(tx with { Lt = tx.Lt });
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "拉取历史交易失败");
-        }
-    }
 
     /// <summary>
     /// 处理一笔入账交易。
@@ -231,46 +168,4 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         var currentPrice = round.ClosePrice > 0 ? round.ClosePrice : round.LockPrice;
         await _notifier.PushNextRoundAsync(round, currentPrice);
     }
-
-
-
 }
-
-/// <summary>
-/// TonAPI SSE “message” 事件载荷
-/// </summary>
-/// <param name="Account_Id"></param>
-/// <param name="Lt"></param>
-/// <param name="Tx_Hash"></param>
-public record SseTxHead(string Account_Id, ulong Lt, string Tx_Hash);
-
-/// <summary>
-/// TonAPI /v2/blockchain/transactions/{hash} 响应 (只列用到的字段)
-/// </summary>
-/// <param name="Amount">交易金额（nanoTON 已转普通 TON）</param>
-/// <param name="In_Message"></param>
-/// <param name="Hash">交易哈希。</param>
-public record TonTxDetail(
-    decimal Amount,
-    InMsg In_Message,
-    string Hash)
-{
-    /// <summary>
-    /// 交易的账户逻辑时间。
-    /// </summary>
-    public ulong Lt { get; init; }
-}
-
-/// <summary>
-/// 
-/// </summary>
-/// <param name="Source"></param>
-/// <param name="Comment"></param>
-/// <param name="Destination"></param>
-public record InMsg(string? Source, string? Comment, string? Destination);
-
-/// <summary>
-/// TonAPI 账户交易列表响应。
-/// </summary>
-/// <param name="Transactions">交易数组。</param>
-public record AccountTxList(TonTxDetail[] Transactions);
