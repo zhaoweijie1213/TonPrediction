@@ -9,6 +9,7 @@ using TonPrediction.Infrastructure;
 using TonPrediction.Infrastructure.Database;
 using TonPrediction.Infrastructure.Database.Migrations;
 using TonPrediction.Infrastructure.Services;
+using TonPrediction.Api.Services.WalletListeners;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();
@@ -38,7 +39,21 @@ builder.Services.AddSingleton<WalletConfig>(service =>
     return new WalletConfig
     {
         ENV_MASTER_WALLET_ADDRESS = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? "",
-        ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? ""
+        ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? "",
+        ListenerType = configuration["WalletListenerType"] ?? "Sse"
+    };
+});
+builder.Services.AddSingleton<SseWalletListener>();
+builder.Services.AddSingleton<RestWalletListener>();
+builder.Services.AddSingleton<WebSocketWalletListener>();
+builder.Services.AddSingleton<IWalletListener>(sp =>
+{
+    var cfg = sp.GetRequiredService<WalletConfig>();
+    return cfg.ListenerType.ToLowerInvariant() switch
+    {
+        "rest" => sp.GetRequiredService<RestWalletListener>(),
+        "websocket" => sp.GetRequiredService<WebSocketWalletListener>(),
+        _ => sp.GetRequiredService<SseWalletListener>()
     };
 });
 builder.Services.AddHostedService<RoundScheduler>();
