@@ -136,7 +136,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
         var amount = tx.Amount;        // 转换为 nano TON 存储
-        var sender = tx.In_Msg?.Source.Address ?? string.Empty;
+        var sender = tx.In_Msg?.Source.Address.ToRawAddress() ?? string.Empty;
         var position = isBull ? Position.Bull : Position.Bear;
 
         using var scope = _scopeFactory.CreateScope();

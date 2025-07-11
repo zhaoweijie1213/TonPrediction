@@ -48,7 +48,8 @@ public class PredictionService(
             BetRecordStatus.Unclaimed => b => b.Claimed == false,
             _ => null
         };
-        var bets = await _betRepo.GetPagedByAddressAsync(address, filter, page, pageSize, ct);
+        var rawAddress = address.ToRawAddress();
+        var bets = await _betRepo.GetPagedByAddressAsync(rawAddress, filter, page, pageSize, ct);
         var roundIds = bets.Select(b => b.RoundId).ToArray();
         var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds);
         var map = rounds.ToDictionary(r => r.Epoch);
@@ -92,7 +93,8 @@ public class PredictionService(
     public async Task<ApiResult<PnlOutput>> GetPnlAsync(string symbol, string address)
     {
         var api = new ApiResult<PnlOutput>();
-        var stat = await _statRepo.GetByAddressAsync(symbol, address);
+        var rawAddress = address.ToRawAddress();
+        var stat = await _statRepo.GetByAddressAsync(symbol, rawAddress);
         if (stat == null)
         {
             api.SetRsult(ApiResultCode.Success, new PnlOutput());

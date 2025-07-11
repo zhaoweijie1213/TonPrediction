@@ -87,7 +87,7 @@ public class TonEventListenerTests
             {
                 Source = new AddressInfo { Address = "sender" },
                 Destination = new AddressInfo { Address = "addr" },
-                Value = 2m,
+                Value = 2,
                 Decoded_Body = new DecodedBody { Text = "Bet 1 bull" }
             }
         };
@@ -158,7 +158,7 @@ public class TonEventListenerTests
             {
                 Source = new AddressInfo { Address = "sender" },
                 Destination = new AddressInfo { Address = "addr" },
-                Value = 1m,
+                Value = 1,
                 Decoded_Body = new DecodedBody { Text = "Bet 1 bull" }
             }
         };

@@ -27,7 +27,8 @@ public class ClaimService(
     public async Task<ApiResult<ClaimOutput?>> ClaimAsync(ClaimInput input)
     {
         var api = new ApiResult<ClaimOutput?>();
-        var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId);
+        var rawAddress = input.Address.ToRawAddress();
+        var bet = await _betRepo.GetByAddressAndRoundAsync(rawAddress, input.RoundId);
         if (bet == null || bet.Claimed || bet.Reward <= 0)
         {
             api.SetRsult(ApiResultCode.DataNotFound, null);
@@ -42,7 +43,7 @@ public class ClaimService(
         var entity = new ClaimEntity
         {
             RoundId = input.RoundId,
-            UserAddress = input.Address,
+            UserAddress = rawAddress,
             Reward = amount,
             TxHash = result.TxHash,
             Status = result.Status,
