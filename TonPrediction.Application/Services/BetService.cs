@@ -22,7 +22,11 @@ public class BetService(
     private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IRoundRepository _roundRepo = roundRepo;
-    private static readonly Regex CommentRegex = new(@"^\s*(\d+)\s+(bull|bear)\s*$", RegexOptions.IgnoreCase);
+
+    /// <summary>
+    /// 评论正则表达式，用于解析交易备注中的事件信息。
+    /// </summary>
+    private static readonly Regex CommentRegex = new(@"^\s*(?<evt>\w+)\s+(?<rid>\d+)\s+(?<dir>bull|bear)\s*$", RegexOptions.IgnoreCase);
 
     /// <summary>
     /// 验证并上报用户下注信息
@@ -43,13 +47,25 @@ public class BetService(
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
-        var match = CommentRegex.Match(detail.In_Msg?.Decoded_Body.Text ?? string.Empty);
-        if (!match.Success || !long.TryParse(match.Groups[1].Value, out var roundId))
+
+        var text = detail.In_Msg?.Decoded_Body.Text;
+        if (string.IsNullOrEmpty(text)) 
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
-        var side = match.Groups[2].Value.ToLowerInvariant();
+
+        var match = CommentRegex.Match(text);
+
+        // 解析事件名称、回合 ID 和下注方向
+        if (!match.Success || !match.Groups["evt"].Value.Equals("Bet",StringComparison.OrdinalIgnoreCase))
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, false);
+            return api;
+        }
+        long roundId = long.Parse(match.Groups["rid"].Value);
+        bool isBull = match.Groups["dir"].Value.Equals("bull",
+                            StringComparison.OrdinalIgnoreCase);
         var round = await _roundRepo.GetByIdAsync(roundId);
         if (round == null || round.Status != RoundStatus.Betting)
         {
@@ -61,7 +77,7 @@ public class BetService(
             api.SetRsult(ApiResultCode.ErrorParams, false, "TxHash is exist");
             return api;
         }
-        var position = side == "bull" ? Position.Bull : Position.Bear;
+        var position = isBull ? Position.Bull : Position.Bear;
         var bet = new BetEntity
         {
             RoundId = round.Id,
