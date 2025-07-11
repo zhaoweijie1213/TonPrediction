@@ -32,7 +32,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
             list.Add(new LeaderboardItemOutput
             {
                 Rank = (page - 1) * pageSize + i + 1,
-                Address = s.UserAddress,
+                Address = s.UserAddress.ToFriendlyAddress(),
                 Rounds = s.Rounds,
                 WinRounds = s.WinRounds,
                 LoseRounds = s.Rounds - s.WinRounds,
@@ -46,7 +46,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
         var output = new LeaderboardOutput { List = list };
         if (!string.IsNullOrWhiteSpace(address))
         {
-            var rank = await _repo.GetRankAsync(symbol, address, rankBy);
+            var rank = await _repo.GetRankAsync(symbol, address.ToRawAddress(), rankBy);
             if (rank > 0)
             {
                 output.AddressRank = rank;

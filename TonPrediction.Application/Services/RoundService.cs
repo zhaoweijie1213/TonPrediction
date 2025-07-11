@@ -109,7 +109,7 @@ public class RoundService(
         var roundIds = rounds.Select(r => r.Id).ToArray();
         var bets = roundIds.Length == 0 || string.IsNullOrWhiteSpace(address)
             ? new List<BetEntity>()
-            : await _betRepo.GetByAddressAndRoundsAsync(address!, roundIds, ct);
+            : await _betRepo.GetByAddressAndRoundsAsync(address!.ToRawAddress(), roundIds, ct);
         var betMap = bets.ToDictionary(b => b.RoundId);
 
         var list = new List<RoundUserBetOutput>();
