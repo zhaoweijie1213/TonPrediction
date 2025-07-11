@@ -20,7 +20,13 @@ public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<Web
     // WebSocket 相对路径，基于 TonConfig.WebSocketUrl 构建
     //private const string WsUrlTemplate = "accounts/transactions?accounts={0}";
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 监听钱包地址的交易详情。
+    /// </summary>
+    /// <param name="walletAddress"></param>
+    /// <param name="lastLt"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async IAsyncEnumerable<TonTxDetail> ListenAsync(string walletAddress, ulong lastLt, [EnumeratorCancellation] CancellationToken ct)
     {
         var apiKey = tonConfig.CurrentValue.ApiKey;
