@@ -14,11 +14,12 @@ namespace TonPrediction.Api.Services.WalletListeners;
 /// <summary>
 /// 通过 WebSocket 订阅交易的监听实现。
 /// </summary>
-public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<WebSocketWalletListener> logger,IOptionsMonitor<TonConfig> tonConfig) : IWalletListener
+public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<WebSocketWalletListener> logger, IOptionsMonitor<TonConfig> tonConfig) : IWalletListener
 {
     private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
     private readonly ILogger<WebSocketWalletListener> _logger = logger;
-    private const string WsUrlTemplate = "/v2/ws/accounts/transactions?accounts={0}";
+    // WebSocket 相对路径，基于 TonConfig.WebSocketUrl 构建
+    private const string WsUrlTemplate = "accounts/transactions?accounts={0}";
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TonTxDetail> ListenAsync(string walletAddress, ulong lastLt, [EnumeratorCancellation] CancellationToken ct)
