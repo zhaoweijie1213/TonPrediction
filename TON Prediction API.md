@@ -43,6 +43,8 @@
 >hub.on("roundEnded", data => { /* ... */ });
 >
 >await hub.start();
+>// 用户在连接钱包后调用，确保能收到个人通知
+>await hub.invoke("joinAddress", userAddress);
 > ```
 >
 >**说明**：除 `currentRound` 与 `nextRound` 外，其他回合相关响应均同时包含 `id` 与 `epoch` 字段，`id` 用于后续业务请求，`epoch` 用于展示回合期次。
@@ -418,3 +420,17 @@ GET /api/predictions/pnl
 | `reward` | string(decimal) | 奖励金额 |
 | `claimed` | bool | 是否已领取 |
 
+## 1️⃣6️⃣ 下注成功通知（`betPlaced` • 单用户推送）
+
+- **SignalR 事件**：`betPlaced`
+- **触发时机**：监听到用户向主钱包转账并确认成功
+- **推送内容**：
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | int | 回合唯一编号 |
+| `epoch` | int | 期次（Epoch） |
+| `amount` | string(decimal) | 下注金额 |
+| `txHash` | string | 交易哈希 |
+
+> 客户端连接 SignalR 后，需要在用户连接钱包时调用 `joinAddress` 方法并传入地址，服务器将基于该地址推送消息。

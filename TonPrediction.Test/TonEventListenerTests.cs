@@ -56,6 +56,14 @@ public class TonEventListenerTests
                 It.IsAny<decimal>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
+        notifier.Setup(n => n.PushBetPlacedAsync(
+                "sender",
+                round.Id,
+                round.Epoch,
+                2,
+                "hash"))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
 
         var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()
@@ -127,6 +135,14 @@ public class TonEventListenerTests
             .ReturnsAsync(round);
 
         var notifier = new Mock<IPredictionHubService>();
+        notifier.Setup(n => n.PushBetPlacedAsync(
+                "sender",
+                round.Id,
+                round.Epoch,
+                1,
+                "hash"))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
 
         var stateRepo = new Mock<IStateRepository>();
         var sp = new ServiceCollection()

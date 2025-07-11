@@ -26,6 +26,16 @@ public interface IPredictionHubService : ITransientDependency
     Task PushNextRoundAsync(RoundEntity round, decimal currentPrice);
 
     /// <summary>
+    /// 推送下注成功消息至指定地址。
+    /// </summary>
+    /// <param name="address">钱包地址。</param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
+    /// <param name="amount">下注金额。</param>
+    /// <param name="txHash">交易哈希。</param>
+    Task PushBetPlacedAsync(string address, long roundId, long epoch, long amount, string txHash);
+
+    /// <summary>
     /// 推送回合开始消息。
     /// </summary>
     /// <param name="roundId">回合唯一编号。</param>

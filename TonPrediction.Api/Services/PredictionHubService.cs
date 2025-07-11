@@ -67,6 +67,27 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
     }
 
     /// <summary>
+    /// 下注成功推送给指定地址。
+    /// </summary>
+    /// <param name="address">钱包地址。</param>
+    /// <param name="roundId">回合唯一编号。</param>
+    /// <param name="epoch">回合期次。</param>
+    /// <param name="amount">下注金额。</param>
+    /// <param name="txHash">交易哈希。</param>
+    public Task PushBetPlacedAsync(string address, long roundId, long epoch, long amount, string txHash)
+    {
+        var output = new BetPlacedOutput
+        {
+            RoundId = roundId,
+            Epoch = epoch,
+            Amount = amount.ToAmountString(),
+            TxHash = txHash
+        };
+        logger.LogInformation("PushBetPlacedAsync.下注成功推送:{output}", JsonConvert.SerializeObject(output));
+        return _hub.Clients.Group(address).SendAsync("betPlaced", output);
+    }
+
+    /// <summary>
     /// 回合开始
     /// </summary>
     /// <param name="roundId">回合唯一编号。</param>
