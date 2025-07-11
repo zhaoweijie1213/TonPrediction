@@ -81,14 +81,14 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         {
             try
             {
-                using var handle = await _locker.AcquireAsync(
-                    CacheKeyCollection.TonEventListenerLockKey,
-                    TimeSpan.FromMinutes(5));
-                if (handle == null)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
-                    continue;
-                }
+                //using var handle = await _locker.AcquireAsync(
+                //    CacheKeyCollection.TonEventListenerLockKey,
+                //    TimeSpan.FromMinutes(5));
+                //if (handle == null)
+                //{
+                //    await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+                //    continue;
+                //}
 
                 await foreach (var tx in _walletListener.ListenAsync(_walletAddress, _lastLt, stoppingToken))
                 {
@@ -114,13 +114,13 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     /// <param name="tx">交易详情。</param>
     internal virtual async Task ProcessTransactionAsync(TonTxDetail tx)
     {
-        var match = CommentRegex.Match(tx.In_Message.Comment ?? string.Empty);
+        var match = CommentRegex.Match(tx.In_Message?.Comment ?? string.Empty);
         if (!match.Success || !long.TryParse(match.Groups[1].Value, out var roundId)) return;
         var side = match.Groups[2].Value.ToLowerInvariant();
         //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
         var amount = tx.Amount;        // TonAPI 已返回普通 TON
-        var sender = tx.In_Message.Source ?? string.Empty;
+        var sender = tx.In_Message?.Source ?? string.Empty;
         var position = side == "bull" ? Position.Bull : Position.Bear;
 
         using var scope = _scopeFactory.CreateScope();

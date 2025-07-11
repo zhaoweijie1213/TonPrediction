@@ -1,15 +1,17 @@
+using Microsoft.Extensions.Configuration;
 using QYQ.Base.Common.IOCExtensions;
 using QYQ.Base.Swagger.Extension;
 using TonPrediction.Api.Hubs;
 using TonPrediction.Api.Services;
+using TonPrediction.Api.Services.WalletListeners;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Database.Config;
+using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Infrastructure;
 using TonPrediction.Infrastructure.Database;
 using TonPrediction.Infrastructure.Database.Migrations;
 using TonPrediction.Infrastructure.Services;
-using TonPrediction.Api.Services.WalletListeners;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddQYQSerilog();
@@ -40,7 +42,7 @@ builder.Services.AddSingleton<WalletConfig>(service =>
     {
         ENV_MASTER_WALLET_ADDRESS = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? "",
         ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? "",
-        ListenerType = configuration["WalletListenerType"] ?? "Sse"
+        ListenerType = configuration.GetSection("WalletListenerType").Get<WalletListenerType>()
     };
 });
 builder.Services.AddSingleton<SseWalletListener>();
@@ -49,10 +51,10 @@ builder.Services.AddSingleton<WebSocketWalletListener>();
 builder.Services.AddSingleton<IWalletListener>(sp =>
 {
     var cfg = sp.GetRequiredService<WalletConfig>();
-    return cfg.ListenerType.ToLowerInvariant() switch
+    return cfg.ListenerType switch
     {
-        "rest" => sp.GetRequiredService<RestWalletListener>(),
-        "websocket" => sp.GetRequiredService<WebSocketWalletListener>(),
+        WalletListenerType.Rest => sp.GetRequiredService<RestWalletListener>(),
+        WalletListenerType.WebSocket => sp.GetRequiredService<WebSocketWalletListener>(),
         _ => sp.GetRequiredService<SseWalletListener>()
     };
 });

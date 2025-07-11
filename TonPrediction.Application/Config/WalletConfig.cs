@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Config
 {
@@ -24,6 +25,6 @@ namespace TonPrediction.Application.Config
         /// <summary>
         /// 钱包监听方式，默认为 Sse。
         /// </summary>
-        public string ListenerType { get; set; } = "Sse";
+        public WalletListenerType ListenerType { get; set; } = WalletListenerType.Sse;
     }
 }
