@@ -17,18 +17,32 @@ namespace TonPrediction.Api.Services.WalletListeners;
 public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<WebSocketWalletListener> logger, IOptionsMonitor<TonConfig> tonConfig) : IWalletListener
 {
     private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
-    private readonly ILogger<WebSocketWalletListener> _logger = logger;
     // WebSocket 相对路径，基于 TonConfig.WebSocketUrl 构建
-    private const string WsUrlTemplate = "accounts/transactions?accounts={0}";
+    //private const string WsUrlTemplate = "accounts/transactions?accounts={0}";
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TonTxDetail> ListenAsync(string walletAddress, ulong lastLt, [EnumeratorCancellation] CancellationToken ct)
     {
-        var wsBaseUri = new Uri(tonConfig.CurrentValue.WebSocketUrl);
-        var wsUri = new Uri(wsBaseUri, string.Format(WsUrlTemplate, walletAddress));
+        var apiKey = tonConfig.CurrentValue.ApiKey;
+        var wsBaseUri = new Uri($"{tonConfig.CurrentValue.WebSocketUrl}?token={apiKey}");
         using var ws = new ClientWebSocket();
-        await ws.ConnectAsync(wsUri, ct);
-        var buffer = new byte[4096];
+        await ws.ConnectAsync(wsBaseUri, ct);
+
+        //发送订阅指令
+        var sub = new
+        {
+            id = 1,
+            jsonrpc = "2.0",
+            method = "subscribe_account",
+            @params = new[] { walletAddress }          // 可追加 ;operations=TonTransfer
+        };
+
+        var json = JsonConvert.SerializeObject(sub);
+        await ws.SendAsync(Encoding.UTF8.GetBytes(json),
+                           WebSocketMessageType.Text, true, ct);
+
+        //接收推送
+        var buffer = new byte[8 * 1024];
         while (ws.State == WebSocketState.Open && !ct.IsCancellationRequested)
         {
             var items = new List<TonTxDetail>();
@@ -38,6 +52,7 @@ public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<Web
                 break;
             }
             var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            logger.LogDebug("ListenAsync.接收websocket消息:{text}", text);
             try
             {
                 var head = JsonConvert.DeserializeObject<SseTxHead>(text);
@@ -53,7 +68,7 @@ public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<Web
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "WS parse error");
+                logger.LogError(ex, "WS parse error");
             }
 
             foreach (var tx in items)
