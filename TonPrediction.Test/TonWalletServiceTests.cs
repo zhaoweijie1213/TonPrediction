@@ -38,7 +38,7 @@ public class TonWalletServiceTests
         };
         var service = new TonWalletService(NullLogger<TonWalletService>.Instance, client, walletConfig);
 
-        var result = await service.TransferAsync("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF", 1m);
+        var result = await service.TransferAsync("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF", 1_000_000_000);
 
         Assert.True(client.SendCalled);
         Assert.Equal("h", result.TxHash);

@@ -6,6 +6,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Common;
 
 namespace TonPrediction.Application.Services;
@@ -83,10 +84,10 @@ public class BetService(
         {
             RoundId = round.Id,
             UserAddress = detail.In_Msg?.Source.Address ?? string.Empty,
-            Amount = detail.Amount,
+            Amount = detail.Amount.ToNanoTon(),
             Position = position,
             Claimed = false,
-            Reward = 0m,
+            Reward = 0,
             TxHash = detail.Hash,
             Lt = detail.Lt,
             Status = BetStatus.Pending

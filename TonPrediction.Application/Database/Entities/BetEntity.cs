@@ -30,8 +30,8 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 下注金额。
         /// </summary>
-        [SugarColumn(ColumnName = "amount", ColumnDataType = "decimal(18,8)")]
-        public decimal Amount { get; set; }
+        [SugarColumn(ColumnName = "amount", ColumnDataType = "bigint")]
+        public long Amount { get; set; }
 
         /// <summary>
         /// 下注方向。
@@ -48,14 +48,14 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 奖励金额。
         /// </summary>
-        [SugarColumn(ColumnName = "reward", ColumnDataType = "decimal(18,8)")]
-        public decimal Reward { get; set; }
+        [SugarColumn(ColumnName = "reward", ColumnDataType = "bigint")]
+        public long Reward { get; set; }
 
         /// <summary>
         /// 手续费
         /// </summary>
-        [SugarColumn(ColumnName = "treasury_fee", ColumnDataType = "decimal(18,8)")]
-        public decimal TreasuryFee { get; set; }
+        [SugarColumn(ColumnName = "treasury_fee", ColumnDataType = "bigint")]
+        public long TreasuryFee { get; set; }
 
         /// <summary>
         /// 下注交易哈希，唯一索引避免重复插入。

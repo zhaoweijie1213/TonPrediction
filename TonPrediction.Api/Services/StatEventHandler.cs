@@ -31,7 +31,7 @@ public class StatEventHandler(IServiceScopeFactory scopeFactory, ILogger<StatEve
             var reward = bet.Reward;
             var stat = await statRepo.GetByAddressAsync(evt.Symbol, bet.UserAddress);
             var profit = reward - bet.Amount;
-            var win = reward > 0m;
+            var win = reward > 0;
             if (stat == null)
             {
                 stat = new PnlStatEntity
