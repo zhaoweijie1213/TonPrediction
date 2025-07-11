@@ -30,8 +30,8 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 奖励金额。
         /// </summary>
-        [SugarColumn(ColumnName = "reward", ColumnDataType = "decimal(18,8)")]
-        public decimal Reward { get; set; }
+        [SugarColumn(ColumnName = "reward", ColumnDataType = "bigint")]
+        public long Reward { get; set; }
 
         /// <summary>
         /// 交易哈希。

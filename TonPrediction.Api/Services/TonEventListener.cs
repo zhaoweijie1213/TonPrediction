@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using TonPrediction.Application.Common;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Api.Services.WalletListeners;
 
 namespace TonPrediction.Api.Services;
@@ -134,7 +135,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         //var side = match.Groups[2].Value.ToLowerInvariant();
         //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
-        var amount = tx.Amount;        // TonAPI 已返回普通 TON
+        var amount = tx.Amount.ToNanoTon();        // 转换为 nano TON 存储
         var sender = tx.In_Msg?.Source.Address ?? string.Empty;
         var position = isBull ? Position.Bull : Position.Bear;
 
@@ -164,7 +165,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
                 Amount = amount,
                 Position = position,
                 Claimed = false,
-                Reward = 0m,
+                Reward = 0,
                 TxHash = tx.Hash,
                 Lt = tx.Lt,
                 Status = BetStatus.Confirmed

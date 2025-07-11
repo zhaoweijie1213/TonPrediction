@@ -28,14 +28,14 @@ public class PnlStatEntity
     /// <summary>
     /// 累计下注金额。
     /// </summary>
-    [SugarColumn(ColumnName = "total_bet", ColumnDataType = "decimal(18,8)")]
-    public decimal TotalBet { get; set; }
+    [SugarColumn(ColumnName = "total_bet", ColumnDataType = "bigint")]
+    public long TotalBet { get; set; }
 
     /// <summary>
     /// 累计奖励金额。
     /// </summary>
-    [SugarColumn(ColumnName = "total_reward", ColumnDataType = "decimal(18,8)")]
-    public decimal TotalReward { get; set; }
+    [SugarColumn(ColumnName = "total_reward", ColumnDataType = "bigint")]
+    public long TotalReward { get; set; }
 
     /// <summary>
     /// 参与回合数。
@@ -58,6 +58,6 @@ public class PnlStatEntity
     /// <summary>
     /// 最佳回合收益。
     /// </summary>
-    [SugarColumn(ColumnName = "best_round_profit", ColumnDataType = "decimal(18,8)")]
-    public decimal BestRoundProfit { get; set; }
+    [SugarColumn(ColumnName = "best_round_profit", ColumnDataType = "bigint")]
+    public long BestRoundProfit { get; set; }
 }

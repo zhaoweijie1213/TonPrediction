@@ -4,6 +4,7 @@ using TonPrediction.Application.Input;
 using TonPrediction.Application.Output;
 using Microsoft.Extensions.Configuration;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Extensions;
 using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
@@ -27,14 +28,14 @@ public class ClaimService(
     {
         var api = new ApiResult<ClaimOutput?>();
         var bet = await _betRepo.GetByAddressAndRoundAsync(input.Address, input.RoundId);
-        if (bet == null || bet.Claimed || bet.Reward <= 0m)
+        if (bet == null || bet.Claimed || bet.Reward <= 0)
         {
             api.SetRsult(ApiResultCode.DataNotFound, null);
             return api;
         }
 
         var rate = _configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
-        var fee = bet.Reward * rate;
+        var fee = (long)decimal.Round(bet.Reward * rate);
         var amount = bet.Reward - fee;
         var result = await _walletService.TransferAsync(input.Address, amount);
 

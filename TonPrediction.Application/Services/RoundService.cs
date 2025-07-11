@@ -42,8 +42,8 @@ public class RoundService(
             BearAmount = r.BearAmount.ToAmountString(),
             RewardPool = r.RewardAmount.ToAmountString(),
             EndTime = new DateTimeOffset(r.CloseTime).ToUnixTimeSeconds(),
-            BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToAmountString() : "0",
-            BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToAmountString() : "0"
+            BullOdds = r.BullAmount > 0 ? ((decimal)r.TotalAmount / r.BullAmount).ToAmountString() : "0",
+            BearOdds = r.BearAmount > 0 ? ((decimal)r.TotalAmount / r.BearAmount).ToAmountString() : "0"
         }).ToList();
         api.SetRsult(ApiResultCode.Success, result);
         return api;
@@ -129,8 +129,8 @@ public class RoundService(
                 StartTime = new DateTimeOffset(r.StartTime).ToUnixTimeSeconds(),
                 EndTime = new DateTimeOffset(r.CloseTime).ToUnixTimeSeconds(),
                 Status = r.Status,
-                BullOdds = r.BullAmount > 0m ? (r.TotalAmount / r.BullAmount).ToAmountString() : "0",
-                BearOdds = r.BearAmount > 0m ? (r.TotalAmount / r.BearAmount).ToAmountString() : "0",
+                BullOdds = r.BullAmount > 0 ? ((decimal)r.TotalAmount / r.BullAmount).ToAmountString() : "0",
+                BearOdds = r.BearAmount > 0 ? ((decimal)r.TotalAmount / r.BearAmount).ToAmountString() : "0",
                 Position = bet?.Position,
                 BetAmount = bet?.Amount.ToAmountString() ?? "0",
                 Reward = bet?.Reward.ToAmountString() ?? "0",

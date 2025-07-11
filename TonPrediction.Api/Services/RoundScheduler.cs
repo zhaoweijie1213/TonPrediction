@@ -165,12 +165,12 @@ namespace TonPrediction.Api.Services
                 {
                     Position.Bull => locked.BullAmount,
                     Position.Bear => locked.BearAmount,
-                    _ => 0m
+                    _ => 0L
                 };
 
                 foreach (var bet in bets)
                 {
-                    decimal reward = 0m;
+                    long reward = 0L;
                     if (!winner.HasValue)
                     {
                         reward = bet.Amount;
@@ -178,7 +178,7 @@ namespace TonPrediction.Api.Services
                     else if ((winner == Position.Bull && bet.Position == Position.Bull) ||
                              (winner == Position.Bear && bet.Position == Position.Bear))
                     {
-                        reward = winTotal > 0m ? bet.Amount / winTotal * locked.RewardAmount : 0m;
+                        reward = winTotal > 0 ? bet.Amount * locked.RewardAmount / winTotal : 0L;
                     }
                     bet.Reward = reward;
                     await betRepo.UpdateByPrimaryKeyAsync(bet);

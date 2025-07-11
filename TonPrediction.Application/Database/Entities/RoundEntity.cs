@@ -80,20 +80,20 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 本回合的下注总金额。
         /// </summary>
-        [SugarColumn(ColumnName = "total_amount", ColumnDataType = "decimal(18,8)")]
-        public decimal TotalAmount { get; set; }
+        [SugarColumn(ColumnName = "total_amount", ColumnDataType = "bigint")]
+        public long TotalAmount { get; set; }
 
         /// <summary>
         /// 押涨总金额。
         /// </summary>
-        [SugarColumn(ColumnName = "bull_amount", ColumnDataType = "decimal(18,8)")]
-        public decimal BullAmount { get; set; }
+        [SugarColumn(ColumnName = "bull_amount", ColumnDataType = "bigint")]
+        public long BullAmount { get; set; }
 
         /// <summary>
         /// 押跌总金额。
         /// </summary>
-        [SugarColumn(ColumnName = "bear_amount", ColumnDataType = "decimal(18,8)")]
-        public decimal BearAmount { get; set; }
+        [SugarColumn(ColumnName = "bear_amount", ColumnDataType = "bigint")]
+        public long BearAmount { get; set; }
 
         /// <summary>
         /// 获胜方。
@@ -104,13 +104,13 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 
         /// </summary>
-        [SugarColumn(ColumnName = "reward_base_cal_amount", ColumnDataType = "decimal(18,8)")]
-        public decimal RewardBaseCalAmount { get; set; }
+        [SugarColumn(ColumnName = "reward_base_cal_amount", ColumnDataType = "bigint")]
+        public long RewardBaseCalAmount { get; set; }
 
         /// <summary>
         /// 可分配奖金池。
         /// </summary>
-        [SugarColumn(ColumnName = "reward_amount", ColumnDataType = "decimal(18,8)")]
-        public decimal RewardAmount { get; set; }
+        [SugarColumn(ColumnName = "reward_amount", ColumnDataType = "bigint")]
+        public long RewardAmount { get; set; }
     }
 }

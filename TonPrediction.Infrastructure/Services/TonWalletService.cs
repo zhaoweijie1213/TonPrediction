@@ -29,7 +29,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
     /// <param name="address"></param>
     /// <param name="amount"></param>
     /// <returns></returns>
-    public async Task<TransferResult> TransferAsync(string address, decimal amount)
+    public async Task<TransferResult> TransferAsync(string address, long amount)
     {
         try
         {
@@ -49,7 +49,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
                         Info = new IntMsgInfo(new()
                         {
                             Dest = new Address(address),
-                            Value = new Coins(amount.ToString()),
+                            Value = new Coins((amount / 1_000_000_000m).ToString()),
                             Bounce = true
                         }),
                         Body = new CellBuilder().Build()
