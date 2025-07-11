@@ -79,9 +79,17 @@ public class TonEventListenerTests
             Mock.Of<IWalletListener>(),
             walletConfig);
 
-        var tx = new TonTxDetail(2m, new InMsg("sender", "1 bull", "addr"), "hash")
+        var tx = new TonTxDetail
         {
-            Lt = 1
+            Hash = "hash",
+            Lt = 1,
+            In_Msg = new InMsg
+            {
+                Source = new AddressInfo { Address = "sender" },
+                Destination = new AddressInfo { Address = "addr" },
+                Value = 2m,
+                Decoded_Body = new DecodedBody { Text = "1 bull" }
+            }
         };
         await listener.ProcessTransactionAsync(tx);
 
@@ -142,7 +150,18 @@ public class TonEventListenerTests
             Mock.Of<IWalletListener>(),
             walletConfig);
 
-        var tx = new TonTxDetail(1m, new InMsg("sender", "1 bull", "addr"), "hash") { Lt = 2 };
+        var tx = new TonTxDetail
+        {
+            Hash = "hash",
+            Lt = 2,
+            In_Msg = new InMsg
+            {
+                Source = new AddressInfo { Address = "sender" },
+                Destination = new AddressInfo { Address = "addr" },
+                Value = 1m,
+                Decoded_Body = new DecodedBody { Text = "1 bull" }
+            }
+        };
         await listener.ProcessTransactionAsync(tx);
 
         betRepo.Verify(b => b.UpdateByPrimaryKeyAsync(bet), Times.Once);

@@ -10,7 +10,7 @@ namespace TonPrediction.Api.Services.WalletListeners;
 /// <summary>
 /// 通过轮询 REST API 的钱包监听实现。
 /// </summary>
-public class RestWalletListener(ILogger<RestWalletListener> logger,IHttpClientFactory httpFactory) : IWalletListener
+public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientFactory httpFactory) : IWalletListener
 {
     private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
 
