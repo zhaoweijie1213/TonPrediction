@@ -11,6 +11,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Services;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -74,8 +75,8 @@ public class TonEventListenerTests
             scopeFactory.Object,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
-            new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>(),
+            Mock.Of<IWalletListener>(),
             walletConfig);
 
         var tx = new TonTxDetail(2m, new InMsg("sender", "1 bull", "addr"), "hash")
@@ -137,8 +138,8 @@ public class TonEventListenerTests
             scopeFactory.Object,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
-            new Mock<IHttpClientFactory>().Object,
             Mock.Of<IDistributedLock>(),
+            Mock.Of<IWalletListener>(),
             walletConfig);
 
         var tx = new TonTxDetail(1m, new InMsg("sender", "1 bull", "addr"), "hash") { Lt = 2 };

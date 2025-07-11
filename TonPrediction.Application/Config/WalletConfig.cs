@@ -20,5 +20,10 @@ namespace TonPrediction.Application.Config
         /// 主钱包私钥
         /// </summary>
         public string ENV_MASTER_WALLET_PK { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 钱包监听方式，默认为 Sse。
+        /// </summary>
+        public string ListenerType { get; set; } = "Sse";
     }
 }
