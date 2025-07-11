@@ -156,7 +156,7 @@ public record TonTxDetail
     /// 返回的账户金额，为 In_Msg.Value 的方便展示。
     /// </summary>
     [JsonIgnore]
-    public decimal Amount => In_Msg?.Value ?? 0;
+    public long Amount => In_Msg?.Value ?? 0;
 }
 
 /// <summary>
@@ -222,7 +222,7 @@ public class InMsg
     /// 金额值（nano TON）。
     /// </summary>
     [JsonProperty("value")]
-    public decimal Value { get; set; }
+    public long Value { get; set; }
 
     /// <summary>
     /// 转运费用。

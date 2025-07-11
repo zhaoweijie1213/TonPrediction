@@ -102,7 +102,7 @@ namespace TonPrediction.Application.Database.Entities
         public Position? WinnerSide { get; set; }
 
         /// <summary>
-        /// 
+        /// 奖励基数计算金额，通常为总金额的
         /// </summary>
         [SugarColumn(ColumnName = "reward_base_cal_amount", ColumnDataType = "bigint")]
         public long RewardBaseCalAmount { get; set; }
