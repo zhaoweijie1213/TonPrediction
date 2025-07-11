@@ -183,5 +183,6 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
 
         var currentPrice = round.ClosePrice > 0 ? round.ClosePrice : round.LockPrice;
         await _notifier.PushNextRoundAsync(round, currentPrice);
+        await _notifier.PushBetPlacedAsync(sender, round.Id, round.Epoch, amount, tx.Hash);
     }
 }
