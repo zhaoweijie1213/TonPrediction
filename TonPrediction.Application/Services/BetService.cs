@@ -38,12 +38,12 @@ public class BetService(
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
-        if (!string.Equals(detail.In_Message?.Destination, _wallet, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(detail.In_Msg?.Destination.Address, _wallet, StringComparison.OrdinalIgnoreCase))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
-        var match = CommentRegex.Match(detail.In_Message?.Comment ?? string.Empty);
+        var match = CommentRegex.Match(detail.In_Msg?.Decoded_Body.Text ?? string.Empty);
         if (!match.Success || !long.TryParse(match.Groups[1].Value, out var roundId))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
@@ -65,7 +65,7 @@ public class BetService(
         var bet = new BetEntity
         {
             RoundId = round.Id,
-            UserAddress = detail.In_Message?.Source ?? string.Empty,
+            UserAddress = detail.In_Msg?.Source.Address ?? string.Empty,
             Amount = detail.Amount,
             Position = position,
             Claimed = false,
@@ -100,25 +100,3 @@ public class BetService(
         return api;
     }
 }
-
-/// <summary>
-/// TonAPI 交易详情模型。
-/// </summary>
-/// <param name="Amount"></param>
-/// <param name="In_Message"></param>
-/// <param name="Hash"></param>
-public record TonTxDetail(decimal Amount, InMsg? In_Message, string Hash)
-{
-    /// <summary>
-    /// 账户逻辑时间。
-    /// </summary>
-    public ulong Lt { get; init; }
-}
-
-/// <summary>
-/// 入站消息模型。
-/// </summary>
-/// <param name="Source"></param>
-/// <param name="Comment"></param>
-/// <param name="Destination"></param>
-public record InMsg(string? Source, string? Comment, string? Destination);
