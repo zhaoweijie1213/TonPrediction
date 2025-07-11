@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
@@ -55,7 +56,19 @@ public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<Web
             logger.LogDebug("ListenAsync.接收websocket消息:{text}", text);
             try
             {
-                var head = JsonConvert.DeserializeObject<SseTxHead>(text);
+                // 解析 JSON，忽略订阅确认包
+                var token = JToken.Parse(text);
+                if (token["method"]?.ToString() == "subscribe_account")
+                {
+                    continue;
+                }
+
+                if (token["tx_hash"] == null || token["lt"] == null)
+                {
+                    continue;
+                }
+
+                var head = token.ToObject<SseTxHead>();
                 if (head != null)
                 {
                     var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{head.Tx_Hash}", ct);
