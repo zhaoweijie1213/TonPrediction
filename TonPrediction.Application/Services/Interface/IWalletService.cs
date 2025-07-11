@@ -14,5 +14,5 @@ public interface IWalletService : ITransientDependency
     /// <param name="address">目标地址。</param>
     /// <param name="amount">转账金额。</param>
     /// <returns>转账结果。</returns>
-    Task<TransferResult> TransferAsync(string address, decimal amount);
+    Task<TransferResult> TransferAsync(string address, long amount);
 }

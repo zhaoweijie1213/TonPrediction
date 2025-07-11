@@ -23,8 +23,8 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
     /// <returns></returns>
     public Task PushCurrentRoundAsync(RoundEntity round, decimal currentPrice)
     {
-        var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
-        var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
+        var oddsBull = round.BullAmount > 0 ? (decimal)round.TotalAmount / round.BullAmount : 0m;
+        var oddsBear = round.BearAmount > 0 ? (decimal)round.TotalAmount / round.BearAmount : 0m;
         var output = new CurrentRoundOutput
         {
             Id = round.Id,
@@ -50,8 +50,8 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
     /// <returns></returns>
     public Task PushNextRoundAsync(RoundEntity round, decimal currentPrice)
     {
-        var oddsBull = round.BullAmount > 0m ? round.TotalAmount / round.BullAmount : 0m;
-        var oddsBear = round.BearAmount > 0m ? round.TotalAmount / round.BearAmount : 0m;
+        var oddsBull = round.BullAmount > 0 ? (decimal)round.TotalAmount / round.BullAmount : 0m;
+        var oddsBear = round.BearAmount > 0 ? (decimal)round.TotalAmount / round.BearAmount : 0m;
         var output = new NextRoundOutput
         {
             Id = round.Id,

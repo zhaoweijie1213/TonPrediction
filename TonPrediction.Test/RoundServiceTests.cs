@@ -28,10 +28,10 @@ public class RoundServiceTests
                 CloseTime = DateTime.UtcNow.AddMinutes(-5),
                 LockPrice = 1m,
                 ClosePrice = 1.2m,
-                TotalAmount = 100m,
-                BullAmount = 60m,
-                BearAmount = 40m,
-                RewardAmount = 95m,
+                TotalAmount = 100000000000,
+                BullAmount = 60000000000,
+                BearAmount = 40000000000,
+                RewardAmount = 95000000000,
                 Status = RoundStatus.Completed
             },
             new()
@@ -42,10 +42,10 @@ public class RoundServiceTests
                 CloseTime = DateTime.UtcNow,
                 LockPrice = 1.2m,
                 ClosePrice = 1.1m,
-                TotalAmount = 80m,
-                BullAmount = 30m,
-                BearAmount = 50m,
-                RewardAmount = 76m,
+                TotalAmount = 80000000000,
+                BullAmount = 30000000000,
+                BearAmount = 50000000000,
+                RewardAmount = 76000000000,
                 Status = RoundStatus.Locked
             }
         };
@@ -56,10 +56,10 @@ public class RoundServiceTests
             {
                 RoundId = 1,
                 UserAddress = "addr",
-                Amount = 10m,
+                Amount = 10000000000,
                 Position = Position.Bull,
                 Claimed = false,
-                Reward = 20m
+                Reward = 20000000000
             }
         };
 
@@ -91,10 +91,10 @@ public class RoundServiceTests
                 CloseTime = DateTime.UtcNow.AddMinutes(-5),
                 LockPrice = 1m,
                 ClosePrice = 1.2m,
-                TotalAmount = 100m,
-                BullAmount = 60m,
-                BearAmount = 40m,
-                RewardAmount = 95m,
+                TotalAmount = 100000000000,
+                BullAmount = 60000000000,
+                BearAmount = 40000000000,
+                RewardAmount = 95000000000,
                 Status = RoundStatus.Completed
             }
         };

@@ -5,8 +5,10 @@ using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Cache;
 using System.Text.RegularExpressions;
+using TonPrediction.Application.Common;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Api.Services.WalletListeners;
 
 namespace TonPrediction.Api.Services;
@@ -54,9 +56,10 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     private ulong _lastLt;
 
     /// <summary>
-    /// 评论正则表达式，用于解析交易备注中的事件信息。
+    /// <summary>
+    /// Bet 事件备注解析正则。
     /// </summary>
-    private static readonly Regex CommentRegex = new(@"^\s*(?<evt>\w+)\s+(?<rid>\d+)\s+(?<dir>bull|bear)\s*$", RegexOptions.IgnoreCase);
+    private static readonly Regex CommentRegex = CommentRegexCollection.Bet;
 
     /// <summary>
     /// 执行
@@ -121,7 +124,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         var text = tx.In_Msg?.Decoded_Body.Text;
         if (string.IsNullOrEmpty(text)) return;
         var match = CommentRegex.Match(text);
-        if (!match.Success|| !match.Groups["evt"].Value.Equals("Bet", StringComparison.OrdinalIgnoreCase)) return;
+        if (!match.Success || !match.Groups["evt"].Value.Equals("Bet", StringComparison.OrdinalIgnoreCase)) return;
 
         // 解析事件名称、回合 ID 和下注方向
         //string eventName = match.Groups["evt"].Value;
@@ -132,7 +135,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         //var side = match.Groups[2].Value.ToLowerInvariant();
         //var roundId = match.Groups[3].Value.ToLowerInvariant();
 
-        var amount = tx.Amount;        // TonAPI 已返回普通 TON
+        var amount = tx.Amount.ToNanoTon();        // 转换为 nano TON 存储
         var sender = tx.In_Msg?.Source.Address ?? string.Empty;
         var position = isBull ? Position.Bull : Position.Bear;
 
@@ -162,7 +165,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
                 Amount = amount,
                 Position = position,
                 Claimed = false,
-                Reward = 0m,
+                Reward = 0,
                 TxHash = tx.Hash,
                 Lt = tx.Lt,
                 Status = BetStatus.Confirmed
