@@ -194,8 +194,10 @@ namespace TonPrediction.Api.Services
                 await roundRepo.UpdateByPrimaryKeyAsync(locked);
 
                 await priceRepo.InsertAsync(new PriceSnapshotEntity { Symbol = symbol, Timestamp = now, Price = closePrice });
-                await _notifier.PushRoundEndedAsync(locked.Id, locked.Epoch);
+
                 await _notifier.PushSettlementEndedAsync(locked.Id, locked.Epoch);
+
+                //await _notifier.PushRoundEndedAsync(locked.Id, locked.Epoch);
             }
 
             // 获取当前正在下注的回合
