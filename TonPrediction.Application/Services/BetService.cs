@@ -6,6 +6,7 @@ using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Common;
 
 namespace TonPrediction.Application.Services;
 
@@ -24,9 +25,9 @@ public class BetService(
     private readonly IRoundRepository _roundRepo = roundRepo;
 
     /// <summary>
-    /// 评论正则表达式，用于解析交易备注中的事件信息。
+    /// Bet 事件备注解析正则。
     /// </summary>
-    private static readonly Regex CommentRegex = new(@"^\s*(?<evt>\w+)\s+(?<rid>\d+)\s+(?<dir>bull|bear)\s*$", RegexOptions.IgnoreCase);
+    private static readonly Regex CommentRegex = CommentRegexCollection.Bet;
 
     /// <summary>
     /// 验证并上报用户下注信息
@@ -49,7 +50,7 @@ public class BetService(
         }
 
         var text = detail.In_Msg?.Decoded_Body.Text;
-        if (string.IsNullOrEmpty(text)) 
+        if (string.IsNullOrEmpty(text))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
@@ -58,7 +59,7 @@ public class BetService(
         var match = CommentRegex.Match(text);
 
         // 解析事件名称、回合 ID 和下注方向
-        if (!match.Success || !match.Groups["evt"].Value.Equals("Bet",StringComparison.OrdinalIgnoreCase))
+        if (!match.Success || !match.Groups["evt"].Value.Equals("Bet", StringComparison.OrdinalIgnoreCase))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
