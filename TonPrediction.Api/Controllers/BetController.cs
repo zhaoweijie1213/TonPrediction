@@ -27,8 +27,8 @@ public class BetController(IBetService betService) : ControllerBase
     /// 用户提交交易 BOC 以记录下注。
     /// </summary>
     [HttpPost("report")]
-    public async Task<ApiResult<bool>> ReportAsync([FromBody] BocInput input)
+    public async Task<ApiResult<string>> ReportAsync([FromBody] BetReportInput input)
     {
-        return await _betService.ReportAsync(input.Boc);
+        return await _betService.ReportAsync(input.Address, input.Boc);
     }
 }

@@ -99,12 +99,12 @@ public class BetServiceBocTests
             roundRepo.Object,
             Mock.Of<IPredictionHubService>());
 
-        var result = await service.ReportAsync(boc);
+        var result = await service.ReportAsync("sender", boc);
 
-        Assert.True(result.Data);
+        Assert.Equal("hash", result.Data);
         Assert.NotNull(inserted);
         Assert.Equal(1, inserted!.RoundId);
         Assert.NotNull(handler.RequestUri);
-        Assert.Contains("/v2/blockchain/messages/", handler.RequestUri!.AbsolutePath);
+        Assert.Contains("/v2/blockchain/accounts/", handler.RequestUri!.AbsolutePath);
     }
 }
