@@ -11,11 +11,11 @@ namespace TonPrediction.Application.Services.Interface;
 public interface IBetService : ITransientDependency
 {
     /// <summary>
-    /// 根据交易哈希上报下注。
+    /// 根据交易 BOC 上报下注。
     /// </summary>
-    /// <param name="txHash">交易哈希。</param>
+    /// <param name="boc">交易 BOC。</param>
     /// <returns>业务结果。</returns>
-    Task<ApiResult<bool>> ReportAsync(string txHash);
+    Task<ApiResult<bool>> ReportAsync(string boc);
 
     /// <summary>
     /// 验证指定回合是否可下注。

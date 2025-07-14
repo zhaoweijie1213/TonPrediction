@@ -382,12 +382,12 @@ GET /api/predictions/pnl
 
 ### `POST /api/bet/report`
 
-用户在转账后调用此接口上报交易哈希，后台验证后记录下注信息。
+用户在转账后调用此接口上报交易 BOC，后台先计算消息哈希，再从 TonAPI 查询交易详情并记录下注信息。
 转账 Comment 格式为 `<回合ID> bull` 或 `<回合ID> bear`。
 
 请求体：
 ```json
-{ "txHash": "<交易哈希>" }
+{ "boc": "<交易BOC>" }
 ```
 
 返回字段：
