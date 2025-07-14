@@ -1,11 +1,12 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 
-namespace TonPrediction.Api.Services.WalletListeners;
+namespace TonPrediction.Application.Services.WalletListeners;
 
 /// <summary>
 /// 基于 SSE 的钱包监听实现。

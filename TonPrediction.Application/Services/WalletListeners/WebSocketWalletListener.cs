@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,7 +11,7 @@ using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 
-namespace TonPrediction.Api.Services.WalletListeners;
+namespace TonPrediction.Application.Services.WalletListeners;
 
 /// <summary>
 /// 通过 WebSocket 订阅交易的监听实现。

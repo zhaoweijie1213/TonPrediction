@@ -11,6 +11,7 @@ using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using System.Net.Http.Json;
+using TonPrediction.Application.Services.WalletListeners;
 
 namespace TonPrediction.Application.Services;
 
@@ -41,56 +42,49 @@ public class BetService(
     /// <returns>操作结果。</returns>
     public async Task<ApiResult<bool>> ReportAsync(string boc)
     {
-        var api = new ApiResult<bool>();
+        var result = new ApiResult<bool>();
         string msgHash;
         try
         {
             var cell = Cell.From(Base64UrlToBase64(boc));
-            msgHash = Convert.ToHexString(cell.Hash.ToBytes());
+            msgHash = Convert.ToHexString(cell.Hash.ToBytes()).ToLowerInvariant();
         }
         catch
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
-            return api;
+            result.SetRsult(ApiResultCode.ErrorParams, false);
+            return result;
         }
 
         TonTxDetail? detail = null;
-        for (var i = 0; i < 5 && detail == null; i++)
-        {
-            try
-            {
-                detail = await _http.GetFromJsonAsync<TonTxDetail>(
-                    $"/v2/blockchain/messages/{msgHash}/transaction");
-            }
-            catch
-            {
-                detail = null;
-            }
 
-            if (detail == null)
-                await Task.Delay(1000);
-        }
+        //等待交易入块
+        var (txHash, lt) = await WaitTxAsync(msgHash);
+
+        //获取交易详情
+        detail = await FetchDetailAsync(txHash);
 
         if (detail == null)
         {
-            api.SetRsult(ApiResultCode.Fail, false);
-            return api;
+            result.SetRsult(ApiResultCode.Fail, false);
+            return result;
         }
 
         if (!string.Equals(detail.In_Msg?.Destination.Address, _wallet, StringComparison.OrdinalIgnoreCase))
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
-            return api;
+            result.SetRsult(ApiResultCode.ErrorParams, false);
+            return result;
         }
         var text = detail.In_Msg?.Decoded_Body.Text;
+
+        if (string.IsNullOrEmpty(text)) return result.SetRsult(ApiResultCode.Fail, false, "error comment");
 
         var match = CommentRegex.Match(text);
 
         // 解析事件名称、回合 ID 和下注方向
         if (!match.Success || !match.Groups["evt"].Value.Equals("Bet", StringComparison.OrdinalIgnoreCase))
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
-            return api;
+            result.SetRsult(ApiResultCode.ErrorParams, false);
+            return result;
         }
         long roundId = long.Parse(match.Groups["rid"].Value);
         bool isBull = match.Groups["dir"].Value.Equals("bull",
@@ -98,15 +92,10 @@ public class BetService(
         var round = await _roundRepo.GetByIdAsync(roundId);
         if (round == null || round.Status != RoundStatus.Betting)
         {
-            api.SetRsult(ApiResultCode.Fail, false);
-            return api;
+            result.SetRsult(ApiResultCode.Fail, false);
+            return result;
         }
-        var txHash = detail.Hash;
-        if (await _betRepo.GetByTxHashAsync(txHash) != null)
-        {
-            api.SetRsult(ApiResultCode.ErrorParams, false, "TxHash is exist");
-            return api;
-        }
+
         var position = isBull ? Position.Bull : Position.Bear;
         var bet = new BetEntity
         {
@@ -121,8 +110,8 @@ public class BetService(
             Status = BetStatus.Pending
         };
         await _betRepo.InsertAsync(bet);
-        api.SetRsult(ApiResultCode.Success, true);
-        return api;
+        result.SetRsult(ApiResultCode.Success, true);
+        return result;
     }
 
     /// <summary>
@@ -145,6 +134,40 @@ public class BetService(
         api.SetRsult(ok ? ApiResultCode.Success : ApiResultCode.Fail, ok);
         return api;
     }
+
+    /// <summary>
+    /// 等待交易入块并返回交易哈希和逻辑时间戳。
+    /// </summary>
+    /// <param name="msgHash"></param>
+    /// <returns></returns>
+    public async Task<(string txHash, ulong lt)> WaitTxAsync(string msgHash)
+    {
+        var url = $"/v2/blockchain/messages/{msgHash}/transactions";
+
+        while (true)
+        {
+            var resp = await _http.GetFromJsonAsync<AccountTxList>(url);
+            if (resp?.Transactions?.Length > 0)         // 已经入块
+            {
+                var tx = resp.Transactions[0];
+                return (tx.Hash, tx.Lt);
+            }
+            await Task.Delay(1000);                // 每 1s 轮询
+        }
+    }
+
+    /// <summary>
+    /// 拉取指定交易的详细信息。
+    /// </summary>
+    /// <param name="txHash"></param>
+    /// <returns></returns>
+    public async Task<TonTxDetail?> FetchDetailAsync(string txHash)
+    {
+        return await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}");
+    }
+
+
+
 
     private static string Base64UrlToBase64(string input)
     {

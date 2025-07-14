@@ -1,4 +1,4 @@
-namespace TonPrediction.Api.Services.WalletListeners;
+namespace TonPrediction.Application.Services.WalletListeners;
 
 /// <summary>
 /// TonAPI SSE "message" 事件载荷。

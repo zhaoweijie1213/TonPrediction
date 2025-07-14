@@ -84,6 +84,7 @@ public class PredictionHubService(ILogger<PredictionHubService> logger, IHubCont
             TxHash = txHash
         };
         logger.LogInformation("PushBetPlacedAsync.下注成功推送:{output}", JsonConvert.SerializeObject(output));
+
         return _hub.Clients.Group(address).SendAsync("betPlaced", output);
     }
 
