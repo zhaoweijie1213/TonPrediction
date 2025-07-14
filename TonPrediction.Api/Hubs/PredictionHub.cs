@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using TonPrediction.Application.Extensions;
 
 namespace TonPrediction.Api.Hubs
 {
@@ -20,7 +21,7 @@ namespace TonPrediction.Api.Hubs
         public async Task JoinAddressAsync(string address)
         {
             if (string.IsNullOrWhiteSpace(address)) return;
-            await Groups.AddToGroupAsync(Context.ConnectionId, address);
+            await Groups.AddToGroupAsync(Context.ConnectionId, address.ToRawAddress());
         }
 
         // 断开连接时无需特殊处理，组成员会自动清理
