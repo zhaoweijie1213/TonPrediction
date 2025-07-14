@@ -75,5 +75,11 @@ namespace TonPrediction.Application.Database.Repository
         /// </summary>
         /// <param name="txHash">交易哈希。</param>
         Task<BetEntity?> GetByTxHashAsync(string txHash);
+
+        /// <summary>
+        /// 获取用户下注回合信息
+        /// </summary>
+        /// <returns></returns>
+        Task<BetEntity> GetByRoundAndUserAsync(long roundId, string userAddress);
     }
 }

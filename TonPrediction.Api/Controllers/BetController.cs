@@ -18,9 +18,9 @@ public class BetController(IBetService betService) : ControllerBase
     /// 验证指定回合是否可以下注。
     /// </summary>
     [HttpGet("verify")]
-    public async Task<ApiResult<bool>> VerifyAsync([FromQuery] long roundId)
+    public async Task<ApiResult<bool>> VerifyAsync(long roundId, string userAddress)
     {
-        return await _betService.VerifyAsync(roundId);
+        return await _betService.VerifyAsync(roundId, userAddress);
     }
 
     /// <summary>

@@ -118,14 +118,23 @@ public class BetService(
     /// 验证指定回合是否可下注。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
+    /// <param name="userAddress"></param>
     /// <returns>验证结果。</returns>
-    public async Task<ApiResult<bool>> VerifyAsync(long roundId)
+    public async Task<ApiResult<bool>> VerifyAsync(long roundId, string userAddress)
     {
         var api = new ApiResult<bool>();
         var round = await _roundRepo.GetByIdAsync(roundId);
         if (round == null)
         {
             api.SetRsult(ApiResultCode.DataNotFound, false);
+            return api;
+        }
+
+        var bet = await _betRepo.GetByRoundAndUserAsync(roundId, userAddress);
+
+        if (bet != null)
+        {
+            api.SetRsult(ApiResultCode.Fail, false, "You have already bet on this round.");
             return api;
         }
 

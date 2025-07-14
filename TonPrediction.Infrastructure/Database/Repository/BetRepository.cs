@@ -87,5 +87,19 @@ namespace TonPrediction.Infrastructure.Database.Repository
                 .Where(b => b.UserAddress == address && roundIds.Contains(b.RoundId))
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// 获取指定回合和用户地址的下注信息。
+        /// </summary>
+        /// <param name="roundId"></param>
+        /// <param name="userAddress"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<BetEntity> GetByRoundAndUserAsync(long roundId, string userAddress)
+        {
+            return Db.Queryable<BetEntity>()
+                .Where(b => b.RoundId == roundId && b.UserAddress == userAddress)
+                .FirstAsync();
+        }
     }
 }

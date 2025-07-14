@@ -18,7 +18,6 @@ namespace TonPrediction.Api.Hubs
             var userId = Context.UserIdentifier;                                // 如果配置了  ClaimTypes.NameIdentifier
             var ip = Context.GetHttpContext()?.Connection.RemoteIpAddress;      // 客户端 IP
             var ua = Context.GetHttpContext()?.Request.Headers["User-Agent"].ToString();
-            //var address = Context.GetHttpContext()?.Request.Query["address"];   // 你的业务参数
 
             logger.LogInformation("""
                 新连接: {cid}, 用户:{userId}, IP:{ip}, UA:{ua}
@@ -33,11 +32,13 @@ namespace TonPrediction.Api.Hubs
         public async Task JoinAddressAsync(string address)
         {
             if (string.IsNullOrWhiteSpace(address)) return;
-            logger.LogInformation("JoinAddressAsync.连接钱包地址:{address}", address.ToRawAddress());
+       
 
             await Groups.AddToGroupAsync(Context.ConnectionId, address.ToRawAddress());
 
             presenceTracker.Add(Context.ConnectionId, address.ToRawAddress());
+
+            logger.LogInformation("JoinAddressAsync.连接钱包地址:钱包地址{address},客户端id:{ConnectionId}", address.ToRawAddress(), Context.ConnectionId);
         }
 
         /// <summary>
@@ -45,10 +46,15 @@ namespace TonPrediction.Api.Hubs
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public override Task OnDisconnectedAsync(Exception? ex)
+        public override async Task OnDisconnectedAsync(Exception? ex)
         {
             presenceTracker.Remove(Context.ConnectionId);
-            return base.OnDisconnectedAsync(ex);
+            await base.OnDisconnectedAsync(ex);
+            var cid = Context.ConnectionId;                                     // 连接 ID
+            var userId = Context.UserIdentifier;                                // 如果配置了  ClaimTypes.NameIdentifier
+            var ip = Context.GetHttpContext()?.Connection.RemoteIpAddress;      // 客户端 IP
+            var ua = Context.GetHttpContext()?.Request.Headers["User-Agent"].ToString();
+            logger.LogInformation("OnDisconnectedAsync.断开连接: {cid}, 用户:{userId}, IP:{ip}, UA:{ua}", cid, userId, ip, ua);
         }
     }
 }

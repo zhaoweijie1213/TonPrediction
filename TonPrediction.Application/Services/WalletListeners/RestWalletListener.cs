@@ -41,7 +41,7 @@ public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientF
                     }
                 }
             }
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(500), ct);
         }
     }
 }
