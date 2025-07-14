@@ -38,11 +38,12 @@ public class BetService(
     /// <summary>
     /// 验证并上报用户下注信息
     /// </summary>
+    /// <param name="address">用户钱包地址。</param>
     /// <param name="boc">交易 BOC。</param>
-    /// <returns>操作结果。</returns>
-    public async Task<ApiResult<bool>> ReportAsync(string boc)
+    /// <returns>交易哈希。</returns>
+    public async Task<ApiResult<string>> ReportAsync(string address, string boc)
     {
-        var result = new ApiResult<bool>();
+        var result = new ApiResult<string>();
         string msgHash;
         try
         {
@@ -51,39 +52,39 @@ public class BetService(
         }
         catch
         {
-            result.SetRsult(ApiResultCode.ErrorParams, false);
+            result.SetRsult(ApiResultCode.ErrorParams, string.Empty);
             return result;
         }
 
         TonTxDetail? detail = null;
 
         //等待交易入块
-        var (txHash, lt) = await WaitTxAsync(msgHash);
+        var (txHash, lt) = await WaitTxAsync(address, msgHash);
 
         //获取交易详情
         detail = await FetchDetailAsync(txHash);
 
         if (detail == null)
         {
-            result.SetRsult(ApiResultCode.Fail, false);
+            result.SetRsult(ApiResultCode.Fail, string.Empty);
             return result;
         }
 
         if (!string.Equals(detail.In_Msg?.Destination.Address, _wallet, StringComparison.OrdinalIgnoreCase))
         {
-            result.SetRsult(ApiResultCode.ErrorParams, false);
+            result.SetRsult(ApiResultCode.ErrorParams, string.Empty);
             return result;
         }
         var text = detail.In_Msg?.Decoded_Body.Text;
 
-        if (string.IsNullOrEmpty(text)) return result.SetRsult(ApiResultCode.Fail, false, "error comment");
+        if (string.IsNullOrEmpty(text)) return result.SetRsult(ApiResultCode.Fail, string.Empty, "error comment");
 
         var match = CommentRegex.Match(text);
 
         // 解析事件名称、回合 ID 和下注方向
         if (!match.Success || !match.Groups["evt"].Value.Equals("Bet", StringComparison.OrdinalIgnoreCase))
         {
-            result.SetRsult(ApiResultCode.ErrorParams, false);
+            result.SetRsult(ApiResultCode.ErrorParams, string.Empty);
             return result;
         }
         long roundId = long.Parse(match.Groups["rid"].Value);
@@ -92,7 +93,7 @@ public class BetService(
         var round = await _roundRepo.GetByIdAsync(roundId);
         if (round == null || round.Status != RoundStatus.Betting)
         {
-            result.SetRsult(ApiResultCode.Fail, false);
+            result.SetRsult(ApiResultCode.Fail, string.Empty);
             return result;
         }
 
@@ -110,7 +111,7 @@ public class BetService(
             Status = BetStatus.Pending
         };
         await _betRepo.InsertAsync(bet);
-        result.SetRsult(ApiResultCode.Success, true);
+        result.SetRsult(ApiResultCode.Success, txHash);
         return result;
     }
 
@@ -147,21 +148,28 @@ public class BetService(
     /// <summary>
     /// 等待交易入块并返回交易哈希和逻辑时间戳。
     /// </summary>
-    /// <param name="msgHash"></param>
-    /// <returns></returns>
-    public async Task<(string txHash, ulong lt)> WaitTxAsync(string msgHash)
+    /// <param name="address">钱包地址。</param>
+    /// <param name="msgHash">消息哈希。</param>
+    /// <returns>交易哈希与账户逻辑时间。</returns>
+    public async Task<(string txHash, ulong lt)> WaitTxAsync(string address, string msgHash)
     {
-        var url = string.Format(TonApiRoutes.MessageTransactions, msgHash);
-
+        ulong lastLt = 0;
         while (true)
         {
+            var url = string.Format(TonApiRoutes.AccountTransactions, address, 20, lastLt);
             var resp = await _http.GetFromJsonAsync<AccountTxList>(url);
-            if (resp?.Transactions?.Length > 0)         // 已经入块
+            if (resp?.Transactions != null)
             {
-                var tx = resp.Transactions[0];
-                return (tx.Hash, tx.Lt);
+                foreach (var tx in resp.Transactions)
+                {
+                    if (string.Equals(tx.In_Msg?.Hash, msgHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (tx.Hash, tx.Lt);
+                    }
+                }
+                lastLt = resp.Transactions[0].Lt;
             }
-            await Task.Delay(1000);                // 每 1s 轮询
+            await Task.Delay(1000); // 每 1s 轮询
         }
     }
 
