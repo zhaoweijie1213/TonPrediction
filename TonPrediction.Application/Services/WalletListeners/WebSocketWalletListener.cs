@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Common;
 
 namespace TonPrediction.Application.Services.WalletListeners;
 
@@ -78,7 +79,7 @@ public class WebSocketWalletListener(IHttpClientFactory httpFactory, ILogger<Web
                 var head = token.ToObject<SseTxHead>();
                 if (head != null)
                 {
-                    var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{head.Tx_Hash}", ct);
+                    var detail = await _http.GetFromJsonAsync<TonTxDetail>(string.Format(TonApiRoutes.TransactionDetail, head.Tx_Hash), ct);
                     if (detail != null)
                     {
                         items.Add(detail with { Hash = head.Tx_Hash, Lt = head.Lt });

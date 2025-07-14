@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Common;
 
 namespace TonPrediction.Application.Services.WalletListeners;
 
@@ -20,7 +21,7 @@ public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientF
     {
         while (!ct.IsCancellationRequested)
         {
-            var url = $"/v2/blockchain/accounts/{walletAddress}/transactions?limit=20&to_lt={lastLt}";
+            var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 20, lastLt);
             var resp = await _http.GetAsync(url, ct);
 
             var content = await resp.Content.ReadAsStringAsync(ct);
