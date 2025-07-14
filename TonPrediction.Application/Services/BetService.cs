@@ -142,7 +142,7 @@ public class BetService(
     /// <returns></returns>
     public async Task<(string txHash, ulong lt)> WaitTxAsync(string msgHash)
     {
-        var url = $"/v2/blockchain/messages/{msgHash}/transactions";
+        var url = string.Format(TonApiRoutes.MessageTransactions, msgHash);
 
         while (true)
         {
@@ -163,7 +163,7 @@ public class BetService(
     /// <returns></returns>
     public async Task<TonTxDetail?> FetchDetailAsync(string txHash)
     {
-        return await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}");
+        return await _http.GetFromJsonAsync<TonTxDetail>(string.Format(TonApiRoutes.TransactionDetail, txHash));
     }
 
 

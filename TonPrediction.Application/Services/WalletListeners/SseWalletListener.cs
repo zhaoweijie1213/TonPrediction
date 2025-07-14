@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Common;
 
 namespace TonPrediction.Application.Services.WalletListeners;
 
@@ -15,7 +16,6 @@ public class SseWalletListener(IHttpClientFactory httpFactory, ILogger<SseWallet
 {
     private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
     private readonly ILogger<SseWalletListener> _logger = logger;
-    private const string SseUrlTemplate = "/v2/sse/accounts/transactions?accounts={0}";
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TonTxDetail> ListenAsync(string walletAddress, ulong lastLt, [EnumeratorCancellation] CancellationToken ct)
@@ -36,7 +36,7 @@ public class SseWalletListener(IHttpClientFactory httpFactory, ILogger<SseWallet
             var items = new List<TonTxDetail>();
             try
             {
-                await using var stream = await _http.GetStreamAsync(string.Format(SseUrlTemplate, walletAddress), ct);
+                await using var stream = await _http.GetStreamAsync(string.Format(TonApiRoutes.SseAccountTransactions, walletAddress), ct);
                 using var reader = new StreamReader(stream);
                 string? eventName = null;
                 while (!reader.EndOfStream && !ct.IsCancellationRequested)
@@ -52,7 +52,7 @@ public class SseWalletListener(IHttpClientFactory httpFactory, ILogger<SseWallet
                     {
                         var json = line["data:".Length..].Trim();
                         var head = JsonConvert.DeserializeObject<SseTxHead>(json)!;
-                        var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{head.Tx_Hash}", ct);
+                        var detail = await _http.GetFromJsonAsync<TonTxDetail>(string.Format(TonApiRoutes.TransactionDetail, head.Tx_Hash), ct);
                         if (detail != null)
                         {
                             items.Add(detail with { Hash = head.Tx_Hash, Lt = head.Lt });
@@ -83,7 +83,7 @@ public class SseWalletListener(IHttpClientFactory httpFactory, ILogger<SseWallet
     private async Task<List<TonTxDetail>> FetchMissedListAsync(string walletAddress, ulong lastLt, CancellationToken ct)
     {
         var list = new List<TonTxDetail>();
-        var url = $"/v2/blockchain/accounts/{walletAddress}/transactions?limit=20&to_lt={lastLt}";
+        var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 20, lastLt);
         try
         {
             var resp = await _http.GetFromJsonAsync<AccountTxList>(url, ct);
