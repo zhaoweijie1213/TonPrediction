@@ -6,7 +6,7 @@ namespace TonPrediction.Api.Hubs
     /// <summary>
     /// 实时推送预测数据的 SignalR Hub。
     /// </summary>
-    public class PredictionHub : Hub
+    public class PredictionHub(ILogger<PredictionHub> logger) : Hub
     {
         /// <summary>
         /// 连接时不加入任何用户组。
@@ -21,6 +21,7 @@ namespace TonPrediction.Api.Hubs
         public async Task JoinAddressAsync(string address)
         {
             if (string.IsNullOrWhiteSpace(address)) return;
+            logger.LogInformation("JoinAddressAsync.连接钱包地址:{address}", address);
             await Groups.AddToGroupAsync(Context.ConnectionId, address.ToRawAddress());
         }
 
