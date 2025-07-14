@@ -7,6 +7,7 @@ using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using System.Net.Http;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -28,7 +29,7 @@ public class BetServiceTests
         var roundRepo = new Mock<IRoundRepository>();
         roundRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(round);
         var service = new BetService(
-            new Mock<IHttpClientFactory>().Object,
+            Mock.Of<IHttpClientFactory>(),
             new ConfigurationBuilder().Build(),
             Mock.Of<IBetRepository>(),
             roundRepo.Object,

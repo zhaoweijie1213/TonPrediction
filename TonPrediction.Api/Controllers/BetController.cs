@@ -24,11 +24,11 @@ public class BetController(IBetService betService) : ControllerBase
     }
 
     /// <summary>
-    /// 用户提交交易哈希以记录下注。
+    /// 用户提交交易 BOC 以记录下注。
     /// </summary>
     [HttpPost("report")]
-    public async Task<ApiResult<bool>> ReportAsync([FromBody] TxHashInput input)
+    public async Task<ApiResult<bool>> ReportAsync([FromBody] BocInput input)
     {
-        return await _betService.ReportAsync(input.TxHash);
+        return await _betService.ReportAsync(input.Boc);
     }
 }

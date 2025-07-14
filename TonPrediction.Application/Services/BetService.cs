@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using QYQ.Base.Common.ApiResult;
@@ -8,6 +7,10 @@ using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Common;
+using TonSdk.Core;
+using TonSdk.Core.Block;
+using TonSdk.Core.Boc;
+using System.Net.Http.Json;
 
 namespace TonPrediction.Application.Services;
 
@@ -18,7 +21,8 @@ public class BetService(
     IHttpClientFactory httpClientFactory,
     IConfiguration configuration,
     IBetRepository betRepo,
-    IRoundRepository roundRepo, IPredictionHubService predictionHubService) : IBetService
+    IRoundRepository roundRepo,
+    IPredictionHubService predictionHubService) : IBetService
 {
     private readonly HttpClient _http = httpClientFactory.CreateClient("TonApi");
     private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
@@ -33,29 +37,52 @@ public class BetService(
     /// <summary>
     /// 验证并上报用户下注信息
     /// </summary>
-    /// <param name="txHash"></param>
-    /// <returns></returns>
-    public async Task<ApiResult<bool>> ReportAsync(string txHash)
+    /// <param name="boc">交易 BOC。</param>
+    /// <returns>操作结果。</returns>
+    public async Task<ApiResult<bool>> ReportAsync(string boc)
     {
         var api = new ApiResult<bool>();
-        var detail = await _http.GetFromJsonAsync<TonTxDetail>($"/v2/blockchain/transactions/{txHash}");
-        if (detail == null)
+        string msgHash;
+        try
         {
-            api.SetRsult(ApiResultCode.ErrorParams, false);
-            return api;
+            var cell = Cell.From(Base64UrlToBase64(boc));
+            msgHash = Convert.ToHexString(cell.Hash.ToBytes());
         }
-        if (!string.Equals(detail.In_Msg?.Destination.Address, _wallet, StringComparison.OrdinalIgnoreCase))
+        catch
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
 
-        var text = detail.In_Msg?.Decoded_Body.Text;
-        if (string.IsNullOrEmpty(text))
+        TonTxDetail? detail = null;
+        for (var i = 0; i < 5 && detail == null; i++)
+        {
+            try
+            {
+                detail = await _http.GetFromJsonAsync<TonTxDetail>(
+                    $"/v2/blockchain/messages/{msgHash}/transaction");
+            }
+            catch
+            {
+                detail = null;
+            }
+
+            if (detail == null)
+                await Task.Delay(1000);
+        }
+
+        if (detail == null)
+        {
+            api.SetRsult(ApiResultCode.Fail, false);
+            return api;
+        }
+
+        if (!string.Equals(detail.In_Msg?.Destination.Address, _wallet, StringComparison.OrdinalIgnoreCase))
         {
             api.SetRsult(ApiResultCode.ErrorParams, false);
             return api;
         }
+        var text = detail.In_Msg?.Decoded_Body.Text;
 
         var match = CommentRegex.Match(text);
 
@@ -74,6 +101,7 @@ public class BetService(
             api.SetRsult(ApiResultCode.Fail, false);
             return api;
         }
+        var txHash = detail.Hash;
         if (await _betRepo.GetByTxHashAsync(txHash) != null)
         {
             api.SetRsult(ApiResultCode.ErrorParams, false, "TxHash is exist");
@@ -88,7 +116,7 @@ public class BetService(
             Position = position,
             Claimed = false,
             Reward = 0,
-            TxHash = detail.Hash,
+            TxHash = txHash,
             Lt = detail.Lt,
             Status = BetStatus.Pending
         };
@@ -116,5 +144,16 @@ public class BetService(
         var ok = round.Status == RoundStatus.Betting && round.LockTime > now;
         api.SetRsult(ok ? ApiResultCode.Success : ApiResultCode.Fail, ok);
         return api;
+    }
+
+    private static string Base64UrlToBase64(string input)
+    {
+        input = input.Replace('-', '+').Replace('_', '/');
+        switch (input.Length % 4)
+        {
+            case 2: input += "=="; break;
+            case 3: input += "="; break;
+        }
+        return input;
     }
 }
