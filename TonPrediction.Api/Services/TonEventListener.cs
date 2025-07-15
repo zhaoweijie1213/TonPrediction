@@ -19,6 +19,11 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
 {
 
     /// <summary>
+    /// 允许交易在锁仓时间后被接受的容错秒数。
+    /// </summary>
+    private const int BetTimeToleranceSeconds = 5;
+
+    /// <summary>
     /// 
     /// </summary>
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
@@ -143,7 +148,10 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         var stateRepo = scope.ServiceProvider.GetRequiredService<IStateRepository>();
 
         var round = await roundRepo.GetByIdAsync(roundId);
-        if (round == null || round.Status != RoundStatus.Betting) return;
+        if (round == null) return;
+
+        var txTime = DateTimeOffset.FromUnixTimeSeconds((long)tx.Utime).UtcDateTime;
+        if (txTime > round.LockTime.AddSeconds(BetTimeToleranceSeconds)) return;
 
         var exist = await betRepo.GetByTxHashAsync(tx.Hash);
         if (exist != null)
