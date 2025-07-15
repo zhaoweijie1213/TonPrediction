@@ -1,6 +1,7 @@
 using DotNetCore.CAP;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using QYQ.Base.Common.IOCExtensions;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Events;
@@ -10,10 +11,8 @@ namespace TonPrediction.Api.Services;
 /// <summary>
 /// 处理回合结算后统计数据的 CAP 事件订阅者。
 /// </summary>
-public class StatEventHandler(IServiceScopeFactory scopeFactory, ILogger<StatEventHandler> logger)
+public class StatEventHandler(IServiceScopeFactory scopeFactory, ILogger<StatEventHandler> logger) : ICapSubscribe, ITransientDependency
 {
-    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
-    private readonly ILogger<StatEventHandler> _logger = logger;
 
     /// <summary>
     /// 订阅回合统计事件并更新用户盈亏数据。
@@ -22,7 +21,8 @@ public class StatEventHandler(IServiceScopeFactory scopeFactory, ILogger<StatEve
     [CapSubscribe("round.stat.update")]
     public async Task HandleAsync(RoundStatEvent evt)
     {
-        using var scope = _scopeFactory.CreateScope();
+        logger.LogInformation("HandleAsync.开始回合下注统计:{RoundId}", evt.RoundId);
+        using var scope = scopeFactory.CreateScope();
         var betRepo = scope.ServiceProvider.GetRequiredService<IBetRepository>();
         var statRepo = scope.ServiceProvider.GetRequiredService<IPnlStatRepository>();
         var bets = await betRepo.GetByRoundAsync(evt.RoundId);

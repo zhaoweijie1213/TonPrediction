@@ -61,7 +61,6 @@ builder.Services.AddSingleton<IWalletListener>(sp =>
 builder.Services.AddHostedService<RoundScheduler>();
 builder.Services.AddHostedService<PriceMonitor>();
 builder.Services.AddHostedService<TonEventListener>();
-builder.Services.AddTransient<StatEventHandler>();
 
 #region  CAP
 
