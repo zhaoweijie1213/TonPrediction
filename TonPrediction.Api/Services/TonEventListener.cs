@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 using TonPrediction.Application.Cache;
 using TonPrediction.Application.Common;
@@ -15,13 +16,8 @@ namespace TonPrediction.Api.Services;
 /// 监听主钱包入账的后台服务。
 /// </summary>
 public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubService notifier, ILogger<TonEventListener> logger, IDistributedLock locker,
-    IWalletListener walletListener, WalletConfig walletConfig) : BackgroundService
+    IWalletListener walletListener, WalletConfig walletConfig, IOptionsMonitor<PredictionConfig> predictionConfig) : BackgroundService
 {
-
-    /// <summary>
-    /// 允许交易在锁仓时间后被接受的容错秒数。
-    /// </summary>
-    private const int BetTimeToleranceSeconds = 5;
 
     /// <summary>
     /// 
@@ -151,7 +147,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         if (round == null) return;
 
         var txTime = DateTimeOffset.FromUnixTimeSeconds((long)tx.Utime).UtcDateTime;
-        if (txTime > round.LockTime.AddSeconds(BetTimeToleranceSeconds)) return;
+        if (txTime > round.LockTime.AddSeconds(predictionConfig.CurrentValue.BetTimeToleranceSeconds)) return;
 
         var exist = await betRepo.GetByTxHashAsync(tx.Hash);
         if (exist != null)

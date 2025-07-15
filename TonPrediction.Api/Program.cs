@@ -33,6 +33,7 @@ builder.Services.AddMultipleService("^TonPrediction");
 builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services.Configure<PredictionConfig>(builder.Configuration.GetSection("PredictionConfig"));
 builder.Services.AddSingleton<WalletConfig>(service =>
 {
     var configuration = service.GetRequiredService<IConfiguration>();

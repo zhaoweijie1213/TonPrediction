@@ -1,15 +1,17 @@
+using DotNetCore.CAP;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Linq;
+using TonPrediction.Application.Cache;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
-using TonPrediction.Application.Services.Interface;
-using DotNetCore.CAP;
 using TonPrediction.Application.Events;
-using TonPrediction.Application.Cache;
+using TonPrediction.Application.Services.Interface;
 
 namespace TonPrediction.Api.Services
 {
@@ -22,15 +24,15 @@ namespace TonPrediction.Api.Services
         IPredictionHubService notifier,
         ILogger<RoundScheduler> logger,
         IDistributedLock locker,
-        ICapPublisher publisher) : BackgroundService
+        ICapPublisher publisher, IOptionsMonitor<PredictionConfig> predictionConfig) : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IPredictionHubService _notifier = notifier;
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly IDistributedLock _locker = locker;
         private readonly ICapPublisher _publisher = publisher;
-        private readonly decimal _treasuryFeeRate = configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
-        private readonly int _interval = configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
+        //private readonly decimal _treasuryFeeRate = configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
+        private readonly int _interval = predictionConfig.CurrentValue.RoundIntervalSeconds;
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
         /// <summary>

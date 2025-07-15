@@ -1,17 +1,19 @@
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using QYQ.Base.Common.ApiResult;
+using System.Net.Http.Json;
+using System.Text.RegularExpressions;
+using TonPrediction.Application.Common;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
-using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Extensions;
-using TonPrediction.Application.Common;
+using TonPrediction.Application.Services.Interface;
+using TonPrediction.Application.Services.WalletListeners;
 using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
-using System.Net.Http.Json;
-using TonPrediction.Application.Services.WalletListeners;
 
 namespace TonPrediction.Application.Services;
 
@@ -23,17 +25,14 @@ public class BetService(
     IConfiguration configuration,
     IBetRepository betRepo,
     IRoundRepository roundRepo,
-    IPredictionHubService predictionHubService) : IBetService
+    IPredictionHubService predictionHubService, IOptionsMonitor<PredictionConfig> predictionConfig) : IBetService
 {
     private readonly HttpClient _http = httpClientFactory.CreateClient("TonApi");
     private readonly string _wallet = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? string.Empty;
     private readonly IBetRepository _betRepo = betRepo;
     private readonly IRoundRepository _roundRepo = roundRepo;
 
-    /// <summary>
-    /// 允许交易在锁仓时间后被接受的容错秒数。
-    /// </summary>
-    private const int BetTimeToleranceSeconds = 5;
+
 
     /// <summary>
     /// Bet 事件备注解析正则。
@@ -103,7 +102,7 @@ public class BetService(
         }
 
         var txTime = DateTimeOffset.FromUnixTimeSeconds((long)detail.Utime).UtcDateTime;
-        if (txTime > round.LockTime.AddSeconds(BetTimeToleranceSeconds))
+        if (txTime > round.LockTime.AddSeconds(predictionConfig.CurrentValue.BetTimeToleranceSeconds))
         {
             result.SetRsult(ApiResultCode.Fail, string.Empty);
             return result;
@@ -123,6 +122,9 @@ public class BetService(
             Status = BetStatus.Pending
         };
         await _betRepo.InsertAsync(bet);
+
+        await predictionHubService.PushBetPlacedAsync(bet.UserAddress, bet.RoundId, round.Epoch, bet.Amount, bet.TxHash);
+
         result.SetRsult(ApiResultCode.Success, txHash);
         return result;
     }

@@ -22,6 +22,7 @@ public interface IBetService : ITransientDependency
     /// 验证指定回合是否可下注。
     /// </summary>
     /// <param name="roundId">回合编号。</param>
+    /// <param name="userAddress"></param>
     /// <returns>验证结果。</returns>
     Task<ApiResult<bool>> VerifyAsync(long roundId, string userAddress);
 }
