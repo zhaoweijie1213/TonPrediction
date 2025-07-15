@@ -24,14 +24,16 @@ public class TonEventListenerTests
     [Fact]
     public async Task ProcessTransactionAsync_InsertsBetAndUpdatesRound()
     {
+        var lockTime = DateTime.UtcNow;
         var round = new RoundEntity
         {
             Symbol = "ton",
             Id = 1,
             Epoch = 1,
             CloseTime = DateTime.UtcNow.AddMinutes(5),
+            LockTime = lockTime,
             LockPrice = 1m,
-            Status = RoundStatus.Betting
+            Status = RoundStatus.Locked
         };
 
         BetEntity? inserted = null;
@@ -91,6 +93,7 @@ public class TonEventListenerTests
         {
             Hash = "hash",
             Lt = 1,
+            Utime = (ulong)new DateTimeOffset(lockTime).ToUnixTimeSeconds(),
             In_Msg = new InMsg
             {
                 Source = new AddressInfo { Address = "sender" },
@@ -114,14 +117,16 @@ public class TonEventListenerTests
     [Fact]
     public async Task ProcessTransactionAsync_UpdatesExistingBet()
     {
+        var lockTime2 = DateTime.UtcNow;
         var round = new RoundEntity
         {
             Symbol = "ton",
             Id = 1,
             Epoch = 1,
             CloseTime = DateTime.UtcNow.AddMinutes(5),
+            LockTime = lockTime2,
             LockPrice = 1m,
-            Status = RoundStatus.Betting
+            Status = RoundStatus.Locked
         };
 
         var bet = new BetEntity { TxHash = "hash", Lt = 0, Status = BetStatus.Pending };
@@ -170,6 +175,7 @@ public class TonEventListenerTests
         {
             Hash = "hash",
             Lt = 2,
+            Utime = (ulong)new DateTimeOffset(lockTime2).ToUnixTimeSeconds(),
             In_Msg = new InMsg
             {
                 Source = new AddressInfo { Address = "sender" },

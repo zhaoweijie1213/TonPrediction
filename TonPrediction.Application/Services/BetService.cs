@@ -31,6 +31,11 @@ public class BetService(
     private readonly IRoundRepository _roundRepo = roundRepo;
 
     /// <summary>
+    /// 允许交易在锁仓时间后被接受的容错秒数。
+    /// </summary>
+    private const int BetTimeToleranceSeconds = 5;
+
+    /// <summary>
     /// Bet 事件备注解析正则。
     /// </summary>
     private static readonly Regex CommentRegex = CommentRegexCollection.Bet;
@@ -91,7 +96,14 @@ public class BetService(
         bool isBull = match.Groups["dir"].Value.Equals("bull",
                             StringComparison.OrdinalIgnoreCase);
         var round = await _roundRepo.GetByIdAsync(roundId);
-        if (round == null || round.Status != RoundStatus.Betting)
+        if (round == null)
+        {
+            result.SetRsult(ApiResultCode.Fail, string.Empty);
+            return result;
+        }
+
+        var txTime = DateTimeOffset.FromUnixTimeSeconds((long)detail.Utime).UtcDateTime;
+        if (txTime > round.LockTime.AddSeconds(BetTimeToleranceSeconds))
         {
             result.SetRsult(ApiResultCode.Fail, string.Empty);
             return result;

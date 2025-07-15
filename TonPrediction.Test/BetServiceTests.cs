@@ -35,7 +35,7 @@ public class BetServiceTests
             roundRepo.Object,
             Mock.Of<IPredictionHubService>());
 
-        var result = await service.VerifyAsync(1);
+        var result = await service.VerifyAsync(1, "user");
 
         Assert.True(result.Data);
     }

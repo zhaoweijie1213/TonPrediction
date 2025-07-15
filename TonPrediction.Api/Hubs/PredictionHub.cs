@@ -32,7 +32,7 @@ namespace TonPrediction.Api.Hubs
         public async Task JoinAddressAsync(string address)
         {
             if (string.IsNullOrWhiteSpace(address)) return;
-       
+
 
             await Groups.AddToGroupAsync(Context.ConnectionId, address.ToRawAddress());
 
