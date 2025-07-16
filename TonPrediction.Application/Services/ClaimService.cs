@@ -38,6 +38,7 @@ public class ClaimService(
         var rate = _configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
         var fee = (long)decimal.Round(bet.Reward * rate);
         var amount = bet.Reward - fee;
+
         var result = await _walletService.TransferAsync(input.Address, amount);
 
         var entity = new ClaimEntity

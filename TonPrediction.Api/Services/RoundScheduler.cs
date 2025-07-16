@@ -163,6 +163,8 @@ namespace TonPrediction.Api.Services
 
                 //计算奖励并更新下注记录
                 var bets = await betRepo.GetByRoundAsync(locked.Id, token);
+                var wallet = scope.ServiceProvider.GetRequiredService<IWalletService>();
+                var claimRepo = scope.ServiceProvider.GetRequiredService<IClaimRepository>();
                 var winTotal = winner switch
                 {
                     Position.Bull => locked.BullAmount,
@@ -182,6 +184,23 @@ namespace TonPrediction.Api.Services
                         reward = winTotal > 0 ? (long)((decimal)bet.Amount * locked.RewardAmount / winTotal) : 0;
                     }
                     bet.Reward = reward;
+
+                    if (winner == Position.Tie)
+                    {
+                        var result = await wallet.TransferAsync(bet.UserAddress, reward, $"Refund {locked.Epoch}");
+                        await claimRepo.InsertAsync(new ClaimEntity
+                        {
+                            RoundId = locked.Id,
+                            UserAddress = bet.UserAddress,
+                            Reward = reward,
+                            TxHash = result.TxHash,
+                            Status = result.Status,
+                            Lt = result.Lt,
+                            Timestamp = result.Timestamp
+                        });
+                        bet.Claimed = true;
+                    }
+
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
                 }
 

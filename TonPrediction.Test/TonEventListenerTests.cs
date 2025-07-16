@@ -12,6 +12,7 @@ using TonPrediction.Application.Enums;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Services;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -81,13 +82,15 @@ public class TonEventListenerTests
 
         var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
 
+        var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
         var listener = new TonEventListener(
             scopeFactory.Object,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
             Mock.Of<IDistributedLock>(),
             Mock.Of<IWalletListener>(),
-            walletConfig);
+            walletConfig,
+            option);
 
         var tx = new TonTxDetail
         {
@@ -163,13 +166,15 @@ public class TonEventListenerTests
 
         var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
 
+        var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
         var listener = new TonEventListener(
             scopeFactory.Object,
             notifier.Object,
             NullLogger<TonEventListener>.Instance,
             Mock.Of<IDistributedLock>(),
             Mock.Of<IWalletListener>(),
-            walletConfig);
+            walletConfig,
+            option);
 
         var tx = new TonTxDetail
         {

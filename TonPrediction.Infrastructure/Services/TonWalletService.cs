@@ -29,7 +29,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
     /// <param name="address"></param>
     /// <param name="amount"></param>
     /// <returns></returns>
-    public async Task<TransferResult> TransferAsync(string address, long amount)
+    public async Task<TransferResult> TransferAsync(string address, long amount, string? comment = null)
     {
         try
         {
@@ -40,6 +40,10 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
             }
 
             var seqno = await _client.GetSeqnoAsync(_master) ?? 0u;
+            var body = string.IsNullOrWhiteSpace(comment)
+                ? new CellBuilder().Build()
+                : new CellBuilder().StoreUInt(0, 32).StoreString(comment).Build();
+
             var message = _wallet.CreateTransferMessage(new[]
             {
                 new WalletTransfer
@@ -52,7 +56,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
                             Value = new Coins((amount / 1_000_000_000m).ToString()),
                             Bounce = true
                         }),
-                        Body = new CellBuilder().Build()
+                        Body = body
                     }),
                     Mode = 1
                 }
