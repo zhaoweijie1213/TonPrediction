@@ -321,6 +321,7 @@ GET /api/predictions/round
 | `status` | enum | 回合状态 |
 | `bullOdds` | string(decimal) | 上涨赔率 |
 | `bearOdds` | string(decimal) | 下跌赔率 |
+| `winnerSide` | enum | 回合结果，获胜方 |
 | `position` | enum | 用户下注方向，可能为 null |
 | `betAmount` | string(decimal) | 用户下注金额 |
 | `reward` | string(decimal) | 奖励金额 |
