@@ -10,6 +10,8 @@ using TonPrediction.Application.Services.Interface;
 using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
+using Microsoft.Extensions.Options;
+using TonPrediction.Application.Config;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
@@ -97,7 +99,8 @@ public class BetServiceBocTests
             cfg,
             betRepo.Object,
             roundRepo.Object,
-            Mock.Of<IPredictionHubService>());
+            Mock.Of<IPredictionHubService>(),
+            Mock.Of<IOptionsMonitor<PredictionConfig>>());
 
         var result = await service.ReportAsync("sender", boc);
 

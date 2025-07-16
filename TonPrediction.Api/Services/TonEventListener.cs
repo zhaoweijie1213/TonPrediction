@@ -49,6 +49,8 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     /// </summary>
     private readonly string _walletAddress = walletConfig.ENV_MASTER_WALLET_ADDRESS;
 
+    private readonly IOptionsMonitor<PredictionConfig> _predictionConfig = predictionConfig;
+
     /// <summary>
     ///
     /// </summary>
@@ -147,7 +149,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
         if (round == null) return;
 
         var txTime = DateTimeOffset.FromUnixTimeSeconds((long)tx.Utime).UtcDateTime;
-        if (txTime > round.LockTime.AddSeconds(predictionConfig.CurrentValue.BetTimeToleranceSeconds)) return;
+        if (txTime > round.LockTime.AddSeconds(_predictionConfig.CurrentValue.BetTimeToleranceSeconds)) return;
 
         var exist = await betRepo.GetByTxHashAsync(tx.Hash);
         if (exist != null)

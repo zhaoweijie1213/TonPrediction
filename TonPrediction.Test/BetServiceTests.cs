@@ -8,6 +8,8 @@ using TonPrediction.Application.Enums;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 using System.Net.Http;
+using Microsoft.Extensions.Options;
+using TonPrediction.Application.Config;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -33,7 +35,8 @@ public class BetServiceTests
             new ConfigurationBuilder().Build(),
             Mock.Of<IBetRepository>(),
             roundRepo.Object,
-            Mock.Of<IPredictionHubService>());
+            Mock.Of<IPredictionHubService>(),
+            Mock.Of<IOptionsMonitor<PredictionConfig>>());
 
         var result = await service.VerifyAsync(1, "user");
 
