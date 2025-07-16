@@ -5,9 +5,9 @@ using QYQ.Base.SqlSugar;
 namespace TonPrediction.Application.Database.Repository
 {
     /// <summary>
-    /// 领奖记录仓库接口。
+    /// 领奖与退款交易记录仓库接口。
     /// </summary>
-    public interface IClaimRepository : IBaseRepository<ClaimEntity>, ITransientDependency
+    public interface ITransactionRepository : IBaseRepository<TransactionEntity>, ITransientDependency
     {
     }
 }
