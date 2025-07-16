@@ -26,7 +26,7 @@ public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientF
 
             var content = await resp.Content.ReadAsStringAsync(ct);
 
-            logger.LogInformation("ListenAsync:{content}", content);
+            //logger.LogInformation("ListenAsync:{content}", content);
 
             var data = JsonConvert.DeserializeObject<AccountTxList>(content);
 

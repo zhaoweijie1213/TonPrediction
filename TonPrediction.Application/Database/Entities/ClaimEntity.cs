@@ -1,4 +1,5 @@
 using SqlSugar;
+using SqlSugar.DbConvert;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Database.Entities
@@ -42,7 +43,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 交易状态。
         /// </summary>
-        [SugarColumn(ColumnName = "status")]
+        [SugarColumn(ColumnName = "status", ColumnDataType = "varchar(20)", SqlParameterDbType = typeof(EnumToStringConvert))]
         public ClaimStatus Status { get; set; }
 
         /// <summary>

@@ -1,5 +1,6 @@
-using System;
 using SqlSugar;
+using SqlSugar.DbConvert;
+using System;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Database.Entities
@@ -74,7 +75,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 回合状态。
         /// </summary>
-        [SugarColumn(ColumnName = "status")]
+        [SugarColumn(ColumnName = "status", ColumnDataType = "varchar(20)", SqlParameterDbType = typeof(EnumToStringConvert))]
         public RoundStatus Status { get; set; }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 获胜方。
         /// </summary>
-        [SugarColumn(ColumnName = "winner_side", IsNullable = true)]
+        [SugarColumn(ColumnName = "winner_side", IsNullable = true, ColumnDataType = "varchar(20)", SqlParameterDbType = typeof(EnumToStringConvert))]
         public Position? WinnerSide { get; set; }
 
         /// <summary>

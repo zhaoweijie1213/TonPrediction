@@ -9,10 +9,12 @@ public enum ClaimStatus
     /// 交易已提交待确认。
     /// </summary>
     Pending = 0,
+
     /// <summary>
     /// 交易已确认。
     /// </summary>
     Confirmed = 1,
+
     /// <summary>
     /// 交易失败。
     /// </summary>

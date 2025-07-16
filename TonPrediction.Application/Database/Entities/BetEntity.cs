@@ -1,4 +1,5 @@
 using SqlSugar;
+using SqlSugar.DbConvert;
 using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Database.Entities
@@ -36,7 +37,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 下注方向。
         /// </summary>
-        [SugarColumn(ColumnName = "position")]
+        [SugarColumn(ColumnName = "position", ColumnDataType = "varchar(20)", SqlParameterDbType = typeof(EnumToStringConvert))]
         public Position Position { get; set; }
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace TonPrediction.Application.Database.Entities
         /// <summary>
         /// 下注状态。
         /// </summary>
-        [SugarColumn(ColumnName = "status")]
+        [SugarColumn(ColumnName = "status", ColumnDataType = "varchar(20)", SqlParameterDbType = typeof(EnumToStringConvert))]
         public BetStatus Status { get; set; }
 
         /// <summary>
