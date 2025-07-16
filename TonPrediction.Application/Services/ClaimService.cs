@@ -14,12 +14,12 @@ namespace TonPrediction.Application.Services;
 /// </summary>
 public class ClaimService(
     IBetRepository betRepo,
-    IClaimRepository claimRepo,
+    ITransactionRepository txRepo,
     IWalletService walletService,
     IConfiguration configuration) : IClaimService
 {
     private readonly IBetRepository _betRepo = betRepo;
-    private readonly IClaimRepository _claimRepo = claimRepo;
+    private readonly ITransactionRepository _txRepo = txRepo;
     private readonly IWalletService _walletService = walletService;
     private readonly IConfiguration _configuration = configuration;
 
@@ -41,17 +41,17 @@ public class ClaimService(
 
         var result = await _walletService.TransferAsync(input.Address, amount);
 
-        var entity = new ClaimEntity
+        var entity = new TransactionEntity
         {
-            RoundId = input.RoundId,
+            BetId = bet.Id,
             UserAddress = rawAddress,
-            Reward = amount,
+            Amount = amount,
             TxHash = result.TxHash,
             Status = result.Status,
             Lt = result.Lt,
             Timestamp = result.Timestamp
         };
-        await _claimRepo.InsertAsync(entity);
+        await _txRepo.InsertAsync(entity);
 
         bet.Claimed = true;
         bet.TreasuryFee = fee;

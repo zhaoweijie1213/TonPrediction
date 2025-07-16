@@ -4,10 +4,10 @@ using TonPrediction.Application.Enums;
 namespace TonPrediction.Application.Database.Entities
 {
     /// <summary>
-    /// 用户领取奖励记录。
+    /// 领奖与退款交易记录。
     /// </summary>
-    [SugarTable("claim")]
-    public class ClaimEntity
+    [SugarTable("transaction")]
+    public class TransactionEntity
     {
         /// <summary>
         /// 主键编号。
@@ -16,10 +16,10 @@ namespace TonPrediction.Application.Database.Entities
         public int Id { get; set; }
 
         /// <summary>
-        /// 回合编号。
+        /// 下注记录编号。
         /// </summary>
-        [SugarColumn(ColumnName = "round_id")]
-        public long RoundId { get; set; }
+        [SugarColumn(ColumnName = "bet_id")]
+        public int BetId { get; set; }
 
         /// <summary>
         /// 用户地址。
@@ -28,10 +28,10 @@ namespace TonPrediction.Application.Database.Entities
         public string UserAddress { get; set; } = string.Empty;
 
         /// <summary>
-        /// 奖励金额。
+        /// 交易金额。
         /// </summary>
-        [SugarColumn(ColumnName = "reward", ColumnDataType = "bigint")]
-        public long Reward { get; set; }
+        [SugarColumn(ColumnName = "amount", ColumnDataType = "bigint")]
+        public long Amount { get; set; }
 
         /// <summary>
         /// 交易哈希。

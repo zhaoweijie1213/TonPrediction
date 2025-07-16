@@ -80,7 +80,7 @@ public class RoundService(IRoundRepository roundRepo, IBetRepository betRepo, IO
         }
 
         var latest = await _roundRepo.GetLatestAsync(symbol);
-        var intervalSec = predictionConfig.Value.RoundIntervalSeconds;
+        var intervalSec = predictionConfig.CurrentValue.RoundIntervalSeconds;
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var startEpoch = (latest?.Epoch ?? 0) + 1;
         var fallback = new UpcomingRoundOutput
