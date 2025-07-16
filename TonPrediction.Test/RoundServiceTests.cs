@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Services;
 using Xunit;
 
@@ -69,7 +71,8 @@ public class RoundServiceTests
         var betRepo = new Mock<IBetRepository>();
         betRepo.Setup(b => b.GetByAddressAndRoundsAsync("addr", It.IsAny<long[]>(), default))
             .ReturnsAsync(bets);
-        var service = new RoundService(roundRepo.Object, new ConfigurationBuilder().Build(), betRepo.Object);
+        var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
+        var service = new RoundService(roundRepo.Object, betRepo.Object, option);
 
         var result = await service.GetRecentAsync("addr", "ton", 2);
 
@@ -104,7 +107,8 @@ public class RoundServiceTests
         var roundRepo = new Mock<IRoundRepository>();
         roundRepo.Setup(r => r.GetRecentAsync("ton", 1)).ReturnsAsync(rounds);
         var betRepo = new Mock<IBetRepository>();
-        var service = new RoundService(roundRepo.Object, new ConfigurationBuilder().Build(), betRepo.Object);
+        var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
+        var service = new RoundService(roundRepo.Object, betRepo.Object, option);
 
         var result = await service.GetRecentAsync(null, "ton", 1);
 
