@@ -78,6 +78,7 @@ public class PredictionService(
                 Status = round.Status,
                 BullOdds = round.BullAmount > 0 ? ((decimal)round.TotalAmount / round.BullAmount).ToAmountString() : "0",
                 BearOdds = round.BearAmount > 0 ? ((decimal)round.TotalAmount / round.BearAmount).ToAmountString() : "0",
+                WinnerSide = round.WinnerSide,
                 Position = bet.Position,
                 BetAmount = bet.Amount.ToAmountString(),
                 Reward = bet.Reward.ToAmountString(),

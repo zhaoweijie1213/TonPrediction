@@ -131,6 +131,7 @@ public class RoundService(
                 Status = r.Status,
                 BullOdds = r.BullAmount > 0 ? ((decimal)r.TotalAmount / r.BullAmount).ToAmountString() : "0",
                 BearOdds = r.BearAmount > 0 ? ((decimal)r.TotalAmount / r.BearAmount).ToAmountString() : "0",
+                WinnerSide = r.WinnerSide,
                 Position = bet?.Position,
                 BetAmount = bet?.Amount.ToAmountString() ?? "0",
                 Reward = bet?.Reward.ToAmountString() ?? "0",

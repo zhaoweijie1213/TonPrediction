@@ -32,7 +32,8 @@ public class RoundServiceTests
                 BullAmount = 60000000000,
                 BearAmount = 40000000000,
                 RewardAmount = 95000000000,
-                Status = RoundStatus.Completed
+                Status = RoundStatus.Completed,
+                WinnerSide = Position.Bull
             },
             new()
             {
@@ -75,6 +76,7 @@ public class RoundServiceTests
         Assert.Equal(2, result.Data.Count);
         Assert.Equal("10", result.Data[0].BetAmount);
         Assert.Equal(RoundStatus.Completed, result.Data[0].Status);
+        Assert.Equal(Position.Bull, result.Data[0].WinnerSide);
         Assert.Equal(RoundStatus.Locked, result.Data[1].Status);
     }
 

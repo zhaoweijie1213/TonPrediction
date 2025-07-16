@@ -77,6 +77,11 @@ public class RoundUserBetOutput
     public string BearOdds { get; set; } = string.Empty;
 
     /// <summary>
+    /// 回合结果，指出看涨或看跌获胜。
+    /// </summary>
+    public Position? WinnerSide { get; set; }
+
+    /// <summary>
     /// 用户下注方向，若未下注则为 null。
     /// </summary>
     public Position? Position { get; set; }
