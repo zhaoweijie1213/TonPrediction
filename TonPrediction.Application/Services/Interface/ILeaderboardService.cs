@@ -12,6 +12,7 @@ public interface ILeaderboardService : ITransientDependency
     /// <summary>
     /// 获取排行榜列表。
     /// </summary>
+    /// <param name="symbol"></param>
     /// <param name="rankBy">排序字段。</param>
     /// <param name="page">页码。</param>
     /// <param name="pageSize">分页大小。</param>

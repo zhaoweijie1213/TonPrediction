@@ -44,8 +44,8 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
                 ? new CellBuilder().Build()
                 : new CellBuilder().StoreUInt(0, 32).StoreString(comment).Build();
 
-            var message = _wallet.CreateTransferMessage(new[]
-            {
+            var message = _wallet.CreateTransferMessage(
+            [
                 new WalletTransfer
                 {
                     Message = new InternalMessage(new()
@@ -60,7 +60,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
                     }),
                     Mode = 1
                 }
-            }, seqno).Sign(_pk, true);
+            ], seqno).Sign(_pk, true);
 
             var result = await _client.SendBocAsync(message.Cell!);
             return new TransferResult(result?.Hash ?? string.Empty, 0, DateTime.UtcNow, ClaimStatus.Confirmed);

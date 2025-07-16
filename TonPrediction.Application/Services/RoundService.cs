@@ -1,28 +1,33 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using QYQ.Base.Common.ApiResult;
 using SqlSugar;
+using TonPrediction.Application.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
-using TonPrediction.Application.Extensions;
-using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
 
 /// <summary>
 /// 回合信息查询业务实现。
 /// </summary>
-public class RoundService(
-    IRoundRepository roundRepo,
-    IConfiguration configuration,
-    IBetRepository betRepo) : IRoundService
+public class RoundService(IRoundRepository roundRepo, IBetRepository betRepo, IOptionsMonitor<PredictionConfig> predictionConfig) : IRoundService
 {
     private readonly IRoundRepository _roundRepo = roundRepo;
-    private readonly IConfiguration _configuration = configuration;
+    //private readonly IConfiguration _configuration = configuration;
     private readonly IBetRepository _betRepo = betRepo;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 获取历史回合列表
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <param name="limit"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<ApiResult<List<RoundHistoryOutput>>> GetHistoryAsync(
         string symbol = "ton",
         int limit = 3,
@@ -75,7 +80,7 @@ public class RoundService(
         }
 
         var latest = await _roundRepo.GetLatestAsync(symbol);
-        var intervalSec = _configuration.GetValue<int>("ENV_ROUND_INTERVAL_SEC", 300);
+        var intervalSec = predictionConfig.Value.RoundIntervalSeconds;
         var startTime = latest?.CloseTime ?? DateTime.UtcNow;
         var startEpoch = (latest?.Epoch ?? 0) + 1;
         var fallback = new UpcomingRoundOutput
@@ -108,7 +113,7 @@ public class RoundService(
         var rounds = await _roundRepo.GetRecentAsync(symbol, limit);
         var roundIds = rounds.Select(r => r.Id).ToArray();
         var bets = roundIds.Length == 0 || string.IsNullOrWhiteSpace(address)
-            ? new List<BetEntity>()
+            ? []
             : await _betRepo.GetByAddressAndRoundsAsync(address!.ToRawAddress(), roundIds, ct);
         var betMap = bets.ToDictionary(b => b.RoundId);
 

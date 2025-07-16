@@ -57,8 +57,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     private ulong _lastLt;
 
     /// <summary>
-    /// <summary>
-    /// Bet 事件备注解析正则。
+    /// Bet 事件备注解析正则
     /// </summary>
     private static readonly Regex CommentRegex = CommentRegexCollection.Bet;
 
