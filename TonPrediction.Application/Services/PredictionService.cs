@@ -36,12 +36,9 @@ public class PredictionService(
         string address,
         BetRecordStatus status = BetRecordStatus.All,
         int page = 1,
-        int pageSize = 10,
-        CancellationToken ct = default)
+        int pageSize = 10)
     {
         var api = new ApiResult<List<RoundUserBetOutput>>();
-        page = page <= 0 ? 1 : page;
-        pageSize = pageSize is <= 0 or > 100 ? 10 : pageSize;
         Expression<Func<BetEntity, bool>>? filter = status switch
         {
             BetRecordStatus.Claimed => b => b.Claimed == true,
@@ -49,10 +46,10 @@ public class PredictionService(
             _ => null
         };
         var rawAddress = address.ToRawAddress();
-        var bets = await _betRepo.GetPagedByAddressAsync(rawAddress, filter, page, pageSize, ct);
+        var bets = await _betRepo.GetPagedByAddressAsync(rawAddress, filter, page, pageSize);
         var roundIds = bets.Select(b => b.RoundId).ToArray();
         var rounds = await _roundRepo.GetByRoundIdsAsync(roundIds);
-        var map = rounds.ToDictionary(r => r.Epoch);
+        var map = rounds.ToDictionary(r => r.Id);
         var list = new List<RoundUserBetOutput>();
         foreach (var bet in bets)
         {

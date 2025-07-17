@@ -23,8 +23,7 @@ public interface IPredictionService : ITransientDependency
         string address,
         BetRecordStatus status = BetRecordStatus.All,
         int page = 1,
-        int pageSize = 10,
-        CancellationToken ct = default);
+        int pageSize = 10);
 
     /// <summary>
     /// 获取指定地址的盈亏汇总。

@@ -27,8 +27,7 @@ namespace TonPrediction.Application.Database.Repository
             string address,
             Expression<Func<BetEntity, bool>>? predicate,
             int page,
-            int pageSize,
-            CancellationToken ct = default);
+            int pageSize);
 
         /// <summary>
         /// 获取指定地址的全部下注记录。
