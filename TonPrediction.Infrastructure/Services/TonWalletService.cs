@@ -20,6 +20,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
     private readonly ILogger<TonWalletService> _logger = logger;
     private readonly Address _master = new(walletConfig.ENV_MASTER_WALLET_ADDRESS);
     private readonly byte[] _pk = Convert.FromHexString(walletConfig.ENV_MASTER_WALLET_PK);
+    private readonly string _walletVersion = walletConfig.WalletVersion;
     private PreprocessedV2? _wallet;
     private byte[]? _pubKey;
 
@@ -31,6 +32,11 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
     /// <returns></returns>
     public async Task<TransferResult> TransferAsync(string address, long amount, string? comment = null)
     {
+        if (_walletVersion.Equals("w5", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogError("当前钱包版本为 W5，TonSdk.NET 暂不支持该版本");
+            return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
+        }
         try
         {
             if (_wallet is null)

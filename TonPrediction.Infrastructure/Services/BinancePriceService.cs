@@ -115,19 +115,17 @@ namespace TonPrediction.Infrastructure.Services
             {
                 try
                 {
-                    var result = await socket.ReceiveAsync(buffer,CancellationToken.None);
+                    var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         break;
                     }
-
                     var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     var data = JsonSerializer.Deserialize<WsResponse>(json, _options);
                     if (data != null)
                     {
                         txs.Add(data.Price);
-         
                     }
                 }
                 catch (Exception ex)

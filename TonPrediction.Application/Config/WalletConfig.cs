@@ -26,5 +26,10 @@ namespace TonPrediction.Application.Config
         /// 钱包监听方式，默认为 Sse。
         /// </summary>
         public WalletListenerType ListenerType { get; set; } = WalletListenerType.Sse;
+
+        /// <summary>
+        /// 钱包合约版本，如 "v4"、"w5" 等。
+        /// </summary>
+        public string WalletVersion { get; set; } = "v4";
     }
 }
