@@ -68,7 +68,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
         catch (Exception ex)
         {
             _logger.LogError(ex, "Transfer failed");
-            return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Pending);
+            return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Extensions;
 using QYQ.Base.Common.ApiResult;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Services;
 
@@ -41,31 +42,38 @@ public class ClaimService(
 
         var result = await _walletService.TransferAsync(input.Address, amount);
 
-        var entity = new TransactionEntity
+        if (result.Status == ClaimStatus.Confirmed)
         {
-            BetId = bet.Id,
-            UserAddress = rawAddress,
-            Amount = amount,
-            TxHash = result.TxHash,
-            Status = result.Status,
-            Lt = result.Lt,
-            Timestamp = result.Timestamp
-        };
-        await _txRepo.InsertAsync(entity);
+            var entity = new TransactionEntity
+            {
+                BetId = bet.Id,
+                UserAddress = rawAddress,
+                Amount = amount,
+                TxHash = result.TxHash,
+                Status = result.Status,
+                Lt = result.Lt,
+                Timestamp = result.Timestamp
+            };
+            await _txRepo.InsertAsync(entity);
 
-        bet.Claimed = true;
-        bet.TreasuryFee = fee;
-        await _betRepo.UpdateByPrimaryKeyAsync(bet);
+            bet.Claimed = true;
+            bet.TreasuryFee = fee;
+            await _betRepo.UpdateByPrimaryKeyAsync(bet);
 
-        var output = new ClaimOutput
+            var output = new ClaimOutput
+            {
+                TxHash = result.TxHash,
+                Lt = result.Lt,
+                Status = result.Status,
+                Timestamp = new DateTimeOffset(result.Timestamp).ToUnixTimeSeconds()
+            };
+
+            api.SetRsult(ApiResultCode.Success, output);
+        }
+        else
         {
-            TxHash = result.TxHash,
-            Lt = result.Lt,
-            Status = result.Status,
-            Timestamp = new DateTimeOffset(result.Timestamp).ToUnixTimeSeconds()
-        };
-
-        api.SetRsult(ApiResultCode.Success, output);
+            api.SetRsult(ApiResultCode.Fail, null);
+        }
         return api;
     }
 }

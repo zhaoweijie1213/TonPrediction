@@ -19,7 +19,7 @@ namespace TonPrediction.Infrastructure.Services
     {
         private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
         private readonly ILogger<BinancePriceService> _logger = logger;
-        private readonly ConcurrentDictionary<string, decimal> _prices = new();
+        //private readonly ConcurrentDictionary<string, decimal> _prices = new();
         private readonly ConcurrentDictionary<string, ClientWebSocket> _sockets = new();
         private readonly ConcurrentDictionary<string, Task> _tasks = new();
         private readonly CancellationTokenSource _cts = new();
@@ -42,14 +42,13 @@ namespace TonPrediction.Infrastructure.Services
                 ? "usdt"
                 : vsCurrency;
             var pair = (symbol + currency).ToUpperInvariant();
-            if (!_prices.TryGetValue(pair, out var price))
-            {
-                price = await FetchRestAsync(pair);
-                _prices[pair] = price;
-                var linkedToken = CancellationTokenSource
-                    .CreateLinkedTokenSource(ct, _cts.Token).Token;
-                _ = EnsureWebSocketAsync(pair, linkedToken);
-            }
+
+            decimal price = await FetchRestAsync(pair);
+
+            //var linkedToken = CancellationTokenSource
+            //    .CreateLinkedTokenSource(ct, _cts.Token).Token;
+            //_ = EnsureWebSocketAsync(pair, linkedToken);
+
 
             return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
         }
@@ -91,7 +90,7 @@ namespace TonPrediction.Infrastructure.Services
                 await socket.ConnectAsync(new Uri($"wss://stream.binance.com/ws/{pair.ToLower()}@trade"), ct);
                 if (_sockets.TryAdd(pair, socket))
                 {
-                    var task = Task.Run(() => ReceiveLoopAsync(pair, socket, ct), CancellationToken.None);
+                    var task = Task.Run(() => ReceiveLoopAsync(pair, socket), CancellationToken.None);
                     _tasks[pair] = task;
                 }
             }
@@ -108,17 +107,18 @@ namespace TonPrediction.Infrastructure.Services
         /// <param name="socket"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        private async Task ReceiveLoopAsync(string pair, ClientWebSocket socket, CancellationToken ct)
+        private async IAsyncEnumerable<decimal> ReceiveLoopAsync(string pair, ClientWebSocket socket)
         {
             var buffer = new byte[1024];
-            while (!ct.IsCancellationRequested && socket.State == WebSocketState.Open)
+            List<decimal> txs = [];
+            while (socket.State == WebSocketState.Open)
             {
                 try
                 {
-                    var result = await socket.ReceiveAsync(buffer, ct);
+                    var result = await socket.ReceiveAsync(buffer,CancellationToken.None);
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, ct);
+                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         break;
                     }
 
@@ -126,21 +126,24 @@ namespace TonPrediction.Infrastructure.Services
                     var data = JsonSerializer.Deserialize<WsResponse>(json, _options);
                     if (data != null)
                     {
-                        _prices[pair] = data.Price;
+                        txs.Add(data.Price);
+         
                     }
-                }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
-                {
-                    // 正常收到取消信号时退出循环
-                    _logger.LogInformation("Binance WebSocket receive canceled");
-                    break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Binance WebSocket receive error");
                     break;
                 }
+
+                foreach (var tx in txs)
+                {
+                    yield return tx;
+                }
             }
+
+
+
             _tasks.TryRemove(pair, out _);
             _sockets.TryRemove(pair, out _);
         }

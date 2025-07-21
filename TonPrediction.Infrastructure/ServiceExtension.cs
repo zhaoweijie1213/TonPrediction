@@ -56,7 +56,7 @@ namespace TonPrediction.Infrastructure
             var tonParams = new HttpParameters
             {
                 Endpoint = tonConfig.Get<TonConfig>()?.TonCenterEndPoint ?? "https://toncenter.com/api/v2/jsonRPC",
-                ApiKey = tonConfig.Get<TonConfig>()?.ApiKey ?? string.Empty
+                ApiKey = tonConfig.Get<TonConfig>()?.TonCenterApiKey ?? string.Empty
             };
             var tonClient = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, tonParams);
             builder.Services.AddSingleton<ITonClientWrapper>(new TonClientWrapper(tonClient));

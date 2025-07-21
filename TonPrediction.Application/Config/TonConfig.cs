@@ -27,7 +27,7 @@ namespace TonPrediction.Application.Config
         public string TonCenterEndPoint { get; set; } = string.Empty;
 
         /// <summary>
-        /// api key for toncenter.io
+        /// api key for tonapi
         /// </summary>
         public string ApiKey { get; set; } = string.Empty;
 
@@ -35,5 +35,10 @@ namespace TonPrediction.Application.Config
         /// websocket 连接地址。
         /// </summary>
         public string WebSocketUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// TonCenterApiKey
+        /// </summary>
+        public string TonCenterApiKey { get; set; } = string.Empty;
     }
 }
