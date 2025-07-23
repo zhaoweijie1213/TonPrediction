@@ -1,6 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
+using System.Net.Http.Json;
+using TonPrediction.Application.Common;
+using TonPrediction.Application.Services.WalletListeners;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Enums;
 using TonPrediction.Application.Extensions;
@@ -18,12 +22,13 @@ namespace TonPrediction.Infrastructure.Services;
 /// <summary>
 /// 使用 TonSdk 通过 TonCenter 转账。
 /// </summary>
-public class TonWalletService(ILogger<TonWalletService> logger, ITonClient client, IOptions<WalletConfig> walletConfig) : IWalletService
+public class TonWalletService(ILogger<TonWalletService> logger, ITonClient client, IOptions<WalletConfig> walletConfig, IHttpClientFactory httpFactory) : IWalletService
 {
     private readonly ITonClient _client = client;
     private readonly ILogger<TonWalletService> _logger = logger;
+    private readonly WalletConfig _config = walletConfig.Value;
     private readonly string _walletVersion = walletConfig.Value.WalletVersion;
-    private WalletV4? _wallet;
+    private readonly HttpClient _http = httpFactory.CreateClient("TonApi");
 
     /// <summary>
     /// 钱包地址，使用 MasterWalletAddress 初始化。
@@ -39,6 +44,9 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
     /// 私钥
     /// </summary>
     private readonly byte[] _privateKey = Convert.FromHexString(walletConfig.Value.MasterWalletPrivateKey);
+    private WalletV4? _wallet;
+
+
 
 
     /// <summary>
@@ -70,7 +78,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
                 //{
                 //    _logger.LogWarning("钱包地址 {Address} 的公钥不匹配，重新创建钱包实例", _address);
                 //}
-                _wallet = new WalletV4(new WalletV4Options { PublicKey = Convert.FromHexString(walletConfig.Value.MasterWalletPublicKey) }, 2);
+                _wallet = new WalletV4(new WalletV4Options { PublicKey = Convert.FromHexString(_config.MasterWalletPublicKey) }, 2);
             }
 
             var coins = await _client.GetBalance(_address);
@@ -106,13 +114,45 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
 
             message.Sign(_privateKey);
 
+            var msgHash = Convert.ToHexString(message.Cell.Hash.ToBytes()).ToLowerInvariant();
+
             var result = await _client.SendBoc(message.Cell);
-            return new TransferResult(result?.Hash ?? string.Empty, 0, DateTime.UtcNow, ClaimStatus.Confirmed);
+
+            var (txHash, lt, utime) = await WaitTxAsync(_config.MasterWalletAddress, msgHash);
+
+            if (string.IsNullOrEmpty(txHash))
+            {
+                return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
+            }
+
+            return new TransferResult(txHash, lt, DateTimeOffset.FromUnixTimeSeconds((long)utime).UtcDateTime, ClaimStatus.Confirmed);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Transfer failed");
             return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
+        }
+    }
+
+    private async Task<(string txHash, ulong lt, ulong utime)> WaitTxAsync(string address, string msgHash)
+    {
+        ulong lastLt = 0;
+        while (true)
+        {
+            var url = string.Format(TonApiRoutes.AccountTransactions, address, 20, lastLt);
+            var resp = await _http.GetFromJsonAsync<AccountTxList>(url);
+            if (resp?.Transactions != null)
+            {
+                foreach (var tx in resp.Transactions)
+                {
+                    if (string.Equals(tx.In_Msg?.Hash, msgHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (tx.Hash, tx.Lt, tx.Utime);
+                    }
+                }
+                lastLt = resp.Transactions[0].Lt;
+            }
+            await Task.Delay(1000);
         }
     }
 }
