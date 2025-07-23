@@ -42,6 +42,7 @@ builder.Services.AddSingleton<WalletConfig>(service =>
     {
         ENV_MASTER_WALLET_ADDRESS = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? "",
         ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? "",
+        ENV_MASTER_WALLET_PUBLIC_KEY = configuration["ENV_MASTER_WALLET_PUBLIC_KEY"] ?? "",
         ListenerType = configuration.GetSection("WalletListenerType").Get<WalletListenerType>()
     };
 });
