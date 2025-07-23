@@ -81,7 +81,8 @@ namespace TonSdk.Contracts.wallet
                 KeySize = 256,
                 Deserializers = new HashmapDeserializers<Address, bool>
                 {
-                    Key = kb => {
+                    Key = kb =>
+                    {
                         var keySlice = kb.Parse();
                         // Assume plugin addresses on workchain 0 for simplicity
                         return new Address(0, keySlice.LoadBytes(32));
