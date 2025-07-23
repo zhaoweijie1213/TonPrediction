@@ -47,7 +47,7 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
         {
             if (_wallet is null)
             {
-                _wallet = new WalletV4(new WalletV4Options { PublicKey = key.PublicKey, Workchain = 0, SubwalletId = 698983191 });
+                _wallet = new WalletV4(new WalletV4Options { PublicKey = key.PublicKey, Workchain = 0, SubwalletId = walletConfig.Value.SubwalletId });
             }
 
             var seqno = await _client.GetSeqnoAsync(_wallet.Address) ?? 0u;
