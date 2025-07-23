@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using QYQ.Base.Common.IOCExtensions;
 using QYQ.Base.Swagger.Extension;
 using TonPrediction.Api.Hubs;
@@ -34,24 +35,13 @@ builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.AddSingleton<IPriceService, BinancePriceService>();
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.Configure<PredictionConfig>(builder.Configuration.GetSection("PredictionConfig"));
-builder.Services.AddSingleton<WalletConfig>(service =>
-{
-    var configuration = service.GetRequiredService<IConfiguration>();
-
-    return new WalletConfig
-    {
-        ENV_MASTER_WALLET_ADDRESS = configuration["ENV_MASTER_WALLET_ADDRESS"] ?? "",
-        ENV_MASTER_WALLET_PK = configuration["ENV_MASTER_WALLET_PK"] ?? "",
-        ENV_MASTER_WALLET_PUBLIC_KEY = configuration["ENV_MASTER_WALLET_PUBLIC_KEY"] ?? "",
-        ListenerType = configuration.GetSection("WalletListenerType").Get<WalletListenerType>()
-    };
-});
+builder.Services.Configure<WalletConfig>(builder.Configuration.GetSection("WalletConfig"));
 builder.Services.AddSingleton<SseWalletListener>();
 builder.Services.AddSingleton<RestWalletListener>();
 builder.Services.AddSingleton<WebSocketWalletListener>();
 builder.Services.AddSingleton<IWalletListener>(sp =>
 {
-    var cfg = sp.GetRequiredService<WalletConfig>();
+    var cfg = builder.Configuration.GetSection("WalletConfig").Get<WalletConfig>()!;
     return cfg.ListenerType switch
     {
         WalletListenerType.Rest => sp.GetRequiredService<RestWalletListener>(),

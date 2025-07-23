@@ -80,7 +80,7 @@ public class TonEventListenerTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
 
-        var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
+        var walletConfig = new WalletConfig { MasterWalletAddress = "addr" };
 
         var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
         var listener = new TonEventListener(
@@ -164,7 +164,7 @@ public class TonEventListenerTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(f => f.CreateScope()).Returns(scope.Object);
 
-        var walletConfig = new WalletConfig { ENV_MASTER_WALLET_ADDRESS = "addr" };
+        var walletConfig = new WalletConfig { MasterWalletAddress = "addr" };
 
         var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
         var listener = new TonEventListener(

@@ -33,8 +33,8 @@ public class TonWalletServiceTests
         var client = new FakeClient();
         var walletConfig = new WalletConfig
         {
-            ENV_MASTER_WALLET_ADDRESS = "EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF",
-            ENV_MASTER_WALLET_PK = "0000000000000000000000000000000000000000000000000000000000000000"
+            MasterWalletAddress = "EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF",
+            MasterWalletPk = "0000000000000000000000000000000000000000000000000000000000000000"
         };
         var service = new TonWalletService(NullLogger<TonWalletService>.Instance, client, walletConfig);
 

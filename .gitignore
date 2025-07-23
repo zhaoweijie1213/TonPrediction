@@ -3,3 +3,4 @@ obj
 bin
 dotnet-install.sh
 logs
+node_modules

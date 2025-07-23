@@ -16,7 +16,7 @@ namespace TonPrediction.Api.Services;
 /// 监听主钱包入账的后台服务。
 /// </summary>
 public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubService notifier, ILogger<TonEventListener> logger, IDistributedLock locker,
-    IWalletListener walletListener, WalletConfig walletConfig, IOptionsMonitor<PredictionConfig> predictionConfig) : BackgroundService
+    IWalletListener walletListener, IOptions<WalletConfig> walletConfig, IOptionsMonitor<PredictionConfig> predictionConfig) : BackgroundService
 {
 
     /// <summary>
@@ -44,11 +44,6 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     /// </summary>
     private readonly IDistributedLock _locker = locker;
 
-    /// <summary>
-    /// 钱包地址
-    /// </summary>
-    private readonly string _walletAddress = walletConfig.ENV_MASTER_WALLET_ADDRESS;
-
     private readonly IOptionsMonitor<PredictionConfig> _predictionConfig = predictionConfig;
 
     /// <summary>
@@ -68,7 +63,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
     /// <returns></returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrWhiteSpace(_walletAddress))
+        if (string.IsNullOrWhiteSpace(walletConfig.Value.MasterWalletAddress))
         {
             _logger.LogWarning("主钱包地址未配置，监听器退出");
             return;
@@ -97,7 +92,7 @@ public class TonEventListener(IServiceScopeFactory scopeFactory, IPredictionHubS
                 //    continue;
                 //}
 
-                await foreach (var tx in _walletListener.ListenAsync(_walletAddress, _lastLt, stoppingToken))
+                await foreach (var tx in _walletListener.ListenAsync(walletConfig.Value.MasterWalletAddress, _lastLt, stoppingToken))
                 {
                     await ProcessTransactionAsync(tx);
                 }
