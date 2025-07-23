@@ -14,14 +14,16 @@ using TonPrediction.Application.Services.Interface;
 using TonPrediction.Application.Services;
 using Microsoft.Extensions.Options;
 using Xunit;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace TonPrediction.Test;
 
 /// <summary>
 /// TonEventListener 单元测试。
 /// </summary>
-public class TonEventListenerTests
+public class TonEventListenerTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
+
     [Fact]
     public async Task ProcessTransactionAsync_InsertsBetAndUpdatesRound()
     {
@@ -83,14 +85,7 @@ public class TonEventListenerTests
         var walletConfig = new WalletConfig { MasterWalletAddress = "addr" };
 
         var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
-        var listener = new TonEventListener(
-            scopeFactory.Object,
-            notifier.Object,
-            NullLogger<TonEventListener>.Instance,
-            Mock.Of<IDistributedLock>(),
-            Mock.Of<IWalletListener>(),
-            walletConfig,
-            option);
+        var listener = factory.Services.GetRequiredService<TonEventListener>();
 
         var tx = new TonTxDetail
         {
@@ -167,14 +162,7 @@ public class TonEventListenerTests
         var walletConfig = new WalletConfig { MasterWalletAddress = "addr" };
 
         var option = Mock.Of<IOptionsMonitor<PredictionConfig>>(o => o.CurrentValue == new PredictionConfig());
-        var listener = new TonEventListener(
-            scopeFactory.Object,
-            notifier.Object,
-            NullLogger<TonEventListener>.Instance,
-            Mock.Of<IDistributedLock>(),
-            Mock.Of<IWalletListener>(),
-            walletConfig,
-            option);
+        var listener = factory.Services.GetRequiredService<TonEventListener>();
 
         var tx = new TonTxDetail
         {

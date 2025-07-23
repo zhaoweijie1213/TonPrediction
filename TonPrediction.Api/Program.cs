@@ -109,3 +109,8 @@ var dbContext = app.Services.GetRequiredService<ApplicationDbContext>();
 InitMigration.Run(dbContext.Db);
 
 app.Run();
+
+/// <summary>
+/// 
+/// </summary>
+public partial class Program { }

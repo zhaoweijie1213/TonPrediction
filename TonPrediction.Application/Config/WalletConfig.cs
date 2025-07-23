@@ -30,7 +30,7 @@ namespace TonPrediction.Application.Config
         /// <summary>
         /// 主钱包私钥
         /// </summary>
-        public string MasterWalletPk { get; set; } = string.Empty;
+        public string MasterWalletPrivateKey { get; set; } = string.Empty;
 
         /// <summary>
         /// 主钱包公钥

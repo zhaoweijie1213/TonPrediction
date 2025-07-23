@@ -27,11 +27,11 @@ public static class TonAmountExtensions
     /// <summary>
     /// 将 nano TON 金额转换为  TON
     /// </summary>
-    /// <param name="ton"></param>
+    /// <param name="nanoTon"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static decimal ToTon(this decimal ton)
-    => ton / NanoFactor;
+    public static decimal ToTon(this long nanoTon)
+    => nanoTon / NanoFactor;
 
     /// <summary>
     /// 将 nano TON 转换为普通 TON 字符串。

@@ -31,6 +31,18 @@
                 "dictionary": 1,
                 "phrase": "coffee public deer host another give design choose slice slab wedding finish wrist comic jaguar bring library wagon clown knock shoot solar crisp rabbit"
             }
+        },
+		{
+            "name": "dev_master",
+            "description": "",
+            "keys": {
+                "public": "5A4B3EFC8B439D13F152D32352862BAFD8055749DB596FC1C7C11B5F47B7F3BF",
+                "secret": "D1252BF4C9BD9F521D47599258D1AFDECC06873B184F04D4A51BE539745EAB91"
+            },
+            "mnemonic": {
+                "dictionary": 1,
+                "phrase": "mobile correct fall album gloom misery oblige warrior olive dose arena wait found blood car barely boost home misery either nephew expose elbow coffee"
+            }
         }
     ],
     "default": "seGiver"

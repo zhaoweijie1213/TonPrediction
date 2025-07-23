@@ -3,8 +3,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TonPrediction.Application.Config;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
+using TonSdk.Client;
 using TonSdk.Contracts.Wallet;
 using TonSdk.Core;
 using TonSdk.Core.Block;
@@ -16,12 +18,27 @@ namespace TonPrediction.Infrastructure.Services;
 /// <summary>
 /// 使用 TonSdk 通过 TonCenter 转账。
 /// </summary>
-public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrapper client, IOptions<WalletConfig> walletConfig) : IWalletService
+public class TonWalletService(ILogger<TonWalletService> logger, ITonClient client, IOptions<WalletConfig> walletConfig) : IWalletService
 {
-    private readonly ITonClientWrapper _client = client;
+    private readonly ITonClient _client = client;
     private readonly ILogger<TonWalletService> _logger = logger;
     private readonly string _walletVersion = walletConfig.Value.WalletVersion;
     private WalletV4? _wallet;
+
+    /// <summary>
+    /// 钱包地址，使用 MasterWalletAddress 初始化。
+    /// </summary>
+    private readonly Address _address = new Address(walletConfig.Value.MasterWalletAddress, new AddressStringifyOptions(false, true, true, 0));
+
+    /// <summary>
+    /// 公钥
+    /// </summary>
+    private readonly byte[] _publicKey = Convert.FromHexString(walletConfig.Value.MasterWalletPublicKey);
+
+    /// <summary>
+    /// 私钥
+    /// </summary>
+    private readonly byte[] _privateKey = Convert.FromHexString(walletConfig.Value.MasterWalletPrivateKey);
 
 
     /// <summary>
@@ -37,20 +54,34 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
             _logger.LogError("当前钱包版本为 W5，TonSdk.NET 暂不支持该版本");
             return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
         }
-        // 拆分成词数组
-        string[] words = walletConfig.Value.Mnemonic.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        Mnemonic mnemonicObj = new Mnemonic(words);
-
-        var key = mnemonicObj.Keys;
+        //// 拆分成词数组
+        //string[] words = walletConfig.Value.Mnemonic.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //Mnemonic mnemonicObj = new Mnemonic(words);
 
         try
         {
             if (_wallet is null)
             {
-                _wallet = new WalletV4(new WalletV4Options { PublicKey = key.PublicKey, Workchain = 0, SubwalletId = walletConfig.Value.SubwalletId });
+                //var publicKey = await _client.Wallet.GetPublicKey(_address);
+
+                //var subwalletId = await _client.Wallet.GetSubwalletId(_address);
+
+                //if (publicKey == null || publicKey != _publicKey)
+                //{
+                //    _logger.LogWarning("钱包地址 {Address} 的公钥不匹配，重新创建钱包实例", _address);
+                //}
+                _wallet = new WalletV4(new WalletV4Options { PublicKey = Convert.FromHexString(walletConfig.Value.MasterWalletPublicKey) }, 2);
             }
 
-            var seqno = await _client.GetSeqnoAsync(_wallet.Address) ?? 0u;
+            var coins = await _client.GetBalance(_address);
+
+            if (amount > coins.ToBigInt())
+            {
+                _logger.LogWarning("当前钱包余额不足");
+                return new TransferResult(string.Empty, 0, DateTime.UtcNow, ClaimStatus.Failed);
+            }
+
+            uint seqno = await _client.Wallet.GetSeqno(_address) ?? 0;
             var body = string.IsNullOrWhiteSpace(comment)
                 ? new CellBuilder().Build()
                 : new CellBuilder().StoreUInt(0, 32).StoreString(comment).Build();
@@ -63,17 +94,19 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClientWrappe
                     {
                         Info = new IntMsgInfo(new()
                         {
-                            Dest = new Address(address),
-                            Value = new Coins((amount / 1_000_000_000m).ToString()),
-                            Bounce = true
+                            Dest = new Address(address, new AddressStringifyOptions(false, true, true, 0)),
+                            Value = new Coins(amount.ToTon()),
+                            Src = _address,
                         }),
                         Body = body
                     }),
                     Mode = 1
                 }
-            ], seqno).Sign(mnemonicObj.Keys.PrivateKey, true);
+            ], seqno);
 
-            var result = await _client.SendBocAsync(message.Cell!);
+            message.Sign(_privateKey);
+
+            var result = await _client.SendBoc(message.Cell);
             return new TransferResult(result?.Hash ?? string.Empty, 0, DateTime.UtcNow, ClaimStatus.Confirmed);
         }
         catch (Exception ex)

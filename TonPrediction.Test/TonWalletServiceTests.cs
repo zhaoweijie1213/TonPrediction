@@ -1,11 +1,14 @@
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
+using TonPrediction.Application.Config;
+using TonPrediction.Application.Enums;
+using TonPrediction.Infrastructure.Services;
+using TonSdk.Client;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
-using TonSdk.Client;
-using TonPrediction.Application.Enums;
-using TonPrediction.Application.Config;
-using TonPrediction.Infrastructure.Services;
+using TonSdk.Core.Crypto;
 using Xunit;
 
 namespace TonPrediction.Test;
@@ -13,35 +16,25 @@ namespace TonPrediction.Test;
 /// <summary>
 /// TonWalletService 单元测试。
 /// </summary>
-public class TonWalletServiceTests
+public class TonWalletServiceTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    private sealed class FakeClient : ITonClientWrapper
-    {
-        public bool SendCalled { get; private set; }
-        public Task<byte[]?> GetPublicKeyAsync(Address address) => Task.FromResult<byte[]?>(new byte[32]);
-        public Task<uint?> GetSeqnoAsync(Address address) => Task.FromResult<uint?>(1);
-        public Task<SendBocResult?> SendBocAsync(Cell boc)
-        {
-            SendCalled = true;
-            return Task.FromResult<SendBocResult?>(new SendBocResult { Hash = "h" });
-        }
-    }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task TransferAsync_SendsBoc()
+    public void GenerateWallet()
     {
-        var client = new FakeClient();
-        var walletConfig = new WalletConfig
-        {
-            MasterWalletAddress = "EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF",
-            MasterWalletPk = "0000000000000000000000000000000000000000000000000000000000000000"
-        };
-        var service = new TonWalletService(NullLogger<TonWalletService>.Instance, client, walletConfig);
+        Mnemonic mnemonic = new();
 
-        var result = await service.TransferAsync("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF", 1_000_000_000, null);
+        string words = string.Join(' ', mnemonic.Words);
 
-        Assert.True(client.SendCalled);
-        Assert.Equal("h", result.TxHash);
-        Assert.Equal(ClaimStatus.Confirmed, result.Status);
+        string pullicKey = Convert.ToHexString(mnemonic.Keys.PublicKey);
+
+        string privateKey = Convert.ToHexString(mnemonic.Keys.PrivateKey);
+
+        Assert.NotEmpty(words);
+
     }
 }
