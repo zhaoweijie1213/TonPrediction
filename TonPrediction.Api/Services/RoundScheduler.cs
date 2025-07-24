@@ -31,8 +31,20 @@ namespace TonPrediction.Api.Services
         private readonly ILogger<RoundScheduler> _logger = logger;
         private readonly IDistributedLock _locker = locker;
         private readonly ICapPublisher _publisher = publisher;
-        //private readonly decimal _treasuryFeeRate = configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
+
+        /// <summary>
+        /// 手续费率，默认为 3%。
+        /// </summary>
+        private readonly decimal _treasuryFeeRate = configuration.GetValue<decimal>("TreasuryFeeRate", 0.03m);
+
+        /// <summary>
+        /// 时间间隔，单位为秒。根据配置文件中的 RoundIntervalSeconds 获取。
+        /// </summary>
         private readonly int _interval = predictionConfig.CurrentValue.RoundIntervalSeconds;
+
+        /// <summary>
+        /// 执行的币种列表。根据配置文件中的 Symbols 获取。
+        /// </summary>
         private readonly string[] _symbols = configuration.GetSection("Symbols").Get<string[]>()!;
 
         /// <summary>
@@ -181,9 +193,14 @@ namespace TonPrediction.Api.Services
                     }
                     else if ((winner == Position.Bull && bet.Position == Position.Bull) || (winner == Position.Bear && bet.Position == Position.Bear))
                     {
-                        reward = winTotal > 0 ? (long)((decimal)bet.Amount * locked.RewardAmount / winTotal) : 0;
+                        var totalReward = winTotal > 0 ? (bet.Amount * (decimal)(locked.RewardAmount / winTotal)) : 0;
+                        // 计算奖励金额，扣除手续费
+                        reward = (long)(totalReward * (1m - _treasuryFeeRate));
+                   
+                        bet.TreasuryFee = (long)(totalReward - reward);
                     }
                     bet.Reward = reward;
+              
 
                     if (winner == Position.Tie)
                     {
