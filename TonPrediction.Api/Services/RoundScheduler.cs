@@ -242,8 +242,16 @@ namespace TonPrediction.Api.Services
             // 到达锁定时间时，锁定当前回合并创建下一回合
             if (live?.LockTime <= now && live.Status == RoundStatus.Betting)
             {
+                decimal lockPrice;
                 // 锁定当前回合
-                var lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
+                if (locked?.LockPrice > 0)
+                {
+                    lockPrice = locked.ClosePrice;
+                }
+                else
+                {
+                    lockPrice = (await priceService.GetAsync(symbol, "usd", token)).Price;
+                }
                 live.LockPrice = lockPrice;
                 live.Status = RoundStatus.Locked;
                 await roundRepo.UpdateByPrimaryKeyAsync(live);
