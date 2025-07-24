@@ -16,12 +16,13 @@ public static class TonApiRoutes
     public const string SseAccountTransactions = "/v2/sse/accounts/transactions?accounts={0}";
 
     /// <summary>
-    /// 获取消息交易列表。
+    /// 通过message hash 获取交易。
     /// </summary>
-    public const string MessageTransactions = "/v2/blockchain/messages/{0}/transactions";
+    public const string TransactionByMessageHash = "/v2/blockchain/messages/{0}/transaction";
 
     /// <summary>
     /// 获取交易详情。
     /// </summary>
     public const string TransactionDetail = "/v2/blockchain/transactions/{0}";
+
 }

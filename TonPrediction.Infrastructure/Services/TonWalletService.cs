@@ -16,6 +16,7 @@ using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
+using QYQ.Base.Common.Extension;
 
 namespace TonPrediction.Infrastructure.Services;
 
@@ -114,11 +115,19 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
 
             message.Sign(_privateKey);
 
-            var msgHash = Convert.ToHexString(message.Cell.Hash.ToBytes()).ToLowerInvariant();
+            //var msgHash = Convert.ToHexString(message.Cell.Hash.ToBytes()).ToLowerInvariant();
 
             var result = await _client.SendBoc(message.Cell);
 
-            var (txHash, lt, utime) = await WaitTxAsync(_config.MasterWalletAddress, msgHash);
+            //获取消息哈希
+            byte[] bytes = Convert.FromBase64String(result.Value.Hash);
+
+            string messageHash = Convert.ToHexString(bytes).ToLowerInvariant();
+
+            //确认交易是否成功
+            var (txHash, lt, utime) = await WaitTxAsync( messageHash);
+
+     
 
             if (string.IsNullOrEmpty(txHash))
             {
@@ -134,25 +143,52 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
         }
     }
 
-    private async Task<(string txHash, ulong lt, ulong utime)> WaitTxAsync(string address, string msgHash)
+    /// <summary>
+    /// 获取交易详情，直到交易被确认。
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="msgHash"></param>
+    /// <returns></returns>
+    private async Task<(string txHash, ulong lt, ulong utime)> WaitTxAsync(string msgHash)
     {
-        ulong lastLt = 0;
+
+        int count = 0;
         while (true)
         {
-            var url = string.Format(TonApiRoutes.AccountTransactions, address, 20, lastLt);
-            var resp = await _http.GetFromJsonAsync<AccountTxList>(url);
-            if (resp?.Transactions != null)
+            try
             {
-                foreach (var tx in resp.Transactions)
+                if (count >= 300)
                 {
-                    if (string.Equals(tx.In_Msg?.Hash, msgHash, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return (tx.Hash, tx.Lt, tx.Utime);
-                    }
+                    _logger.LogWarning("等待交易确认超时，消息哈希: {MsgHash}", msgHash);
+                    return ("", 0, 0);
                 }
-                lastLt = resp.Transactions[0].Lt;
+                var url = string.Format(TonApiRoutes.TransactionByMessageHash, msgHash);
+                var transaction = await _http.GetFromJsonAsync<TonTxDetail>(url);
+                if (!string.IsNullOrEmpty(transaction?.Hash))
+                {
+
+                    return (transaction.Hash, transaction.Lt, transaction.Utime);
+
+                }
             }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                _logger.LogWarning("请求频繁,重试中...");
+            }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning("未查询到交易,重试中...");
+            }
+            catch (Exception e)
+            {
+                _logger.BaseErrorLog("WaitTxAsync", e);
+                break;
+            }
+
+            count++;
             await Task.Delay(1000);
         }
+
+        return ("", 0, 0);
     }
 }
