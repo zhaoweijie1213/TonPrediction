@@ -125,9 +125,9 @@ public class TonWalletService(ILogger<TonWalletService> logger, ITonClient clien
             string messageHash = Convert.ToHexString(bytes).ToLowerInvariant();
 
             //确认交易是否成功
-            var (txHash, lt, utime) = await WaitTxAsync( messageHash);
+            var (txHash, lt, utime) = await WaitTxAsync(messageHash);
 
-     
+
 
             if (string.IsNullOrEmpty(txHash))
             {

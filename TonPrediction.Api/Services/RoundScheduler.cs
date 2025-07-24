@@ -175,8 +175,6 @@ namespace TonPrediction.Api.Services
 
                 //计算奖励并更新下注记录
                 var bets = await betRepo.GetByRoundAsync(locked.Id, token);
-                var wallet = scope.ServiceProvider.GetRequiredService<IWalletService>();
-                var txRepo = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                 var winTotal = winner switch
                 {
                     Position.Bull => locked.BullAmount,
@@ -196,32 +194,22 @@ namespace TonPrediction.Api.Services
                         var totalReward = winTotal > 0 ? (bet.Amount * (decimal)(locked.RewardAmount / winTotal)) : 0;
                         // 计算奖励金额，扣除手续费
                         reward = (long)(totalReward * (1m - _treasuryFeeRate));
-                   
+
                         bet.TreasuryFee = (long)(totalReward - reward);
                     }
                     bet.Reward = reward;
-              
 
-                    if (winner == Position.Tie)
-                    {
-                        var result = await wallet.TransferAsync(bet.UserAddress, bet.Amount, $"Refund {locked.Epoch}");
-                        await txRepo.InsertAsync(new TransactionEntity
-                        {
-                            BetId = bet.Id,
-                            UserAddress = bet.UserAddress,
-                            Amount = bet.Amount,
-                            TxHash = result.TxHash,
-                            Status = result.Status,
-                            Lt = result.Lt,
-                            Timestamp = result.Timestamp
-                        });
-                        bet.Claimed = true;
-                    }
+                    // 平局时仅计算返还金额，具体转账在异步事件中处理
 
                     await betRepo.UpdateByPrimaryKeyAsync(bet);
                 }
 
                 await _publisher.PublishAsync("round.stat.update", new RoundStatEvent(symbol, locked.Id));
+
+                if (winner == Position.Tie)
+                {
+                    await _publisher.PublishAsync("round.refund.tie", new RoundRefundEvent(symbol, locked.Id));
+                }
 
                 locked.Status = winner switch
                 {
