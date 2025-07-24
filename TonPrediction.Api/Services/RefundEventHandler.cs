@@ -39,7 +39,7 @@ public class RefundEventHandler(IServiceScopeFactory scopeFactory, ILogger<Refun
         foreach (var bet in bets)
         {
             if (bet.Claimed) continue;
-            var result = await wallet.TransferAsync(bet.UserAddress, bet.Amount, $"Refund {round.Epoch}");
+            var result = await wallet.TransferAsync(bet.UserAddress, bet.Amount, $"Refund {round.Epoch} {round.Symbol}");
             await txRepo.InsertAsync(new TransactionEntity
             {
                 BetId = bet.Id,
