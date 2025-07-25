@@ -40,4 +40,16 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     {
         return await _service.GetByAddressAsync(address, symbol, rankBy);
     }
+
+    /// <summary>
+    /// 模糊搜索地址。
+    /// </summary>
+    [HttpGet("search")]
+    public async Task<ApiResult<AddressListOutput>> SearchAddressAsync(
+        [FromQuery] string keyword,
+        [FromQuery] string symbol = "ton",
+        [FromQuery] int limit = 10)
+    {
+        return await _service.SearchAddressAsync(keyword, symbol, limit);
+    }
 }

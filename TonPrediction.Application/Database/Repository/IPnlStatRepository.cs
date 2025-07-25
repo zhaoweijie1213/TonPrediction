@@ -33,4 +33,12 @@ public interface IPnlStatRepository : IBaseRepository<PnlStatEntity>, ITransient
     /// <param name="address">用户地址。</param>
     /// <param name="rankBy">排序字段。</param>
     Task<int> GetRankAsync(string symbol, string address, RankByType rankBy);
+
+    /// <summary>
+    /// 模糊搜索地址。
+    /// </summary>
+    /// <param name="symbol">币种符号。</param>
+    /// <param name="keyword">地址关键字。</param>
+    /// <param name="limit">结果数量。</param>
+    Task<List<string>> SearchAddressAsync(string symbol, string keyword, int limit);
 }

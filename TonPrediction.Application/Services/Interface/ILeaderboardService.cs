@@ -35,4 +35,15 @@ public interface ILeaderboardService : ITransientDependency
         string address,
         string symbol = "ton",
         RankByType rankBy = RankByType.NetProfit);
+
+    /// <summary>
+    /// 模糊搜索地址。
+    /// </summary>
+    /// <param name="keyword">地址关键字。</param>
+    /// <param name="symbol">币种符号。</param>
+    /// <param name="limit">返回数量限制。</param>
+    Task<ApiResult<AddressListOutput>> SearchAddressAsync(
+        string keyword,
+        string symbol = "ton",
+        int limit = 10);
 }
