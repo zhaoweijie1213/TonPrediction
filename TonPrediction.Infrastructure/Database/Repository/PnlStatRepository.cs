@@ -6,6 +6,8 @@ using TonPrediction.Application.Database.Config;
 using TonPrediction.Application.Database.Entities;
 using TonPrediction.Application.Database.Repository;
 using TonPrediction.Application.Enums;
+using TonPrediction.Application.Extensions;
+using System;
 
 namespace TonPrediction.Infrastructure.Database.Repository;
 
@@ -59,5 +61,21 @@ public class PnlStatRepository(
             RankByType.NetProfit => await query.Where(s => s.TotalReward - s.TotalBet > stat.TotalReward - stat.TotalBet).CountAsync() + 1,
             _ => await query.Where(s => s.TotalReward > stat.TotalReward).CountAsync() + 1
         };
+    }
+
+    /// <inheritdoc />
+    public async Task<List<string>> SearchAddressAsync(string symbol, string keyword, int limit)
+    {
+        // 先获取该币种的所有地址，再按用户友好地址进行筛选
+        var addresses = await Db.Queryable<PnlStatEntity>()
+            .Where(s => s.Symbol == symbol)
+            .Select(s => s.UserAddress)
+            .ToListAsync();
+
+        return addresses
+            .Select(a => a.ToFriendlyAddress())
+            .Where(a => a.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            .Take(limit)
+            .ToList();
     }
 }

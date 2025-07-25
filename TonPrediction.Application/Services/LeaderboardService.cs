@@ -4,6 +4,7 @@ using TonPrediction.Application.Enums;
 using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
+using System.Linq;
 
 namespace TonPrediction.Application.Services;
 
@@ -113,6 +114,26 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
             NetProfit = (stat.TotalReward - stat.TotalBet).ToAmountString()
         };
 
+        api.SetRsult(ApiResultCode.Success, output);
+        return api;
+    }
+
+    /// <inheritdoc />
+    public async Task<ApiResult<AddressListOutput>> SearchAddressAsync(
+        string keyword,
+        string symbol = "ton",
+        int limit = 10)
+    {
+        var api = new ApiResult<AddressListOutput>();
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, new AddressListOutput());
+            return api;
+        }
+
+        limit = limit is <= 0 or > 100 ? 10 : limit;
+        var list = await _repo.SearchAddressAsync(symbol, keyword.ToRawAddress(), limit);
+        var output = new AddressListOutput { Addresses = list.Select(a => a.ToFriendlyAddress()).ToList() };
         api.SetRsult(ApiResultCode.Success, output);
         return api;
     }
