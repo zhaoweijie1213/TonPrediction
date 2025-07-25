@@ -364,6 +364,27 @@ GET /api/predictions/pnl
 | `pageSize` | int    | 10        | 分页大小，<=100                            |
 | `address`  | string |           | 若传入则返回该地址的排行信息               |
 
+返回字段：
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `list` | object[] | 排行榜条目数组 |
+| `self` | object | 指定地址的排行信息，未传入地址时为 null |
+
+**排行榜条目字段：**
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `rank` | int | 名次（1 为最高） |
+| `address` | string | 用户地址（user-friendly） |
+| `rounds` | int | 参与回合数 |
+| `winRounds` | int | 获胜回合数 |
+| `loseRounds` | int | 失利回合数 |
+| `winRate` | string | 胜率（0-1） |
+| `totalBet` | string(decimal) | 累计下注金额 |
+| `totalReward` | string(decimal) | 累计奖励金额 |
+| `netProfit` | string(decimal) | 净收益 |
+
 ### `GET /api/leaderboard/address`
 
 | 参数名   | 类型   | 默认值    | 说明                 |
@@ -374,6 +395,8 @@ GET /api/predictions/pnl
 
 返回指定地址的排行信息以及前 10 名记录。
 
+返回字段同上文“排行榜条目字段”。
+
 ### `GET /api/leaderboard/search`
 
 | 参数名   | 类型   | 默认值 | 说明                 |
@@ -382,7 +405,11 @@ GET /api/predictions/pnl
 | `symbol` | string | TONUSD | 币种对               |
 | `limit`  | int    | 10     | 返回数量，<=100       |
 
-返回匹配的地址列表，地址为 user-friendly 格式。
+返回字段：
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `addresses` | string[] | 匹配到的地址列表（user-friendly 格式） |
 ## 1️⃣3️⃣ 领奖
 
 ### `POST /api/claim`
