@@ -74,11 +74,46 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
     }
 
     /// <inheritdoc />
-    public async Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+    public async Task<ApiResult<LeaderboardItemOutput?>> GetByAddressAsync(
         string address,
         string symbol = "ton",
         RankByType rankBy = RankByType.NetProfit)
     {
-        return await GetListAsync(symbol, rankBy, 1, 10, address);
+        var api = new ApiResult<LeaderboardItemOutput?>();
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            api.SetRsult(ApiResultCode.ErrorParams, null);
+            return api;
+        }
+
+        var rank = await _repo.GetRankAsync(symbol, address.ToRawAddress(), rankBy);
+        if (rank <= 0)
+        {
+            api.SetRsult(ApiResultCode.DataNotFound, null);
+            return api;
+        }
+
+        var stat = await _repo.GetByAddressAsync(symbol, address.ToRawAddress());
+        if (stat == null)
+        {
+            api.SetRsult(ApiResultCode.DataNotFound, null);
+            return api;
+        }
+
+        var output = new LeaderboardItemOutput
+        {
+            Rank = rank,
+            Address = stat.UserAddress.ToFriendlyAddress(),
+            Rounds = stat.Rounds,
+            WinRounds = stat.WinRounds,
+            LoseRounds = stat.Rounds - stat.WinRounds,
+            WinRate = stat.Rounds > 0 ? ((decimal)stat.WinRounds / stat.Rounds).ToString("F2") : "0",
+            TotalBet = stat.TotalBet.ToAmountString(),
+            TotalReward = stat.TotalReward.ToAmountString(),
+            NetProfit = (stat.TotalReward - stat.TotalBet).ToAmountString()
+        };
+
+        api.SetRsult(ApiResultCode.Success, output);
+        return api;
     }
 }

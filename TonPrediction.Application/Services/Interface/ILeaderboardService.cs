@@ -31,7 +31,7 @@ public interface ILeaderboardService : ITransientDependency
     /// <param name="address">用户地址。</param>
     /// <param name="symbol">币种符号。</param>
     /// <param name="rankBy">排序字段。</param>
-    Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+    Task<ApiResult<LeaderboardItemOutput?>> GetByAddressAsync(
         string address,
         string symbol = "ton",
         RankByType rankBy = RankByType.NetProfit);
