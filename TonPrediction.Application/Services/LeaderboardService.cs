@@ -50,8 +50,22 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
             var rank = await _repo.GetRankAsync(symbol, address.ToRawAddress(), rankBy);
             if (rank > 0)
             {
-                output.AddressRank = rank;
-                output.AddressPage = (rank - 1) / pageSize + 1;
+                var stat = await _repo.GetByAddressAsync(symbol, address.ToRawAddress());
+                if (stat != null)
+                {
+                    output.Self = new LeaderboardItemOutput
+                    {
+                        Rank = rank,
+                        Address = stat.UserAddress.ToFriendlyAddress(),
+                        Rounds = stat.Rounds,
+                        WinRounds = stat.WinRounds,
+                        LoseRounds = stat.Rounds - stat.WinRounds,
+                        WinRate = stat.Rounds > 0 ? ((decimal)stat.WinRounds / stat.Rounds).ToString("F2") : "0",
+                        TotalBet = stat.TotalBet.ToAmountString(),
+                        TotalReward = stat.TotalReward.ToAmountString(),
+                        NetProfit = (stat.TotalReward - stat.TotalBet).ToAmountString()
+                    };
+                }
             }
         }
 
