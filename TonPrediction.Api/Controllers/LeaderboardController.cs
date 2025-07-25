@@ -33,7 +33,7 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     /// 获取指定地址的排行榜信息。
     /// </summary>
     [HttpGet("address")]
-    public async Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+    public async Task<ApiResult<LeaderboardItemOutput?>> GetByAddressAsync(
         [FromQuery] string address,
         [FromQuery] string symbol = "ton",
         [FromQuery] RankByType rankBy = RankByType.NetProfit)
