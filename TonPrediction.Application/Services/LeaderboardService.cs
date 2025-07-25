@@ -1,8 +1,9 @@
+using QYQ.Base.Common.ApiResult;
 using TonPrediction.Application.Database.Repository;
+using TonPrediction.Application.Enums;
+using TonPrediction.Application.Extensions;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
-using TonPrediction.Application.Extensions;
-using QYQ.Base.Common.ApiResult;
 
 namespace TonPrediction.Application.Services;
 
@@ -16,7 +17,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
     /// <inheritdoc />
     public async Task<ApiResult<LeaderboardOutput>> GetListAsync(
         string symbol = "ton",
-        string rankBy = "netProfit",
+        RankByType rankBy = RankByType.NetProfit,
         int page = 1,
         int pageSize = 10,
         string? address = null)
@@ -36,7 +37,7 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
                 Rounds = s.Rounds,
                 WinRounds = s.WinRounds,
                 LoseRounds = s.Rounds - s.WinRounds,
-                WinRate = s.Rounds > 0 ? ((decimal)s.WinRounds / s.Rounds).ToAmountString() : "0",
+                WinRate = s.Rounds > 0 ? ((decimal)s.WinRounds / s.Rounds).ToString("F2") : "0",
                 TotalBet = s.TotalBet.ToAmountString(),
                 TotalReward = s.TotalReward.ToAmountString(),
                 NetProfit = (s.TotalReward - s.TotalBet).ToAmountString()

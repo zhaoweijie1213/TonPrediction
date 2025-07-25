@@ -1,6 +1,7 @@
-using TonPrediction.Application.Database.Entities;
-using QYQ.Base.SqlSugar;
 using QYQ.Base.Common.IOCExtensions;
+using QYQ.Base.SqlSugar;
+using TonPrediction.Application.Database.Entities;
+using TonPrediction.Application.Enums;
 
 namespace TonPrediction.Application.Database.Repository;
 
@@ -23,7 +24,7 @@ public interface IPnlStatRepository : IBaseRepository<PnlStatEntity>, ITransient
     /// <param name="rankBy">排序字段。</param>
     /// <param name="page">页码。</param>
     /// <param name="pageSize">分页大小。</param>
-    Task<List<PnlStatEntity>> GetPagedAsync(string symbol, string rankBy, int page, int pageSize);
+    Task<List<PnlStatEntity>> GetPagedAsync(string symbol, RankByType rankBy, int page, int pageSize);
 
     /// <summary>
     /// 获取指定地址的排名。
@@ -31,5 +32,5 @@ public interface IPnlStatRepository : IBaseRepository<PnlStatEntity>, ITransient
     /// <param name="symbol">币种符号。</param>
     /// <param name="address">用户地址。</param>
     /// <param name="rankBy">排序字段。</param>
-    Task<int> GetRankAsync(string symbol, string address, string rankBy);
+    Task<int> GetRankAsync(string symbol, string address, RankByType rankBy);
 }

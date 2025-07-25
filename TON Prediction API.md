@@ -102,6 +102,7 @@
 | netProfit | 净收益 |
 | totalBet | 累计下注 |
 | winRate | 胜率 |
+| totalReward | 总奖金 |
 
 ## 1️⃣ 当前回合（`currentRound` • WS 推送）
 

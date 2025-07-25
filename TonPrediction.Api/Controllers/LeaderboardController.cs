@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using QYQ.Base.Common.ApiResult;
+using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 using TonPrediction.Application.Services.Interface;
 
@@ -20,7 +21,7 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     [HttpGet("list")]
     public async Task<ApiResult<LeaderboardOutput>> GetListAsync(
         [FromQuery] string symbol = "ton",
-        [FromQuery] string rankBy = "netProfit",
+        [FromQuery] RankByType rankBy = RankByType.NetProfit,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? address = null)

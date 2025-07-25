@@ -1,5 +1,6 @@
 using QYQ.Base.Common.ApiResult;
 using QYQ.Base.Common.IOCExtensions;
+using TonPrediction.Application.Enums;
 using TonPrediction.Application.Output;
 
 namespace TonPrediction.Application.Services.Interface;
@@ -19,7 +20,7 @@ public interface ILeaderboardService : ITransientDependency
     /// <param name="address">可选地址。</param>
     Task<ApiResult<LeaderboardOutput>> GetListAsync(
         string symbol = "ton",
-        string rankBy = "netProfit",
+        RankByType rankBy = RankByType.NetProfit,
         int page = 1,
         int pageSize = 10,
         string? address = null);
