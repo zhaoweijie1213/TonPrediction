@@ -362,7 +362,17 @@ GET /api/predictions/pnl
 | `rankBy`   | enum   | netProfit | rounds \| netProfit \| totalBet \| winRate |
 | `page`     | int    | 1         | 当前页                                     |
 | `pageSize` | int    | 10        | 分页大小，<=100                            |
-| `address`  | string |           | 若传入则返回该地址在列表中的页码 & 排名    |
+| `address`  | string |           | 若传入则返回该地址的排行信息               |
+
+### `GET /api/leaderboard/address`
+
+| 参数名   | 类型   | 默认值    | 说明                 |
+| -------- | ------ | --------- | -------------------- |
+| `address` | string |           | 用户地址             |
+| `symbol`  | string | TONUSD    | 币种对               |
+| `rankBy`  | enum   | netProfit | rounds \| netProfit \| totalBet \| winRate |
+
+返回指定地址的排行信息以及前 10 名记录。
 ## 1️⃣3️⃣ 领奖
 
 ### `POST /api/claim`
