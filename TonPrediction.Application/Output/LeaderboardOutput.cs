@@ -11,12 +11,7 @@ public class LeaderboardOutput
     public List<LeaderboardItemOutput> List { get; set; } = new();
 
     /// <summary>
-    /// 指定地址的排名，可为空。
+    /// 指定地址的排行信息，可为空。
     /// </summary>
-    public int? AddressRank { get; set; }
-
-    /// <summary>
-    /// 指定地址所在页码，可为空。
-    /// </summary>
-    public int? AddressPage { get; set; }
+    public LeaderboardItemOutput? Self { get; set; }
 }
