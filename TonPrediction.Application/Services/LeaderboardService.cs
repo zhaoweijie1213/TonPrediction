@@ -72,4 +72,13 @@ public class LeaderboardService(IPnlStatRepository repo) : ILeaderboardService
         api.SetRsult(ApiResultCode.Success, output);
         return api;
     }
+
+    /// <inheritdoc />
+    public async Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+        string address,
+        string symbol = "ton",
+        RankByType rankBy = RankByType.NetProfit)
+    {
+        return await GetListAsync(symbol, rankBy, 1, 10, address);
+    }
 }

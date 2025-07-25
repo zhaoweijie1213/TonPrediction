@@ -28,4 +28,16 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     {
         return await _service.GetListAsync(symbol, rankBy, page, pageSize, address);
     }
+
+    /// <summary>
+    /// 获取指定地址的排行榜信息。
+    /// </summary>
+    [HttpGet("address")]
+    public async Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+        [FromQuery] string address,
+        [FromQuery] string symbol = "ton",
+        [FromQuery] RankByType rankBy = RankByType.NetProfit)
+    {
+        return await _service.GetByAddressAsync(address, symbol, rankBy);
+    }
 }

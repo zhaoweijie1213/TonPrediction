@@ -24,4 +24,15 @@ public interface ILeaderboardService : ITransientDependency
         int page = 1,
         int pageSize = 10,
         string? address = null);
+
+    /// <summary>
+    /// 获取指定地址的排行榜信息。
+    /// </summary>
+    /// <param name="address">用户地址。</param>
+    /// <param name="symbol">币种符号。</param>
+    /// <param name="rankBy">排序字段。</param>
+    Task<ApiResult<LeaderboardOutput>> GetByAddressAsync(
+        string address,
+        string symbol = "ton",
+        RankByType rankBy = RankByType.NetProfit);
 }
