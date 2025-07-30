@@ -47,7 +47,7 @@ namespace TonPrediction.Api.Services
                             await RecordPriceAsync(symbol, stoppingToken);
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+                        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
                     }
 
                 }
@@ -71,14 +71,14 @@ namespace TonPrediction.Api.Services
             var priceResult = await _priceService.GetAsync(symbol, "usd", token);
             var price = priceResult.Price;
             using var scope = _scopeFactory.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
+            //var repo = scope.ServiceProvider.GetRequiredService<IPriceSnapshotRepository>();
             var roundRepo = scope.ServiceProvider.GetRequiredService<IRoundRepository>();
-            await repo.InsertAsync(new PriceSnapshotEntity
-            {
-                Symbol = symbol,
-                Timestamp = DateTime.UtcNow,
-                Price = price
-            });
+            //await repo.InsertAsync(new PriceSnapshotEntity
+            //{
+            //    Symbol = symbol,
+            //    Timestamp = DateTime.UtcNow,
+            //    Price = price
+            //});
 
             //获取当前锁定的回合
             var round = await roundRepo.GetCurrentLockedAsync(symbol);
