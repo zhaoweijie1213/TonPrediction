@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Linq;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 
@@ -59,6 +60,38 @@ namespace TonPrediction.Infrastructure.Services
 
 
             return new PriceResult(symbol, vsCurrency, price, DateTimeOffset.UtcNow);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<PriceResult>> GetRecentPricesAsync(
+            string symbol,
+            string vsCurrency = "usd",
+            int minutes = 30,
+            CancellationToken ct = default)
+        {
+            var currency = vsCurrency.Equals("usd", StringComparison.OrdinalIgnoreCase)
+                ? "usdt"
+                : vsCurrency;
+            var pair = (symbol + currency).ToUpperInvariant();
+            var end = DateTime.UtcNow;
+            var start = end.AddMinutes(-minutes);
+
+            var result = await _restClient.SpotApi.ExchangeData.GetKlinesAsync(
+                pair,
+                Binance.Net.Enums.KlineInterval.OneMinute,
+                startTime: start,
+                endTime: end,
+                limit: minutes,
+                ct);
+
+            var list = result.Data
+                .Select(k => new PriceResult(
+                    symbol,
+                    vsCurrency,
+                    k.ClosePrice,
+                    k.CloseTime))
+                .ToList();
+            return list;
         }
 
         /// <summary>

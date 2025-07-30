@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 
@@ -36,6 +38,40 @@ namespace TonPrediction.Infrastructure.Services
                 _logger.LogError(ex, "Failed to fetch price from CoinGecko");
                 return new PriceResult(symbol, vsCurrency, 0m, DateTimeOffset.UtcNow);
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<PriceResult>> GetRecentPricesAsync(
+            string symbol,
+            string vsCurrency = "usd",
+            int minutes = 30,
+            CancellationToken ct = default)
+        {
+            try
+            {
+                var url = $"https://api.coingecko.com/api/v3/coins/{symbol}/market_chart?vs_currency={vsCurrency}&days=1&interval=minutely";
+                var resp = await _httpClient.GetFromJsonAsync<ChartResponse>(url, ct);
+                var list = resp?.Prices
+                    ?.TakeLast(minutes)
+                    .Select(p => new PriceResult(
+                        symbol,
+                        vsCurrency,
+                        p[1],
+                        DateTimeOffset.FromUnixTimeMilliseconds((long)p[0])))
+                    .ToList() ?? new List<PriceResult>();
+                return list;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch prices from CoinGecko");
+                return new List<PriceResult>();
+            }
+        }
+
+        private sealed class ChartResponse
+        {
+            [JsonPropertyName("prices")]
+            public List<List<decimal>>? Prices { get; set; }
         }
 
         private sealed class Response
