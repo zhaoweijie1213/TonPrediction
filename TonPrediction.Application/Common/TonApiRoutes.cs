@@ -8,7 +8,7 @@ public static class TonApiRoutes
     /// <summary>
     /// 获取指定钱包交易列表。
     /// </summary>
-    public const string AccountTransactions = "/v2/blockchain/accounts/{0}/transactions?limit={1}&to_lt={2}";
+    public const string AccountTransactions = "/v2/blockchain/accounts/{0}/transactions?limit={1}&after_lt={2}&sort_order=asc";
 
     /// <summary>
     /// SSE 监听钱包交易。

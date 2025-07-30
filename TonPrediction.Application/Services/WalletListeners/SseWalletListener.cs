@@ -83,7 +83,7 @@ public class SseWalletListener(IHttpClientFactory httpFactory, ILogger<SseWallet
     private async Task<List<TonTxDetail>> FetchMissedListAsync(string walletAddress, ulong lastLt, CancellationToken ct)
     {
         var list = new List<TonTxDetail>();
-        var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 20, lastLt);
+        var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 100, lastLt);
         try
         {
             var resp = await _http.GetFromJsonAsync<AccountTxList>(url, ct);

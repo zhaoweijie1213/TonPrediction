@@ -170,7 +170,7 @@ public class BetService(
         ulong lastLt = 0;
         while (true)
         {
-            var url = string.Format(TonApiRoutes.AccountTransactions, address, 20, lastLt);
+            var url = string.Format(TonApiRoutes.AccountTransactions, address, 100, lastLt);
             var resp = await _http.GetFromJsonAsync<AccountTxList>(url);
             if (resp?.Transactions != null)
             {

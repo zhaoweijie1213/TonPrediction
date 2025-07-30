@@ -21,7 +21,7 @@ public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientF
     {
         while (!ct.IsCancellationRequested)
         {
-            var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 20, lastLt);
+            var url = string.Format(TonApiRoutes.AccountTransactions, walletAddress, 100, lastLt);
             var resp = await _http.GetAsync(url, ct);
 
             var content = await resp.Content.ReadAsStringAsync(ct);
@@ -41,7 +41,7 @@ public class RestWalletListener(ILogger<RestWalletListener> logger, IHttpClientF
                     }
                 }
             }
-            await Task.Delay(TimeSpan.FromMilliseconds(1000), ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(3000), ct);
         }
     }
 }

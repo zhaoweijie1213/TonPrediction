@@ -47,7 +47,7 @@ namespace TonPrediction.Api.Services
                             await RecordPriceAsync(symbol, stoppingToken);
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
                     }
 
                 }

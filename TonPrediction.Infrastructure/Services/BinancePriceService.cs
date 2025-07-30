@@ -1,10 +1,11 @@
+using Binance.Net.Clients;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 using TonPrediction.Application.Services;
 using TonPrediction.Application.Services.Interface;
 
@@ -26,6 +27,11 @@ namespace TonPrediction.Infrastructure.Services
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
         /// <summary>
+        /// 币安 REST 客户端，用于获取价格数据。
+        /// </summary>
+        private readonly BinanceRestClient _restClient = new();
+
+        /// <summary>
         /// 获取指定币种对的价格。
         /// </summary>
         /// <param name="symbol"></param>
@@ -42,8 +48,10 @@ namespace TonPrediction.Infrastructure.Services
                 ? "usdt"
                 : vsCurrency;
             var pair = (symbol + currency).ToUpperInvariant();
+            var tickerResult = await _restClient.SpotApi.ExchangeData.GetTickerAsync(pair);
+            decimal price = tickerResult.Data.LastPrice;
 
-            decimal price = await FetchRestAsync(pair);
+            //decimal price = await FetchRestAsync(pair);
 
             //var linkedToken = CancellationTokenSource
             //    .CreateLinkedTokenSource(ct, _cts.Token).Token;
