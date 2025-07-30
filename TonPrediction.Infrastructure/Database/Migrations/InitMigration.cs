@@ -16,7 +16,6 @@ namespace TonPrediction.Infrastructure.Database.Migrations
         {
             db.CodeFirst.InitTables<RoundEntity>();
             db.CodeFirst.InitTables<BetEntity>();
-            db.CodeFirst.InitTables<PriceSnapshotEntity>();
             db.CodeFirst.InitTables<TransactionEntity>();
             db.CodeFirst.InitTables<StateEntity>();
             db.CodeFirst.InitTables<PnlStatEntity>();
