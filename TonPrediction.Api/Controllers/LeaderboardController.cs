@@ -42,9 +42,10 @@ public class LeaderboardController(ILeaderboardService service) : ControllerBase
     }
 
     /// <summary>
-    /// 模糊搜索地址。
+    /// 搜索地址。
     /// </summary>
     [HttpGet("search")]
+    [Obsolete("不使用该接口")]
     public async Task<ApiResult<AddressListOutput>> SearchAddressAsync(
         [FromQuery] string keyword,
         [FromQuery] string symbol = "ton",
